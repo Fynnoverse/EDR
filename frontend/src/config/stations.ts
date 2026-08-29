@@ -999,6 +999,12 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Łódź Widzew",
         trainPosRange: 0.5,
         platformPosOverride: [19.543928, 51.763177]
+    },
+    LK: {
+        id: "LK",
+        srName: "Łódź Kaliska",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.430088, 51.757714]
     }
 }
 

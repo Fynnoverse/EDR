@@ -41,7 +41,10 @@ export const SelectMenuLayout: React.FC<Props & SubNavigationProps> = ({children
         <Navbar fluid={true} className="sticky top-0 bg-slate-300 h-20 z-20">
             <Navbar.Brand href="/">
                 <img src={appLogo} height={64} width={64} alt="App Logo"/>
-                <span className="ml-4">EDR</span>
+                <span className="ml-4 font-semibold">EDR</span>
+                <span className="ml-2 rounded-full bg-slate-700 px-2 py-1 text-xs font-medium text-white whitespace-nowrap">
+                    Fork by Fynnovation
+                </span>
             </Navbar.Brand>
             <Navbar.Collapse>
                 <div className="flex items-center space-x-4">

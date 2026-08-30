@@ -21,6 +21,7 @@ import { TrainTimeTableRow } from "../Sirius";
 import { TimeTableRow } from "../customTypes/TimeTableRow";
 import { ExtendedTrain } from "../customTypes/ExtendedTrain";
 import { nowUTC } from "../utils/date";
+import { DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM } from "./functions/trainFilters";
 const Graph = React.lazy(() => import("./components/Graph"));
 
 type Props = {
@@ -33,20 +34,24 @@ export type FilterConfig = {
     maxTime?: number;
     onlyApproaching: boolean;
     onlyOnTrack: boolean;
+    departedDistance: number;
 }
 
 export const presetFilterConfig: {[k: string]: FilterConfig} = {
     default: {
         onlyApproaching: false,
-        onlyOnTrack: false
+        onlyOnTrack: false,
+        departedDistance: DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM
     },
     near: {
         onlyApproaching: false,
-        onlyOnTrack: true
+        onlyOnTrack: true,
+        departedDistance: DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM
     },
     approaching: {
         onlyApproaching: true,
-        onlyOnTrack: false
+        onlyOnTrack: false,
+        departedDistance: DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM
     }
 }
 

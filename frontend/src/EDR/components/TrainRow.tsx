@@ -70,7 +70,7 @@ const TableRow: React.FC<Props> = (
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 
-    if (filterConfig.onlyApproaching && shouldHideDepartedTrain(trainHasPassedStation, trainDetails?.distanceFromStation)) return null;
+    if (filterConfig.onlyApproaching && shouldHideDepartedTrain(trainHasPassedStation, trainDetails?.distanceFromStation, filterConfig.departedDistance)) return null;
     if (filterConfig.maxRange && trainDetails?.distanceFromStation > filterConfig.maxRange) return null;
     const expectedArrivalIninutes = (expectedArrival.getHours() * 60 + expectedArrival.getMinutes()) - (dateNow.getHours() * 60 + dateNow.getMinutes());
     if (filterConfig.maxTime && Math.abs(expectedArrivalIninutes) > filterConfig.maxTime) return null;

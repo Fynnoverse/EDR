@@ -93,6 +93,9 @@ export const SelectMenuLayout: React.FC<Props & SubNavigationProps> = ({children
                     <Navbar.Link href="https://github.com/simrail/EDR" target="_blank">
                         Github
                     </Navbar.Link>
+                    <Navbar.Link href="https://github.com/Fynnoverse/EDR" target="_blank">
+                        Fynnovation Fork
+                    </Navbar.Link>
                     <Navbar.Link href="https://github.com/simrail/EDR/issues" target="_blank">
                         {t("NAVBAR_bugs")}
                     </Navbar.Link>

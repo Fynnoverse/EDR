@@ -12,9 +12,10 @@ Changes introduced in this fork may be copied and incorporated into other projec
 
 All reuse and distribution remains subject to the terms of the [GNU General Public License v3.0](LICENSE.md).
 
-The hosted version of this fork is available at [edr.fynnovation.com](https://edr.fynnovation.com).
 
-### ➡️➡️➡️[The app is available right here.](https://edr.simrail.app/)⬅️⬅️⬅️
+### ➡️➡️➡️[The hosted version of this fork is available here.](https://edr.fynnovation.com)⬅️⬅️⬅️
+
+#### ➡️➡️➡️[The app is available right here.](https://edr.simrail.app/)⬅️⬅️⬅️
 
 Main features include but are not limited to:
 

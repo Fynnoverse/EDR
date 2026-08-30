@@ -59,10 +59,26 @@ export function getTrainsList(req: express.Request, res: express.Response) {
 }
 
 export async function getTrainsListForPost(req: express.Request, res: express.Response, trainTimetables: IEdrServerTrain[]) {
+    const { serverCode, post } = req.params;
+    if (!Array.isArray(trainTimetables)) {
+        return res.status(503).send({
+            error: "TIMETABLE_NOT_READY",
+            message: `Timetable for server ${serverCode} is not loaded yet.`,
+        });
+    }
+
+    const internalIds = POSTS[post]?.filter(id => Number.isFinite(id));
+    if (!internalIds?.length) {
+        return res.status(400).send({
+            error: "UNSUPPORTED_POST",
+            message: `Post ${post} is not supported.`,
+        });
+    }
+
     try {
-        const { serverCode, post } = req.params;
         const e = await selfClient.get(`trains/${serverCode}`);
         const trainList = (e.data as Train[]);
+        let osrmFailureLogged = false;
         return res
             .setHeader("Cache-control", 'public, max-age=10, must-revalidate, stale-if-error=30')
             .send(await Promise.all(trainList.map(async (train) => {
@@ -70,7 +86,6 @@ export async function getTrainsListForPost(req: express.Request, res: express.Re
                 const trainTimetable = trainTimetables.find(timetable => timetable.trainNoLocal === train.TrainNoLocal);
                 if (trainTimetable !== undefined) {
                     // TODO: This needs refactoring when new stations get lumped together like Glowny
-                    const internalIds = POSTS[post];
                     const postsInTimetable = trainTimetable.timetable.filter(checkpoint => internalIds.includes(parseInt(checkpoint.pointId)));
                     const hasTrainLeftThePost = postsInTimetable !== undefined && postsInTimetable.length > 0 ? train?.TrainData.VDDelayedTimetableIndex > postsInTimetable[postsInTimetable.length - 1].indexOfPoint : true;
                     if (hasTrainLeftThePost) {
@@ -80,7 +95,25 @@ export async function getTrainsListForPost(req: express.Request, res: express.Re
                         };
                     } else {
                         const stationPosition = stationPositions[internalIds[0]];
-                        osrmResult = (await getOsrmDataFromSelfApi(train.TrainData.Longitute, train.TrainData.Latititute, stationPosition[0], stationPosition[1])).data;
+                        if (!stationPosition) {
+                            return {
+                                ...train,
+                                distanceFromStation: null,
+                            };
+                        }
+
+                        try {
+                            osrmResult = (await getOsrmDataFromSelfApi(train.TrainData.Longitute, train.TrainData.Latititute, stationPosition[0], stationPosition[1])).data;
+                        } catch {
+                            if (!osrmFailureLogged) {
+                                console.error(`OSRM is unavailable while processing ${serverCode}/${post}; returning trains without distance information.`);
+                                osrmFailureLogged = true;
+                            }
+                            return {
+                                ...train,
+                                distanceFromStation: null,
+                            };
+                        }
                         return {
                             ...train,
                             distanceFromStation: osrmResult?.routes?.[0]?.distance !== undefined ? Math.round(osrmResult.routes[0].distance / 10) / 100 : 0,
@@ -93,8 +126,9 @@ export async function getTrainsListForPost(req: express.Request, res: express.Re
                     };
                 }
                 
-            })).catch(reason => console.log(reason)));
-    } catch {
+            })));
+    } catch (error) {
+        console.error(`Cannot create train list for ${serverCode}/${post}:`, error);
         return res.sendStatus(500);
     }
 }

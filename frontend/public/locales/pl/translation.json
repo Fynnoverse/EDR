@@ -14,6 +14,8 @@
   "SELECTMENU_nav_previous_server": "Poprzedni serwer",
   "SELECTMENU_nav_next_server": "Następny serwer",
   "SELECTMENU_no_posts": "No dispatch posts available on this server",
+  "SELECTMENU_interlocking_computer": "Komputerowe",
+  "SELECTMENU_interlocking_relay": "Przekaźnikowe",
 
   "FOOTER_version": "Version",
   "FOOTER_screenshots_by": "Autor screena",

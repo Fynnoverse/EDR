@@ -21,6 +21,7 @@ import { TrainTimeTableRow } from "../Sirius";
 import { TimeTableRow } from "../customTypes/TimeTableRow";
 import { ExtendedTrain } from "../customTypes/ExtendedTrain";
 import { nowUTC } from "../utils/date";
+import { DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM } from "./functions/trainFilters";
 const Graph = React.lazy(() => import("./components/Graph"));
 
 type Props = {
@@ -33,20 +34,24 @@ export type FilterConfig = {
     maxTime?: number;
     onlyApproaching: boolean;
     onlyOnTrack: boolean;
+    departedDistance: number;
 }
 
 export const presetFilterConfig: {[k: string]: FilterConfig} = {
     default: {
         onlyApproaching: false,
-        onlyOnTrack: false
+        onlyOnTrack: false,
+        departedDistance: DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM
     },
     near: {
         onlyApproaching: false,
-        onlyOnTrack: true
+        onlyOnTrack: true,
+        departedDistance: DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM
     },
     approaching: {
         onlyApproaching: true,
-        onlyOnTrack: false
+        onlyOnTrack: false,
+        departedDistance: DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM
     }
 }
 
@@ -83,7 +88,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
         Promise.all([getTzOffset(serverCode), getServerTime(serverCode)]).then((v) => {
             setTzOffset(v[0]);
             setServerTime(v[1]);
-            getTimetable(post, serverCode).then((data) => {
+            getTimetable(post, serverCode, v[0]).then((data) => {
                 setTimetable(data.sort((row1, row2) => row1.scheduledArrivalObject.valueOf() - row2.scheduledArrivalObject.valueOf()));
                 getStations(serverCode).then((data) => {
                     setStations(_keyBy('Name', data));
@@ -154,7 +159,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
 
     // Adds all the calculated infos for online trains. Such as distance or closest station for example
     React.useEffect(() => {
-        if (loading || (trains as ExtendedTrain[]).length === 0 || !previousTrains || !trainTimetables) return;
+        if (loading || !Array.isArray(trains) || trains.length === 0 || !previousTrains || !trainTimetables) return;
         setTimeout(() => {
             const addDetailsToTrains = getTrainDetails(previousTrains, trainTimetables, nowUTC(serverTime));
             const onlineTrainsWithDetails = _map(addDetailsToTrains, trains);
@@ -166,20 +171,20 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
 
     // Get missing train timetables when a new train spawns on the map
     React.useEffect(() => {
-        if (!trains || !serverCode) return;
+        if (!Array.isArray(trains) || !serverCode || tzOffset === undefined) return;
         // Filter for trains that have a checkpoint at the current station
         const allTrainIds = trains.map((t) => (timetable as TimeTableRow[])?.findIndex(entry => entry.trainNoLocal === t.TrainNoLocal) > -1 ? t.TrainNoLocal: null).filter((trainNumber): trainNumber is Exclude<typeof trainNumber, null> => trainNumber !== null);
         const previousTrainIds = Object.keys(trainTimetables ?? []);
         const difference = _difference(allTrainIds, previousTrainIds);
         if (difference.length === 0) return;
-        Promise.all(difference.map(trainId => getTrainTimetable(trainId, serverCode))).then((timetables) => {
+        Promise.all(difference.map(trainId => getTrainTimetable(trainId, serverCode, tzOffset))).then((timetables) => {
             setTrainTimetables(groupBy(flatMap(timetables).concat(...Object.values(trainTimetables ?? {})), 'displayedTrainNumber'))
         });
-    }, [trains, timetable, trainTimetables, serverCode])
+    }, [trains, timetable, trainTimetables, serverCode, tzOffset])
 
     // Get new player info when someone takes over a train
     React.useEffect(() => {
-        if (!trains) return;
+        if (!Array.isArray(trains)) return;
         const allPlayerIds = trains.map((t) => t.TrainData.ControlledBySteamID).filter((trainNumber): trainNumber is Exclude<typeof trainNumber, null> => trainNumber !== null);
         const previousPlayerIds = previousPlayers?.current?.map(player => player.steamid) ?? [];
         const difference = _difference(allPlayerIds, previousPlayerIds);
@@ -220,6 +225,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
                     setGraphModalOpen(false)}
                     serverTime={serverTime}
                     serverCode={serverCode}
+                    serverTzOffset={tzOffset}
                 />
                 : null
         }

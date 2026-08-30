@@ -45,6 +45,7 @@ import KZ from "./images/posts/jpg/Katowice_Zawodzie.jpg";
 import LA from "./images/posts/jpg/Lazy_La.jpg";
 import LB from "./images/posts/jpg/Lazy_Lb.jpg";
 import LC from "./images/posts/jpg/Lazy_Lc.jpg";
+import LK from "./images/posts/jpg/Lodz_Kaliska.jpg";
 import LW from "./images/posts/jpg/Lodz_Widzew.jpg";
 import MI from "./images/posts/jpg/Miechow.jpg";
 import ND from "./images/posts/jpg/Niedzwiedz.jpg";
@@ -96,6 +97,7 @@ import KZ_WEBP from "./images/posts/webp/Katowice_Zawodzie.webp";
 import LA_WEBP from "./images/posts/webp/Lazy_La.webp";
 import LB_WEBP from "./images/posts/webp/Lazy_Lb.webp";
 import LC_WEBP from "./images/posts/webp/Lazy_Lc.webp";
+import LK_WEBP from "./images/posts/webp/Lodz_Kaliska.webp";
 import LW_WEBP from "./images/posts/webp/Lodz_Widzew.webp";
 import MI_WEBP from "./images/posts/webp/Miechow.webp";
 import ND_WEBP from "./images/posts/webp/Niedzwiedz.webp";
@@ -168,6 +170,7 @@ export const optimizedPostsImagesMap: {[k: string]: string} = {
     ŁA: LA,
     LB,
     ŁC: LC,
+    LK,
     LW,
     MI,
     ND,
@@ -221,6 +224,7 @@ export const optimizedPostsWebpImagesMap: {[k: string]: string} = {
     ŁA: LA_WEBP,
     LB: LB_WEBP,
     ŁC: LC_WEBP,
+    LK: LK_WEBP,
     LW: LW_WEBP,
     MI: MI_WEBP,
     ND: ND_WEBP,

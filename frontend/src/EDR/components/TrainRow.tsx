@@ -16,6 +16,7 @@ import {TrainToCell} from "./Cells/TrainToCell";
 import { ISteamUser } from "../../config/ISteamUser";
 import { StationConfig } from "../../config/stations";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
+import { shouldHideDepartedTrain } from "../functions/trainFilters";
 
 
 export const tableCellCommonClassnames = (streamMode: boolean = false) => streamMode ? "p-2" : "p-4";
@@ -69,7 +70,7 @@ const TableRow: React.FC<Props> = (
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 
-    if (filterConfig.onlyApproaching && (trainHasPassedStation || !trainDetails)) return null;
+    if (filterConfig.onlyApproaching && shouldHideDepartedTrain(trainHasPassedStation, trainDetails?.distanceFromStation, filterConfig.departedDistance)) return null;
     if (filterConfig.maxRange && trainDetails?.distanceFromStation > filterConfig.maxRange) return null;
     const expectedArrivalIninutes = (expectedArrival.getHours() * 60 + expectedArrival.getMinutes()) - (dateNow.getHours() * 60 + dateNow.getMinutes());
     if (filterConfig.maxTime && Math.abs(expectedArrivalIninutes) > filterConfig.maxTime) return null;

@@ -89,6 +89,7 @@
   "EDR_UI_filter_radius": "Adott távolság szűrése (km)",
   "EDR_UI_reset_button": "Alaphelyzet",
   "EDR_UI_save_button": "Mentés",
+  "EDR_UI_save_and_close_button": "Mentés és bezárás",
   "EDR_UI_timetable_times": "Időpontok",
   "EDR_UI_timetable_station": "Állomás",
   "EDR_UI_timetable_layover": "Várakozás",

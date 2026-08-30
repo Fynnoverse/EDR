@@ -89,6 +89,7 @@
   "EDR_UI_filter_radius": "Filtrer par rayon (km)",
   "EDR_UI_reset_button": "Réinitialiser",
   "EDR_UI_save_button": "Sauvegarder",
+  "EDR_UI_save_and_close_button": "Enregistrer et fermer",
   "EDR_UI_timetable_times": "Temps",
   "EDR_UI_timetable_station": "Station",
   "EDR_UI_timetable_layover": "Halte",

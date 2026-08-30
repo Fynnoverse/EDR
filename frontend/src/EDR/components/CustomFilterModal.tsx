@@ -83,7 +83,10 @@ export const ColumnFilterModal: React.FC<Props> = ({filterConfig, setFilterConfi
             <Modal.Footer>
                 <div className="w-full flex justify-between">
                 <Button color="gray" onClick={() => {setFilterConfig(presetFilterConfig.default); onClose();}}>{t('EDR_UI_reset_button')}</Button>
-                <Button onClick={() => setFilterConfig(pendingFilterConfig)}>{t('EDR_UI_save_button')}</Button>
+                <div className="flex gap-2">
+                    <Button color="gray" onClick={() => setFilterConfig(pendingFilterConfig)}>{t('EDR_UI_save_button')}</Button>
+                    <Button onClick={() => {setFilterConfig(pendingFilterConfig); onClose();}}>{t('EDR_UI_save_and_close_button')}</Button>
+                </div>
                 </div>
             </Modal.Footer>
         </Modal>

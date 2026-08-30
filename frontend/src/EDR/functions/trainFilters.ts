@@ -18,6 +18,35 @@ export const hasTrainPassedStation = (
 ) => currentTimetableIndex > Math.max(stationIndex, ...secondaryStationIndices);
 
 /**
+ * Classifies rows that are displayed with reduced opacity and should therefore
+ * be placed after active trains.
+ *
+ * @param currentTimetableIndex - Current train index, or no value for an offline train.
+ * @param stationIndex - Main timetable index of the selected post.
+ * @param secondaryStationIndices - Timetable indices of merged secondary posts.
+ * @returns Whether the row is inactive at the selected post.
+ */
+export const isInactiveTrainAtStation = (
+    currentTimetableIndex: number | undefined,
+    stationIndex: number,
+    secondaryStationIndices: number[] = [],
+) => currentTimetableIndex === undefined
+    || hasTrainPassedStation(currentTimetableIndex, stationIndex, secondaryStationIndices);
+
+/**
+ * Moves inactive entries behind active entries while retaining the existing
+ * order inside both groups.
+ *
+ * @param rows - Rows in their current timetable order.
+ * @param isInactive - Callback classifying a row as inactive.
+ * @returns A new array with inactive rows at the bottom.
+ */
+export const moveInactiveRowsLast = <T>(rows: T[], isInactive: (row: T) => boolean): T[] => [
+    ...rows.filter(row => !isInactive(row)),
+    ...rows.filter(isInactive),
+];
+
+/**
  * The distance supplied by the live API is unsigned. It must therefore only
  * be used after the timetable index confirms that the train passed the post.
  *

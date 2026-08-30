@@ -1,7 +1,9 @@
 import {
     hasTrainPassedStation,
+    isInactiveTrainAtStation,
     MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM,
     MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM,
+    moveInactiveRowsLast,
     shouldHideByScheduledTime,
     shouldHideDepartedTrain,
 } from "../trainFilters";
@@ -16,6 +18,30 @@ describe("hasTrainPassedStation", () => {
         expect(hasTrainPassedStation(13, 12, [14])).toBe(false);
         expect(hasTrainPassedStation(14, 12, [14])).toBe(false);
         expect(hasTrainPassedStation(15, 12, [14])).toBe(true);
+    });
+});
+
+describe("inactive train ordering", () => {
+    it("classifies offline and departed trains as inactive", () => {
+        expect(isInactiveTrainAtStation(undefined, 12)).toBe(true);
+        expect(isInactiveTrainAtStation(12, 12)).toBe(false);
+        expect(isInactiveTrainAtStation(13, 12)).toBe(true);
+    });
+
+    it("moves inactive rows to the bottom without changing group order", () => {
+        const rows = [
+            {id: "inactive-1", inactive: true},
+            {id: "active-1", inactive: false},
+            {id: "inactive-2", inactive: true},
+            {id: "active-2", inactive: false},
+        ];
+
+        expect(moveInactiveRowsLast(rows, row => row.inactive).map(row => row.id)).toEqual([
+            "active-1",
+            "active-2",
+            "inactive-1",
+            "inactive-2",
+        ]);
     });
 });
 

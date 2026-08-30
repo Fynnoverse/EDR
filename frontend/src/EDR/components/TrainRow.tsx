@@ -16,7 +16,7 @@ import {TrainToCell} from "./Cells/TrainToCell";
 import { ISteamUser } from "../../config/ISteamUser";
 import { StationConfig } from "../../config/stations";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
-import { hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrain } from "../functions/trainFilters";
+import { isInactiveTrainAtStation, shouldHideByScheduledTime, shouldHideDepartedTrain } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 
 
@@ -52,13 +52,11 @@ const TableRow: React.FC<Props> = (
 ) => {
     const dateNow = nowUTC(serverTime);
 
+    const secondaryStationIndices = (ttRow.secondaryPostsRows || []).map(row => row.stationIndex);
     const trainHasPassedStation = trainDetails
-        ? hasTrainPassedStation(
-            trainDetails.TrainData.VDDelayedTimetableIndex,
-            ttRow.stationIndex,
-            (ttRow.secondaryPostsRows || []).map(row => row.stationIndex),
-        )
+        ? isInactiveTrainAtStation(trainDetails.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices)
         : false;
+    const isInactive = isInactiveTrainAtStation(trainDetails?.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices);
     const departureExpectedHours = ttRow.scheduledDepartureObject.getUTCHours();
     const departureExpectedMinutes = ttRow.scheduledDepartureObject.getUTCMinutes();
     // console_log("Is next day ? " + ttRow.train_number, isNextDay);
@@ -87,7 +85,7 @@ const TableRow: React.FC<Props> = (
     return <Table.Row
         className={`
             dark:text-gray-100 light:text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-600 
-            ${trainHasPassedStation || !trainDetails ? 'opacity-50' : 'opacity-100'}
+            ${isInactive ? 'opacity-50' : 'opacity-100'}
         `} data-timeoffset={Math.abs(getServerTimeNumber(dateNow) - getServerTimeNumber(ttRow.scheduledArrivalObject))}
     >
         <TrainInfoCell

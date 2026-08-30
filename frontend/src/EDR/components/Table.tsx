@@ -14,6 +14,7 @@ import { ISteamUser } from "../../config/ISteamUser";
 import { TrainTimeTableRow } from "../../Sirius";
 import { Dictionary } from "lodash";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
+import { isInactiveTrainAtStation, moveInactiveRowsLast } from "../functions/trainFilters";
 
 export type Bounds = {
     firstColBounds: RectReadOnly;
@@ -71,6 +72,20 @@ export const EDRTable: React.FC<Props> = ({
     if (!trainsWithDetails || !post || !serverTime) return null;
     const postCfg = postConfig[post];
     const showStopColumn = timetable.length > 0 && timetable.some((row) => row.platform || Math.ceil(row.plannedStop) !== 0);
+    const visibleTimetable = moveInactiveRowsLast(
+        timetable
+            .filter((tt) => filter ?
+                filter.replace(/\s+/g, '')
+                    .split(searchSeparator)
+                    .filter(n => n)
+                    .some((trainFilter) => tt.trainNoLocal.startsWith(trainFilter)) : true)
+            .filter((tt) => filterConfig.onlyOnTrack ? !!trainsWithDetails[tt.trainNoLocal] : true),
+        (tt) => isInactiveTrainAtStation(
+            trainsWithDetails[tt.trainNoLocal]?.TrainData.VDDelayedTimetableIndex,
+            tt.stationIndex,
+            (tt.secondaryPostsRows || []).map(row => row.stationIndex),
+        ),
+    );
 
     return <div>
         <SimRailMapModal serverCode={serverCode} trainId={mapModalTrainId} setModalTrainId={setMapModalTrainId} />
@@ -95,18 +110,7 @@ export const EDRTable: React.FC<Props> = ({
             <Table striped={true}>
             <Table.Body>
                 {timetable.length > 0
-                    ? timetable
-                        .filter((tt) => filter ? 
-                            // Remove spaces, trim not enough since humans usually use space after a separator
-                            filter.replace(/\s+/g, '')
-                            // Separate train numbers
-                            .split(searchSeparator)
-                            // Remove empty values (if last char is separator, no filtering would occur due to empty string)
-                            .filter(n => n)
-                            // If any train numbers match up, filter for it
-                            .some((train_filter) => tt.trainNoLocal.startsWith(train_filter)) : true)
-                        .filter((tt) => filterConfig.onlyOnTrack ? !!trainsWithDetails[tt.trainNoLocal] : true)
-                        .map(tr =>
+                    ? visibleTimetable.map(tr =>
                     <TableRow
                         key={tr.trainNoLocal + "_" + tr.fromPost + "_" + tr.toPost}
                         ttRow={tr}

@@ -89,6 +89,7 @@
   "EDR_UI_filter_radius": "Filter etter radius (km)",
   "EDR_UI_reset_button": "Nullstill",
   "EDR_UI_save_button": "Lagre",
+  "EDR_UI_save_and_close_button": "Lagre og lukk",
   "EDR_UI_timetable_times": "tider",
   "EDR_UI_timetable_station": "Stasjon",
   "EDR_UI_timetable_layover": "Reguleringstid",

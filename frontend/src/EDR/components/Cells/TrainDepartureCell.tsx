@@ -4,8 +4,8 @@ import {edrImagesMap} from "../../../config";
 import {tableCellCommonClassnames} from "../TrainRow";
 import {useTranslation} from "react-i18next";
 import Tooltip from "rc-tooltip";
-import { format } from "date-fns";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
+import { formatServerTime } from "../../../utils/serverTime";
 
 type Props = {
     headerSixthhColRef: any;
@@ -29,7 +29,7 @@ export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNo
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="150" style={{minWidth: 150}} ref={headerSixthhColRef}>
             <div className="flex items-center justify-start h-full">
-                {format(ttRow.scheduledDepartureObject, 'HH:mm')}
+                {formatServerTime(ttRow.scheduledDepartureObject)}
                 <div className="inline-flex items-center h-full pl-4 hidden lg:block">
                     {
                         !trainHasPassedStation && !isTrainOffline && (trainMustDepart ?

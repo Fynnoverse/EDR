@@ -5,10 +5,10 @@ import { DetailedTrain } from "../functions/trainDetails";
 import TrainTimetableTimeline from "./TrainTimetableTimeline";
 import {frameHeight} from "./SimRailMapModal";
 import { TrainTimeTableRow } from "../../Sirius";
-import { format } from "date-fns";
 import Tooltip from "rc-tooltip";
 import { edrImagesMap } from "../../config";
 import { useTranslation } from "react-i18next";
+import { formatServerTime } from "../../utils/serverTime";
 
 type Props = {
     trainDetails?: DetailedTrain;
@@ -43,15 +43,15 @@ const TrainTimetableBody: React.FC<BodyProps> = ({timetable, closestStation, clo
                         <Table.Cell className="relative">
                             <div className="flex flex-col">
                                 <TrainTimetableTimeline isAtTheStation={ttRow.nameForPerson === closestStation} itemIndex={index} closestStationIndex={closestStationIndex ?? 0} />
-                                {ttRow.scheduledArrivalObject.getFullYear() > 1970 && (
+                                {ttRow.scheduledArrivalObject.getUTCFullYear() > 1970 && (
                                     <>
-                                        {format(ttRow.scheduledArrivalObject, 'HH:mm')}
+                                        {formatServerTime(ttRow.scheduledArrivalObject)}
                                         <br />
                                     </>
                                 )}
-                                {ttRow.scheduledDepartureObject.getFullYear() < 3000 && (
+                                {ttRow.scheduledDepartureObject.getUTCFullYear() < 3000 && (
                                     <>
-                                        {format(ttRow.scheduledDepartureObject, 'HH:mm')}
+                                        {formatServerTime(ttRow.scheduledDepartureObject)}
                                     </>
                                 )}
                             </div>

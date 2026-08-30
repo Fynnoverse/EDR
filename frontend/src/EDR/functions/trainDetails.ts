@@ -21,7 +21,7 @@ export const getTrainDetails = (previousTrains: React.MutableRefObject<{[k: stri
     if (previousTrainData?.TrainData && previousTrainData?.TrainData.VDDelayedTimetableIndex < t.TrainData.VDDelayedTimetableIndex) {
         const stationPassed = trainTimetables[t.TrainNoLocal]?.find(ttRow => ttRow.indexOfPoint === (t.TrainData.VDDelayedTimetableIndex - 1));
         if (stationPassed && dateNow) {
-            lastDelay = differenceInMinutes(new Date(stationPassed.scheduledDepartureObject.getFullYear(), stationPassed.scheduledDepartureObject.getMonth(), stationPassed.scheduledDepartureObject.getDate(), dateNow.getHours(), dateNow.getMinutes()), stationPassed.scheduledDepartureObject);
+            lastDelay = differenceInMinutes(new Date(Date.UTC(stationPassed.scheduledDepartureObject.getUTCFullYear(), stationPassed.scheduledDepartureObject.getUTCMonth(), stationPassed.scheduledDepartureObject.getUTCDate(), dateNow.getUTCHours(), dateNow.getUTCMinutes())), stationPassed.scheduledDepartureObject);
         }
     }
 

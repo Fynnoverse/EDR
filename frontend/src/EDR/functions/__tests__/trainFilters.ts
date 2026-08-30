@@ -13,5 +13,6 @@ describe("shouldHideDepartedTrain", () => {
 
     it("keeps a train visible when no live distance is available", () => {
         expect(shouldHideDepartedTrain(true, undefined, 1)).toBe(false);
+        expect(shouldHideDepartedTrain(true, null, 1)).toBe(false);
     });
 });

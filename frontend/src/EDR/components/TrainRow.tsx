@@ -5,7 +5,7 @@ import { getDateWithHourAndMinutes } from "../functions/timeUtils";
 import {configByType} from "../../config/trains";
 import {FilterConfig} from "..";
 import { DetailedTrain } from "../functions/trainDetails";
-import { format, subMinutes } from "date-fns";
+import { subMinutes } from "date-fns";
 import {TrainInfoCell} from "./Cells/TrainInfoCell";
 import {TrainTypeCell} from "./Cells/TrainTypeCell";
 import {TrainArrivalCell} from "./Cells/TrainArrivalCell";
@@ -17,6 +17,7 @@ import { ISteamUser } from "../../config/ISteamUser";
 import { StationConfig } from "../../config/stations";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { shouldHideDepartedTrain } from "../functions/trainFilters";
+import { getServerTimeNumber } from "../../utils/serverTime";
 
 
 export const tableCellCommonClassnames = (streamMode: boolean = false) => streamMode ? "p-2" : "p-4";
@@ -24,7 +25,7 @@ type Props = {
     setModalTrainId: React.Dispatch<React.SetStateAction<string | undefined>>,
     setTimetableTrainId: React.Dispatch<React.SetStateAction<string | undefined>>,
     ttRow: TimeTableRow,
-    trainDetails: DetailedTrain,
+    trainDetails: DetailedTrain | undefined,
     serverTime: number | undefined,
     firstColRef: any,
     secondColRef: any,
@@ -51,28 +52,31 @@ const TableRow: React.FC<Props> = (
 ) => {
     const dateNow = nowUTC(serverTime);
 
-    const trainHasPassedStation = trainDetails?.TrainData.VDDelayedTimetableIndex > Math.max(ttRow.stationIndex, ...(ttRow.secondaryPostsRows || []).map(row => row.stationIndex));
-    const departureExpectedHours = ttRow.scheduledDepartureObject.getHours();
-    const departureExpectedMinutes = ttRow.scheduledDepartureObject.getMinutes();
+    const trainHasPassedStation = trainDetails
+        ? trainDetails.TrainData.VDDelayedTimetableIndex > Math.max(ttRow.stationIndex, ...(ttRow.secondaryPostsRows || []).map(row => row.stationIndex))
+        : false;
+    const departureExpectedHours = ttRow.scheduledDepartureObject.getUTCHours();
+    const departureExpectedMinutes = ttRow.scheduledDepartureObject.getUTCMinutes();
     // console_log("Is next day ? " + ttRow.train_number, isNextDay);
-    const isDepartureNextDay = dateNow.getHours() >= 20 && departureExpectedHours < 12;  // TODO: less but still clunky
-    const isDeparturePreviousDay = departureExpectedHours >= 20 && dateNow.getHours() < 12; // TODO: less but still Clunky
+    const isDepartureNextDay = dateNow.getUTCHours() >= 20 && departureExpectedHours < 12;  // TODO: less but still clunky
+    const isDeparturePreviousDay = departureExpectedHours >= 20 && dateNow.getUTCHours() < 12; // TODO: less but still Clunky
     const expectedDeparture = getDateWithHourAndMinutes(dateNow, departureExpectedHours, departureExpectedMinutes, isDepartureNextDay, isDeparturePreviousDay);
 
-    const arrivalExpectedHours = ttRow.scheduledArrivalObject.getHours();
-    const arrivalExpectedMinutes = ttRow.scheduledArrivalObject.getMinutes();
-    const isArrivalNextDay = dateNow.getHours() >= 20 && arrivalExpectedHours < 12;  // TODO: less but still clunky
-    const isArrivalPreviousDay = arrivalExpectedHours >= 20 && dateNow.getHours() < 12; // TODO: less but still Clunky
+    const arrivalExpectedHours = ttRow.scheduledArrivalObject.getUTCHours();
+    const arrivalExpectedMinutes = ttRow.scheduledArrivalObject.getUTCMinutes();
+    const isArrivalNextDay = dateNow.getUTCHours() >= 20 && arrivalExpectedHours < 12;  // TODO: less but still clunky
+    const isArrivalPreviousDay = arrivalExpectedHours >= 20 && dateNow.getUTCHours() < 12; // TODO: less but still Clunky
     const expectedArrival = getDateWithHourAndMinutes(dateNow, arrivalExpectedHours, arrivalExpectedMinutes, isArrivalNextDay, isArrivalPreviousDay);
     const arrivalTimeDelay = trainDetails?.lastDelay ? trainDetails.lastDelay : 0;
 
-    const trainMustDepart = !trainHasPassedStation && trainDetails?.distanceFromStation < 1.5 && (subMinutes(expectedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
+    const distanceFromStation = trainDetails?.distanceFromStation;
+    const trainMustDepart = !trainHasPassedStation && distanceFromStation != null && distanceFromStation < 1.5 && (subMinutes(expectedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 
     if (filterConfig.onlyApproaching && shouldHideDepartedTrain(trainHasPassedStation, trainDetails?.distanceFromStation, filterConfig.departedDistance)) return null;
-    if (filterConfig.maxRange && trainDetails?.distanceFromStation > filterConfig.maxRange) return null;
-    const expectedArrivalIninutes = (expectedArrival.getHours() * 60 + expectedArrival.getMinutes()) - (dateNow.getHours() * 60 + dateNow.getMinutes());
+    if (filterConfig.maxRange && distanceFromStation != null && distanceFromStation > filterConfig.maxRange) return null;
+    const expectedArrivalIninutes = (expectedArrival.getUTCHours() * 60 + expectedArrival.getUTCMinutes()) - (dateNow.getUTCHours() * 60 + dateNow.getUTCMinutes());
     if (filterConfig.maxTime && Math.abs(expectedArrivalIninutes) > filterConfig.maxTime) return null;
 
 
@@ -80,7 +84,7 @@ const TableRow: React.FC<Props> = (
         className={`
             dark:text-gray-100 light:text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-600 
             ${trainHasPassedStation || !trainDetails ? 'opacity-50' : 'opacity-100'}
-        `} data-timeoffset={Math.abs(parseInt(format(dateNow, "HHmm")) - parseInt(format(ttRow.scheduledArrivalObject, 'HHmm')))}
+        `} data-timeoffset={Math.abs(getServerTimeNumber(dateNow) - getServerTimeNumber(ttRow.scheduledArrivalObject))}
     >
         <TrainInfoCell
             ttRow={ttRow}
@@ -110,6 +114,7 @@ const TableRow: React.FC<Props> = (
             thirdColRef={thirdColRef}
             streamMode={streamMode}
             arrivalTimeDelay={arrivalTimeDelay}
+            serverNow={dateNow}
         />
         <TrainFromCell headerFourthColRef={headerFourthColRef} ttRow={ttRow} secondaryPostData={secondaryPostData}
                        streamMode={streamMode} />

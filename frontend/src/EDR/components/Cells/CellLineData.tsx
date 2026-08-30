@@ -7,7 +7,7 @@ import { DetailedTrain } from "../../functions/trainDetails";
 
 type Props = {
     ttRow: TimeTableRow;
-    trainDetails: DetailedTrain;
+    trainDetails: DetailedTrain | undefined;
 }
 export const CellLineData: React.FC<Props> = ({ttRow, trainDetails}) => {
     const {t} = useTranslation();

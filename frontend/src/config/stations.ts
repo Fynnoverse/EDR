@@ -840,12 +840,6 @@ export const postConfig: Dictionary<StationConfig> = {
         trainPosRange: 0.5,
         platformPosOverride: [19.859630, 50.804040]
     },
-    ZYR: {
-        id: "ZYR",
-        srName: "Żyrardów",
-        trainPosRange: 0.5,
-        platformPosOverride: [20.448360, 52.052271]
-    },
     PRZ: {
         id: "PRZ",
         srName: "Przemiarki",
@@ -1005,6 +999,114 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Łódź Kaliska",
         trainPosRange: 0.5,
         platformPosOverride: [19.430088, 51.757714]
+    },
+    BA: {
+        id: "BA",
+        srName: "Baby",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.717187, 51.538282]
+    },
+    BE: {
+        id: "BE",
+        srName: "Bełchów",
+        trainPosRange: 0.5,
+        platformPosOverride: [20.033494, 52.026046]
+    },
+    GA: {
+        id: "GA",
+        srName: "Gajewniki",
+        trainPosRange: 0.5,
+        platformPosOverride: [18.983129, 51.612811]
+    },
+    GL: {
+        id: "GL",
+        srName: "Glinnik",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.495132, 51.886605]
+    },
+    GN: {
+        id: "GN",
+        srName: "Głowno",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.702507, 51.959665]
+    },
+    LA: {
+        id: "LA",
+        srName: "Łask",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.108786, 51.604103]
+    },
+    LCH: {
+        id: "LCH",
+        srName: "Łódź Chojny",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.494985, 51.725217]
+    },
+    LUB: {
+        id: "LUB",
+        srName: "Łódź Lublinek",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.358181, 51.719826]
+    },
+    LZ: {
+        id: "LZ",
+        srName: "Łódź Żabieniec",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.405852, 51.797350]
+    },
+    LG: {
+        id: "LG",
+        srName: "Łowicz Główny",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.956626, 52.104493]
+    },
+    LP: {
+        id: "LP",
+        srName: "Łowicz Przedmieście",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.948651, 52.093110]
+    },
+    PA: {
+        id: "PA",
+        srName: "Pabianice",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.322163, 51.659661]
+    },
+    RT: {
+        id: "RT",
+        srName: "Retkinia",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.415163, 51.742761]
+    },
+    RO: {
+        id: "RO",
+        srName: "Rokiciny",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.780980, 51.669084]
+    },
+    WT: {
+        id: "WT",
+        srName: "Witonia",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.276902, 52.156850]
+    },
+    ZDW: {
+        id: "ZDW",
+        srName: "Zduńska Wola",
+        trainPosRange: 0.5,
+        platformPosOverride: [18.942019, 51.611250]
+    },
+    ZG: {
+        id: "ZG",
+        srName: "Zgierz",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.421290, 51.844430]
+    },
+    ZG_PN: {
+        id: "ZG_PN",
+        srName: "Zgierz Północ",
+        trainPosRange: 0.5,
+        platformPosOverride: [19.384474, 51.869032]
     }
 }
 

@@ -154,7 +154,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
 
     // Adds all the calculated infos for online trains. Such as distance or closest station for example
     React.useEffect(() => {
-        if (loading || (trains as ExtendedTrain[]).length === 0 || !previousTrains || !trainTimetables) return;
+        if (loading || !Array.isArray(trains) || trains.length === 0 || !previousTrains || !trainTimetables) return;
         setTimeout(() => {
             const addDetailsToTrains = getTrainDetails(previousTrains, trainTimetables, nowUTC(serverTime));
             const onlineTrainsWithDetails = _map(addDetailsToTrains, trains);
@@ -166,7 +166,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
 
     // Get missing train timetables when a new train spawns on the map
     React.useEffect(() => {
-        if (!trains || !serverCode) return;
+        if (!Array.isArray(trains) || !serverCode) return;
         // Filter for trains that have a checkpoint at the current station
         const allTrainIds = trains.map((t) => (timetable as TimeTableRow[])?.findIndex(entry => entry.trainNoLocal === t.TrainNoLocal) > -1 ? t.TrainNoLocal: null).filter((trainNumber): trainNumber is Exclude<typeof trainNumber, null> => trainNumber !== null);
         const previousTrainIds = Object.keys(trainTimetables ?? []);
@@ -179,7 +179,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
 
     // Get new player info when someone takes over a train
     React.useEffect(() => {
-        if (!trains) return;
+        if (!Array.isArray(trains)) return;
         const allPlayerIds = trains.map((t) => t.TrainData.ControlledBySteamID).filter((trainNumber): trainNumber is Exclude<typeof trainNumber, null> => trainNumber !== null);
         const previousPlayerIds = previousPlayers?.current?.map(player => player.steamid) ?? [];
         const difference = _difference(allPlayerIds, previousPlayerIds);

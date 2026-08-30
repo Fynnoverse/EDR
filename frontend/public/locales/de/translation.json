@@ -14,6 +14,8 @@
   "SELECTMENU_nav_previous_server": "Vorheriger Server",
   "SELECTMENU_nav_next_server": "Nächster Server",
   "SELECTMENU_no_posts": "Auf diesem Server sind keine Stellwerke verfügbar",
+  "SELECTMENU_interlocking_computer": "Elektronisch",
+  "SELECTMENU_interlocking_relay": "Relais",
 
   "FOOTER_version": "Version",
   "FOOTER_screenshots_by": "Screenshot von",

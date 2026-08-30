@@ -4,14 +4,6 @@
 
 The project aims to provide a better, easier to understand and modern timetable experience for dispatchers compared to the official built-in timetable in the game. Created by [@DKFN](https://github.com/DKFN). Currently maintained by [@Tallyrald](https://github.com/Tallyrald)
 
-## About this fork
-
-This repository is a fork of the original [SimRail Community EDR project](https://github.com/simrail/EDR). Full credit for the original project and its foundation belongs to its original authors and contributors.
-
-Changes introduced in this fork may be copied and incorporated into other projects without asking for prior permission. They may also be used as inspiration for independent implementations. In either case, please credit [Fynnoverse](https://github.com/Fynnoverse) and this Fork [Fynnoverse/EDR](https://github.com/Fynnoverse/EDR) as the source and retain all credits, copyright notices, and license information belonging to the original project and its contributors.
-
-All reuse and distribution remains subject to the terms of the [GNU General Public License v3.0](LICENSE.md).
-
 ### ➡️➡️➡️[The app is available right here.](https://edr.simrail.app/)⬅️⬅️⬅️
 
 Main features include but are not limited to:

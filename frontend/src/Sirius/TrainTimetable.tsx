@@ -12,11 +12,11 @@ import { TrainTimeTableRow } from ".";
 import Tooltip from "rc-tooltip";
 import { useTranslation } from "react-i18next";
 import { edrImagesMap } from "../config";
-import { format } from "date-fns";
 import { getPlayer, getStations } from "../api/api";
 import { ISteamUser } from "../config/ISteamUser";
 import { enqueueSnackbar } from "notistack";
 import _difference from "lodash/difference";
+import { formatServerTime } from "../utils/serverTime";
 
 type Props = {
     trainTimetable: TrainTimeTableRow[];
@@ -122,8 +122,8 @@ export const TrainTimetable: React.FC<Props> = ({trainTimetable, train, autoScro
                                         </Table.Cell>
                                         <Table.Cell>
                                             <div className="flex justify-between">
-                                            {ttRow.scheduledArrivalObject.getFullYear() > 1970 && (
-                                                <span>{format(ttRow.scheduledArrivalObject, 'HH:mm')}</span>
+                                            {ttRow.scheduledArrivalObject.getUTCFullYear() > 1970 && (
+                                                <span>{formatServerTime(ttRow.scheduledArrivalObject)}</span>
                                             )}
                                                 <span>{ttRow.stopTypeNumber > 0 && <Badge>{`${stopTypeToLetters(ttRow.stopTypeNumber)}`}</Badge>}</span>
                                             </div>
@@ -139,9 +139,9 @@ export const TrainTimetable: React.FC<Props> = ({trainTimetable, train, autoScro
                                             </span>
                                         </Table.Cell>
                                         <Table.Cell className="pa-0 flex-col">
-                                            {ttRow.scheduledDepartureObject.getFullYear() < 3000 && (
+                                            {ttRow.scheduledDepartureObject.getUTCFullYear() < 3000 && (
                                                 <>
-                                                    {format(ttRow.scheduledDepartureObject, 'HH:mm')}
+                                                    {formatServerTime(ttRow.scheduledDepartureObject)}
                                                 </>
                                             )}
                                         </Table.Cell>

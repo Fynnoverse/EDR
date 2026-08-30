@@ -44,7 +44,7 @@ export const TrainInfoCell: React.FC<Props> = ({
     const trainConfig = configByLoco[trainDetails?.Vehicles[0].split(':')[0]];
     const icons = isWebpSupported ? edrWebpImagesMap : edrImagesMap;
     const trainIcon = isWebpSupported ? trainConfig?.iconWebp : trainConfig?.icon;
-    const isTrainApproaching = !trainHasPassedStation && ((nextStationName === postCfg?.srName || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName)) && trainDetails.distanceFromStation < 3);
+    const isTrainApproaching = !trainHasPassedStation && trainDetails.distanceFromStation != null && ((nextStationName === postCfg?.srName || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName)) && trainDetails.distanceFromStation < 3);
 
     const CopyToClipboard = (stringToCopy: string) => {
         navigator.clipboard.writeText(stringToCopy);
@@ -124,7 +124,7 @@ export const TrainInfoCell: React.FC<Props> = ({
                     ? <div className="max-w-[70px] md:max-w-full max-h-[1.3rem] overflow-hidden">
                         <span className="hidden md:inline">{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
                         <span className={isTrainApproaching ? 'px-1 rounded bg-green-200 dark:bg-green-600 animate-pulse' : ''}>{nextStationName}</span>
-                        { trainDetails.distanceFromStation && <span>,&nbsp;
+                        { trainDetails.distanceFromStation != null && <span>,&nbsp;
                             <div className="inline-flex">
                                 {trainDetails.distanceFromStation > 0.5 && <span>
                                     {trainDetails.distanceFromStation} km

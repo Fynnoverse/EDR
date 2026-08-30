@@ -1,5 +1,3 @@
-import { toZonedTime } from "date-fns-tz";
-
 export const timeOptions: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
     minute: '2-digit',
@@ -15,8 +13,7 @@ export const nowUTC = (serverTime: number | undefined) => {
         now = new Date(serverTime);
     }
 
-    return toZonedTime(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(), now.getUTCDate(),
-            now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds()), "GMT");
+    return now;
 }
 
 // We don't care about the date, only time
@@ -24,5 +21,5 @@ export const formatTime = (date: Date, language: string, options?: Intl.DateTime
     if (!(date instanceof Date)) {
 		return '-';
 	}
-	return date.toLocaleTimeString(language, options);
+	return date.toLocaleTimeString(language, {...options, timeZone: "UTC"});
 }

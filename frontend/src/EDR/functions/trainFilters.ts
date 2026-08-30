@@ -8,8 +8,8 @@ export const DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 10;
  */
 export const shouldHideDepartedTrain = (
     trainHasPassedStation: boolean,
-    distanceFromStation: number | undefined,
+    distanceFromStation: number | null | undefined,
     hideDistance: number,
 ) => trainHasPassedStation
-    && distanceFromStation !== undefined
+    && distanceFromStation != null
     && distanceFromStation >= hideDistance;

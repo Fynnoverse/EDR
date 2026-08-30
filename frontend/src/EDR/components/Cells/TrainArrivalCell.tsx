@@ -3,8 +3,9 @@ import {Badge} from "flowbite-react";
 import {tableCellCommonClassnames} from "../TrainRow";
 import {DetailedTrain} from "../../functions/trainDetails";
 import {useTranslation} from "react-i18next";
-import { format, isTomorrow } from "date-fns";
+import { isTomorrow } from "date-fns";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
+import { formatServerTime } from "../../../utils/serverTime";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -24,7 +25,7 @@ export const TrainArrivalCell: React.FC<Props> = ({
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="150" ref={thirdColRef}>
             <div className="flex items-center justify-center h-full">
-                {format(ttRow.scheduledArrivalObject, 'HH:mm')}
+                {formatServerTime(ttRow.scheduledArrivalObject)}
                 {isTheTrainTommorow && <sup>+1</sup>}
                 &nbsp;
                 {
@@ -44,13 +45,13 @@ export const TrainArrivalCell: React.FC<Props> = ({
             </div>
             <div className="flex justify-center">
                 {
-                    !trainHasPassedStation && arrivalTimeDelay > 5 && trainDetails?.distanceFromStation < 5
+                    !trainHasPassedStation && trainDetails?.distanceFromStation != null && arrivalTimeDelay > 5 && trainDetails.distanceFromStation < 5
                         ? <Badge className="animate-pulse duration-1000"
                                  color="failure">{t('EDR_TRAINROW_train_delayed')}</Badge>
                         : undefined
                 }
                 {
-                    !trainHasPassedStation && arrivalTimeDelay < -5 && trainDetails?.distanceFromStation < 5
+                    !trainHasPassedStation && trainDetails?.distanceFromStation != null && arrivalTimeDelay < -5 && trainDetails.distanceFromStation < 5
                         ? <Badge className="animate-pulse" color="info">{t('EDR_TRAINROW_train_early')}</Badge>
                         : undefined
                 }

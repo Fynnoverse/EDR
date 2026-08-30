@@ -5,11 +5,13 @@ import { TimeTableRow } from "../customTypes/TimeTableRow";
 import { ExtendedTrain } from "../customTypes/ExtendedTrain";
 import { toServerTime } from "../utils/serverTime";
 
-export const BASE_API_URL = process.env.REACT_APP_API_URL ?? (
+const configuredBaseApiUrl = process.env.REACT_APP_API_URL ?? (
     process.env.NODE_ENV === "development"
         ? `${window.location.protocol}//${window.location.hostname}:8080/`
         : "/"
 );
+export const normalizeBaseApiUrl = (baseUrl: string) => `${baseUrl.replace(/\/+$/, "")}/`;
+export const BASE_API_URL = normalizeBaseApiUrl(configuredBaseApiUrl);
 
 const baseApiCall = async <T>(URL: string): Promise<T> => {
     const outbound = BASE_API_URL + URL;

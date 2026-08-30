@@ -15,7 +15,6 @@ import {
     ReferenceLine
 } from 'recharts';
 import {configByType} from "../../../config/trains";
-import {format} from "date-fns";
 import {getDateWithHourAndMinutes} from "../../functions/timeUtils";
 import {PathFinding_FindPathAndHaversineSum, PathFindingLineTrace} from "../../../pathfinding/api";
 import _sortBy from "lodash/sortBy";
@@ -24,6 +23,7 @@ import {Button} from "flowbite-react";
 import {useTranslation} from "react-i18next";
 import { Dictionary } from "lodash";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
+import { formatServerTime, getServerTimeNumber } from "../../../utils/serverTime";
 
 export type GraphProps = {
     post: string;
@@ -34,14 +34,14 @@ export type GraphProps = {
 }
 
 const dateFormatter = (date: Date) => {
-    return format(date, "HH:mm");
+    return formatServerTime(date);
 };
 const makeDate = (dateAry: string[], serverTime: number | undefined) => {
     const dateNow = nowUTC(serverTime);
     const hours = Number.parseInt(dateAry[0]);
     const minutes = Number.parseInt(dateAry[1]);
-    const isDepartureNextDay = dateNow.getHours() >= 20 && Number.parseInt(dateAry[0]) < 12;  // TODO: less but still clunky
-    const isDeparturePreviousDay = Number.parseInt(dateAry[0]) >= 20 && dateNow.getHours() < 12; // TODO: less but still Clunky
+    const isDepartureNextDay = dateNow.getUTCHours() >= 20 && Number.parseInt(dateAry[0]) < 12;  // TODO: less but still clunky
+    const isDeparturePreviousDay = Number.parseInt(dateAry[0]) >= 20 && dateNow.getUTCHours() < 12; // TODO: less but still Clunky
     const date =  getDateWithHourAndMinutes(dateNow, hours, minutes, isDepartureNextDay, isDeparturePreviousDay);
     return date.getTime();
 }
@@ -60,7 +60,7 @@ const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
                 {_sortBy(payload, 'value').map((p) => {
                     return (
                         <div className="flex justify-between w-full" key={p.dataKey}>
-                            <span style={{color: p.stroke}}>{p.dataKey}&nbsp;&nbsp;</span><span>{format(new Date(p.value), "HH:mm")}</span>
+                            <span style={{color: p.stroke}}>{p.dataKey}&nbsp;&nbsp;</span><span>{formatServerTime(new Date(p.value))}</span>
                         </div>
                     )
                 })}
@@ -101,14 +101,14 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
     const [displayMode, setDisplayMode] = React.useState<LayoutType>("vertical");
     const [zoom, setZoom] = React.useState<number>(1);
     const [dtNow, setDtNow] = React.useState(nowUTC(serverTime));
-    const currentHourSort = Number.parseInt(format(dtNow, "HHmm"));
+    const currentHourSort = getServerTimeNumber(dtNow);
     const [neighboursTimetables, setNeighboursTimetables] = React.useState<Dictionary<Dictionary<TimeTableRow>>>();
     const [allPathsOfPosts, setAllPathsOfPosts] = React.useState<{[postId: string]: {prev?: PathFindingLineTrace, next?: PathFindingLineTrace}}>();
     const [data, setData] = React.useState<any[]>();
     const {t} = useTranslation();
     const onlyAnHourAround = React.useMemo(
         () => _keyBy(timetable.filter((ttRow) =>
-            Math.abs(Number.parseInt(format(ttRow.scheduledArrivalObject, "HHmm")) - currentHourSort) <= 130 / zoom), "trainNoLocal"),
+            Math.abs(getServerTimeNumber(ttRow.scheduledArrivalObject) - currentHourSort) <= 130 / zoom), "trainNoLocal"),
         [currentHourSort, timetable, zoom]);
 
     React.useEffect(() => {

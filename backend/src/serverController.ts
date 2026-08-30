@@ -87,13 +87,7 @@ export async function getTrainsListForPost(req: express.Request, res: express.Re
                 if (trainTimetable !== undefined) {
                     // TODO: This needs refactoring when new stations get lumped together like Glowny
                     const postsInTimetable = trainTimetable.timetable.filter(checkpoint => internalIds.includes(parseInt(checkpoint.pointId)));
-                    const hasTrainLeftThePost = postsInTimetable !== undefined && postsInTimetable.length > 0 ? train?.TrainData.VDDelayedTimetableIndex > postsInTimetable[postsInTimetable.length - 1].indexOfPoint : true;
-                    if (hasTrainLeftThePost) {
-                        return {
-                            ...train,
-                            distanceFromStation: null,
-                        };
-                    } else {
+                    if (postsInTimetable.length > 0) {
                         const stationPosition = stationPositions[internalIds[0]];
                         if (!stationPosition) {
                             return {
@@ -119,13 +113,11 @@ export async function getTrainsListForPost(req: express.Request, res: express.Re
                             distanceFromStation: osrmResult?.routes?.[0]?.distance !== undefined ? Math.round(osrmResult.routes[0].distance / 10) / 100 : 0,
                         };
                     }
-                } else {
-                    return {
-                        ...train,
-                        distanceFromStation: null,
-                    };
                 }
-                
+                return {
+                    ...train,
+                    distanceFromStation: null,
+                };
             })));
     } catch (error) {
         console.error(`Cannot create train list for ${serverCode}/${post}:`, error);

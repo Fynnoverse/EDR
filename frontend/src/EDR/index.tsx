@@ -83,7 +83,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
         Promise.all([getTzOffset(serverCode), getServerTime(serverCode)]).then((v) => {
             setTzOffset(v[0]);
             setServerTime(v[1]);
-            getTimetable(post, serverCode).then((data) => {
+            getTimetable(post, serverCode, v[0]).then((data) => {
                 setTimetable(data.sort((row1, row2) => row1.scheduledArrivalObject.valueOf() - row2.scheduledArrivalObject.valueOf()));
                 getStations(serverCode).then((data) => {
                     setStations(_keyBy('Name', data));
@@ -166,16 +166,16 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
 
     // Get missing train timetables when a new train spawns on the map
     React.useEffect(() => {
-        if (!Array.isArray(trains) || !serverCode) return;
+        if (!Array.isArray(trains) || !serverCode || tzOffset === undefined) return;
         // Filter for trains that have a checkpoint at the current station
         const allTrainIds = trains.map((t) => (timetable as TimeTableRow[])?.findIndex(entry => entry.trainNoLocal === t.TrainNoLocal) > -1 ? t.TrainNoLocal: null).filter((trainNumber): trainNumber is Exclude<typeof trainNumber, null> => trainNumber !== null);
         const previousTrainIds = Object.keys(trainTimetables ?? []);
         const difference = _difference(allTrainIds, previousTrainIds);
         if (difference.length === 0) return;
-        Promise.all(difference.map(trainId => getTrainTimetable(trainId, serverCode))).then((timetables) => {
+        Promise.all(difference.map(trainId => getTrainTimetable(trainId, serverCode, tzOffset))).then((timetables) => {
             setTrainTimetables(groupBy(flatMap(timetables).concat(...Object.values(trainTimetables ?? {})), 'displayedTrainNumber'))
         });
-    }, [trains, timetable, trainTimetables, serverCode])
+    }, [trains, timetable, trainTimetables, serverCode, tzOffset])
 
     // Get new player info when someone takes over a train
     React.useEffect(() => {
@@ -220,6 +220,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
                     setGraphModalOpen(false)}
                     serverTime={serverTime}
                     serverCode={serverCode}
+                    serverTzOffset={tzOffset}
                 />
                 : null
         }

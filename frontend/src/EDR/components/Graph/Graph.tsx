@@ -30,6 +30,7 @@ export type GraphProps = {
     timetable: TimeTableRow[];
     serverTime: number | undefined;
     serverCode: string | undefined;
+    serverTzOffset: number;
 }
 
 const dateFormatter = (date: Date) => {
@@ -45,8 +46,8 @@ const makeDate = (dateAry: string[], serverTime: number | undefined) => {
     return date.getTime();
 }
 
-const getStationTimetable = (postId: string, serverCode: string) => {
-    return getTimetable(postId, serverCode).then((d) => {
+const getStationTimetable = (postId: string, serverCode: string, serverTzOffset: number) => {
+    return getTimetable(postId, serverCode, serverTzOffset).then((d) => {
         return [postId, _keyBy(d, "trainNoLocal")];
     });
 }
@@ -96,7 +97,7 @@ const CustomizedAxisTick = (data: any, displayMode: string, color: string) => (p
 
 
 // TODO: This code is WET and have been written in an envening. Neeeeds refactoring of course ! (so it can be DRY :D)
-const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, serverCode}) => {
+const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, serverCode, serverTzOffset}) => {
     const [displayMode, setDisplayMode] = React.useState<LayoutType>("vertical");
     const [zoom, setZoom] = React.useState<number>(1);
     const [dtNow, setDtNow] = React.useState(nowUTC(serverTime));
@@ -144,7 +145,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
         setAllPathsOfPosts(allPaths);
 
         // Get timetable data
-        Promise.all(onScreenPosts.map(postId => getStationTimetable(postId, serverCode)))
+        Promise.all(onScreenPosts.map(postId => getStationTimetable(postId, serverCode, serverTzOffset)))
             .then(data => {
                 if (data !== null) {
                     return Object.fromEntries(data);
@@ -153,7 +154,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
                 }
             })
             .then(setNeighboursTimetables)
-    }, [post, serverCode]);
+    }, [post, serverCode, serverTzOffset]);
 
     React.useEffect(() => {
         if (!neighboursTimetables || !onlyAnHourAround || !allPathsOfPosts) return;

@@ -1,9 +1,9 @@
 import {Server, Station, Train} from "@simrail/types";
-import { subHours } from "date-fns";
 import { ISteamUser } from "../config/ISteamUser";
 import { TrainTimeTableRow } from "../Sirius";
 import { TimeTableRow } from "../customTypes/TimeTableRow";
 import { ExtendedTrain } from "../customTypes/ExtendedTrain";
+import { toServerTime } from "../utils/serverTime";
 
 export const BASE_API_URL = process.env.REACT_APP_API_URL ?? (
     process.env.NODE_ENV === "development"
@@ -40,22 +40,22 @@ const expectArray = <T>(data: unknown, endpoint: string): T[] => {
     return data as T[];
 };
 
-export const getTimetable = (post: string, serverCode: string): Promise<TimeTableRow[]> =>
+export const getTimetable = (post: string, serverCode: string, serverTzOffset: number): Promise<TimeTableRow[]> =>
     baseApiCall<unknown>(`dispatch/${serverCode}/${post}?mergePosts=true`).then(data => expectArray<TimeTableRow>(data, "dispatch").map(tr => {
-        tr.actualArrivalObject = subHours(new Date(tr.actualArrivalObject), (new Date(tr.actualArrivalObject).getTimezoneOffset() * -1) / 60);
-        tr.actualDepartureObject = subHours(new Date(tr.actualDepartureObject), (new Date(tr.actualDepartureObject).getTimezoneOffset() * -1) / 60);
-        tr.scheduledArrivalObject = subHours(new Date(tr.scheduledArrivalObject), (new Date(tr.scheduledArrivalObject).getTimezoneOffset() * -1) / 60);
-        tr.scheduledDepartureObject = subHours(new Date(tr.scheduledDepartureObject), (new Date(tr.scheduledDepartureObject).getTimezoneOffset() * -1) / 60);
+        tr.actualArrivalObject = toServerTime(tr.actualArrivalObject, serverTzOffset);
+        tr.actualDepartureObject = toServerTime(tr.actualDepartureObject, serverTzOffset);
+        tr.scheduledArrivalObject = toServerTime(tr.scheduledArrivalObject, serverTzOffset);
+        tr.scheduledDepartureObject = toServerTime(tr.scheduledDepartureObject, serverTzOffset);
 
         return tr;
     }));
 
-export const getTrainTimetable = (trainId: string, serverCode: string): Promise<TrainTimeTableRow[]> =>
+export const getTrainTimetable = (trainId: string, serverCode: string, serverTzOffset: number): Promise<TrainTimeTableRow[]> =>
     baseApiCall<unknown>(`train/${serverCode}/${trainId}`).then(data => expectArray<TrainTimeTableRow>(data, "train").map(tr => {
-        tr.actualArrivalObject = subHours(new Date(tr.actualArrivalObject), (new Date(tr.actualArrivalObject).getTimezoneOffset() * -1) / 60);
-        tr.actualDepartureObject = subHours(new Date(tr.actualDepartureObject), (new Date(tr.actualDepartureObject).getTimezoneOffset() * -1) / 60);
-        tr.scheduledArrivalObject = subHours(new Date(tr.scheduledArrivalObject), (new Date(tr.scheduledArrivalObject).getTimezoneOffset() * -1) / 60);
-        tr.scheduledDepartureObject = subHours(new Date(tr.scheduledDepartureObject), (new Date(tr.scheduledDepartureObject).getTimezoneOffset() * -1) / 60);
+        tr.actualArrivalObject = toServerTime(tr.actualArrivalObject, serverTzOffset);
+        tr.actualDepartureObject = toServerTime(tr.actualDepartureObject, serverTzOffset);
+        tr.scheduledArrivalObject = toServerTime(tr.scheduledArrivalObject, serverTzOffset);
+        tr.scheduledDepartureObject = toServerTime(tr.scheduledDepartureObject, serverTzOffset);
 
         return tr;
     }));

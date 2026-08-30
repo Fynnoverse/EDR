@@ -88,7 +88,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
         Promise.all([getTzOffset(serverCode), getServerTime(serverCode)]).then((v) => {
             setTzOffset(v[0]);
             setServerTime(v[1]);
-            getTimetable(post, serverCode, v[0]).then((data) => {
+            getTimetable(post, serverCode).then((data) => {
                 setTimetable(data.sort((row1, row2) => row1.scheduledArrivalObject.valueOf() - row2.scheduledArrivalObject.valueOf()));
                 getStations(serverCode).then((data) => {
                     setStations(_keyBy('Name', data));
@@ -177,7 +177,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
         const previousTrainIds = Object.keys(trainTimetables ?? []);
         const difference = _difference(allTrainIds, previousTrainIds);
         if (difference.length === 0) return;
-        Promise.all(difference.map(trainId => getTrainTimetable(trainId, serverCode, tzOffset))).then((timetables) => {
+        Promise.all(difference.map(trainId => getTrainTimetable(trainId, serverCode))).then((timetables) => {
             setTrainTimetables(groupBy(flatMap(timetables).concat(...Object.values(trainTimetables ?? {})), 'displayedTrainNumber'))
         });
     }, [trains, timetable, trainTimetables, serverCode, tzOffset])
@@ -225,7 +225,6 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
                     setGraphModalOpen(false)}
                     serverTime={serverTime}
                     serverCode={serverCode}
-                    serverTzOffset={tzOffset}
                 />
                 : null
         }

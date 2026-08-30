@@ -30,7 +30,6 @@ export type GraphProps = {
     timetable: TimeTableRow[];
     serverTime: number | undefined;
     serverCode: string | undefined;
-    serverTzOffset: number;
 }
 
 /** Formats both Date values and numeric Recharts axis ticks as server time. */
@@ -47,8 +46,8 @@ const makeDate = (dateAry: string[], serverTime: number | undefined) => {
     return date.getTime();
 }
 
-const getStationTimetable = (postId: string, serverCode: string, serverTzOffset: number) => {
-    return getTimetable(postId, serverCode, serverTzOffset).then((d) => {
+const getStationTimetable = (postId: string, serverCode: string) => {
+    return getTimetable(postId, serverCode).then((d) => {
         return [postId, _keyBy(d, "trainNoLocal")];
     });
 }
@@ -98,7 +97,7 @@ const CustomizedAxisTick = (data: any, displayMode: string, color: string) => (p
 
 
 // TODO: This code is WET and have been written in an envening. Neeeeds refactoring of course ! (so it can be DRY :D)
-const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, serverCode, serverTzOffset}) => {
+const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, serverCode}) => {
     const [displayMode, setDisplayMode] = React.useState<LayoutType>("vertical");
     const [zoom, setZoom] = React.useState<number>(1);
     const [dtNow, setDtNow] = React.useState(nowUTC(serverTime));
@@ -118,7 +117,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
         }, 10000);
 
         return () => window.clearInterval(intervalId);
-    }, [serverTime, serverTzOffset])
+    }, [serverTime])
 
     React.useEffect(() => {
         const gottenPostConfig = postConfig[post];
@@ -146,7 +145,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
         setAllPathsOfPosts(allPaths);
 
         // Get timetable data
-        Promise.all(onScreenPosts.map(postId => getStationTimetable(postId, serverCode, serverTzOffset)))
+        Promise.all(onScreenPosts.map(postId => getStationTimetable(postId, serverCode)))
             .then(data => {
                 if (data !== null) {
                     return Object.fromEntries(data);
@@ -155,7 +154,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
                 }
             })
             .then(setNeighboursTimetables)
-    }, [post, serverCode, serverTzOffset]);
+    }, [post, serverCode]);
 
     React.useEffect(() => {
         if (!neighboursTimetables || !onlyAnHourAround || !allPathsOfPosts) return;
@@ -192,7 +191,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
         });
 
         setData(data);
-    }, [neighboursTimetables, onlyAnHourAround, currentHourSort, post, allPathsOfPosts, serverTime, serverTzOffset])
+    }, [neighboursTimetables, onlyAnHourAround, currentHourSort, post, allPathsOfPosts, serverTime])
 
     const TimeComponent = displayMode === "vertical" ? XAxis : YAxis;
     const PostComponent = displayMode === "vertical" ? YAxis : XAxis;

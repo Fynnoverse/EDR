@@ -16,7 +16,7 @@ import {TrainToCell} from "./Cells/TrainToCell";
 import { ISteamUser } from "../../config/ISteamUser";
 import { StationConfig } from "../../config/stations";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
-import { shouldHideDepartedTrain } from "../functions/trainFilters";
+import { shouldHideByScheduledTime, shouldHideDepartedTrain } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 
 
@@ -76,8 +76,8 @@ const TableRow: React.FC<Props> = (
 
     if (filterConfig.onlyApproaching && shouldHideDepartedTrain(trainHasPassedStation, trainDetails?.distanceFromStation, filterConfig.departedDistance)) return null;
     if (filterConfig.maxRange && distanceFromStation != null && distanceFromStation > filterConfig.maxRange) return null;
-    const expectedArrivalIninutes = (expectedArrival.getUTCHours() * 60 + expectedArrival.getUTCMinutes()) - (dateNow.getUTCHours() * 60 + dateNow.getUTCMinutes());
-    if (filterConfig.maxTime && Math.abs(expectedArrivalIninutes) > filterConfig.maxTime) return null;
+    const expectedArrivalInMinutes = (expectedArrival.getUTCHours() * 60 + expectedArrival.getUTCMinutes()) - (dateNow.getUTCHours() * 60 + dateNow.getUTCMinutes());
+    if (shouldHideByScheduledTime(filterConfig.maxTime, expectedArrivalInMinutes, trainDetails?.lastDelay)) return null;
 
 
     return <Table.Row

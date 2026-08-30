@@ -78,22 +78,22 @@ export const expectExtendedTrainArray = (data: unknown): ExtendedTrain[] =>
         return value as ExtendedTrain;
     });
 
-export const getTimetable = (post: string, serverCode: string, serverTzOffset: number): Promise<TimeTableRow[]> =>
+export const getTimetable = (post: string, serverCode: string): Promise<TimeTableRow[]> =>
     baseApiCall<unknown>(`dispatch/${serverCode}/${post}?mergePosts=true`).then(data => expectArray<TimeTableRow>(data, "dispatch").map(tr => {
-        tr.actualArrivalObject = toServerTime(tr.actualArrivalObject, serverTzOffset);
-        tr.actualDepartureObject = toServerTime(tr.actualDepartureObject, serverTzOffset);
-        tr.scheduledArrivalObject = toServerTime(tr.scheduledArrivalObject, serverTzOffset);
-        tr.scheduledDepartureObject = toServerTime(tr.scheduledDepartureObject, serverTzOffset);
+        tr.actualArrivalObject = toServerTime(tr.actualArrivalObject);
+        tr.actualDepartureObject = toServerTime(tr.actualDepartureObject);
+        tr.scheduledArrivalObject = toServerTime(tr.scheduledArrivalObject);
+        tr.scheduledDepartureObject = toServerTime(tr.scheduledDepartureObject);
 
         return tr;
     }));
 
-export const getTrainTimetable = (trainId: string, serverCode: string, serverTzOffset: number): Promise<TrainTimeTableRow[]> =>
+export const getTrainTimetable = (trainId: string, serverCode: string): Promise<TrainTimeTableRow[]> =>
     baseApiCall<unknown>(`train/${serverCode}/${trainId}`).then(data => expectArray<TrainTimeTableRow>(data, "train").map(tr => {
-        tr.actualArrivalObject = toServerTime(tr.actualArrivalObject, serverTzOffset);
-        tr.actualDepartureObject = toServerTime(tr.actualDepartureObject, serverTzOffset);
-        tr.scheduledArrivalObject = toServerTime(tr.scheduledArrivalObject, serverTzOffset);
-        tr.scheduledDepartureObject = toServerTime(tr.scheduledDepartureObject, serverTzOffset);
+        tr.actualArrivalObject = toServerTime(tr.actualArrivalObject);
+        tr.actualDepartureObject = toServerTime(tr.actualDepartureObject);
+        tr.scheduledArrivalObject = toServerTime(tr.scheduledArrivalObject);
+        tr.scheduledDepartureObject = toServerTime(tr.scheduledDepartureObject);
 
         return tr;
     }));

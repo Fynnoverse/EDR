@@ -7,9 +7,9 @@ type Props = {
     serverCode: string | undefined;
 } & Omit<GraphModalProps & GraphProps, 'children'>
 const Graph: React.FC<Props> = (props) => {
-    const {serverTime, timetable, post, serverCode, serverTzOffset} = props;
+    const {serverTime, timetable, post, serverCode} = props;
     const {isOpen, onClose} = props;
-    const graphBody = <GraphContent serverTime={serverTime} timetable={timetable} post={post} serverCode={serverCode} serverTzOffset={serverTzOffset}/>
+    const graphBody = <GraphContent serverTime={serverTime} timetable={timetable} post={post} serverCode={serverCode}/>
 
     return props.fullScreenMode ? <div className="h-screen w-screen">{graphBody}</div> : <GraphModal isOpen={isOpen} onClose={onClose}>{graphBody}</GraphModal>
 }

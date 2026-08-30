@@ -148,7 +148,7 @@ const Sirius: React.FC<Props> = ({isWebpSupported}) => {
         if (!trainNumber || !serverCode) return;
         getTzOffset(serverCode).then((offset) => {
             setServerTzOffset(offset);
-            return getTrainTimetable(trainNumber, serverCode, offset);
+            return getTrainTimetable(trainNumber, serverCode);
         }).then(setTrainTimetable);
         setTimeout(() => getServerTime(serverCode).then(setServerTime), 1000);
         fetchTrain(trainNumber, serverCode, setTrain, navigate);

@@ -1,17 +1,12 @@
 /**
- * Encodes the SimRail server's wall-clock time in UTC fields. Consumers must
- * use UTC getters/formatters so browser timezone and DST rules cannot alter it.
+ * Parses a timetable timestamp while preserving the server wall-clock values
+ * already encoded by the backend in UTC fields. Consumers must use UTC
+ * getters/formatters so browser timezone and DST rules cannot alter it.
  *
- * @param value - Absolute timestamp received from a timetable endpoint.
- * @param serverTzOffset - SimRail server offset from UTC, expressed in hours.
- * @returns A Date whose UTC fields represent the server's wall-clock time.
+ * @param value - Timestamp received from a timetable endpoint.
+ * @returns A Date whose UTC fields retain the backend's wall-clock time.
  */
-export const toServerTime = (value: Date | string | number, serverTzOffset: number): Date => {
-    const absoluteTime = new Date(value);
-    if (Number.isNaN(absoluteTime.getTime())) return absoluteTime;
-
-    return new Date(absoluteTime.getTime() + serverTzOffset * 60 * 60 * 1000);
-};
+export const toServerTime = (value: Date | string | number): Date => new Date(value);
 
 /**
  * Formats UTC-encoded server wall-clock fields without applying the browser timezone.

@@ -42,6 +42,20 @@ const expectArray = <T>(data: unknown, endpoint: string): T[] => {
     return data as T[];
 };
 
+export const expectExtendedTrainArray = (data: unknown): ExtendedTrain[] =>
+    expectArray<unknown>(data, "trains for post").map((value, index) => {
+        if (typeof value !== "object" || value === null || !("distanceFromStation" in value)) {
+            throw new TypeError(`Expected train ${index} to contain distanceFromStation`);
+        }
+
+        const distance = value.distanceFromStation;
+        if (distance !== null && (typeof distance !== "number" || !Number.isFinite(distance))) {
+            throw new TypeError(`Expected distanceFromStation for train ${index} to be a finite number or null`);
+        }
+
+        return value as ExtendedTrain;
+    });
+
 export const getTimetable = (post: string, serverCode: string, serverTzOffset: number): Promise<TimeTableRow[]> =>
     baseApiCall<unknown>(`dispatch/${serverCode}/${post}?mergePosts=true`).then(data => expectArray<TimeTableRow>(data, "dispatch").map(tr => {
         tr.actualArrivalObject = toServerTime(tr.actualArrivalObject, serverTzOffset);
@@ -66,7 +80,7 @@ export const getTrains = (serverCode: string): Promise<Train[]> =>
     baseApiCall<unknown>(`trains/${serverCode}`).then(data => expectArray<Train>(data, "trains"));
 
 export const getTrainsForPost = (serverCode: string, post: string): Promise<ExtendedTrain[]> =>
-    baseApiCall<unknown>(`trains/${serverCode}/${post}`).then(data => expectArray<ExtendedTrain>(data, "trains for post"));
+    baseApiCall<unknown>(`trains/${serverCode}/${post}`).then(expectExtendedTrainArray);
 
 export const getStations = (serverCode: string): Promise<Station[]> =>
     baseApiCall<unknown>(`stations/${serverCode}`).then(data => expectArray<Station>(data, "stations"));

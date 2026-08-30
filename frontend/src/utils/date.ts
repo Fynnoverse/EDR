@@ -5,6 +5,11 @@ export const timeOptions: Intl.DateTimeFormatOptions = {
     hour12: false
 };
 
+/**
+ * Returns the wall-clock value supplied by the server/time endpoint.
+ * That endpoint is already adjusted to the SimRail server timezone, so the
+ * timetable offset must not be applied to it a second time.
+ */
 export const nowUTC = (serverTime: number | undefined) => {
     let now: Date;
     if (serverTime === undefined) {

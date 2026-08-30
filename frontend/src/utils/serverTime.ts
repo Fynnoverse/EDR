@@ -15,3 +15,10 @@ export const formatServerTime = (date: Date, separator = ":") =>
 
 /** Returns an HHmm-style number used by existing timetable proximity comparisons. */
 export const getServerTimeNumber = (date: Date) => date.getUTCHours() * 100 + date.getUTCMinutes();
+
+/** Checks whether a timetable value is on the next server-calendar day. */
+export const isNextServerDay = (date: Date, serverNow: Date) => {
+    const dateDay = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    const currentDay = Date.UTC(serverNow.getUTCFullYear(), serverNow.getUTCMonth(), serverNow.getUTCDate());
+    return dateDay - currentDay === 24 * 60 * 60 * 1000;
+};

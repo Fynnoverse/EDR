@@ -3,9 +3,8 @@ import {Badge} from "flowbite-react";
 import {tableCellCommonClassnames} from "../TrainRow";
 import {DetailedTrain} from "../../functions/trainDetails";
 import {useTranslation} from "react-i18next";
-import { isTomorrow } from "date-fns";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
-import { formatServerTime } from "../../../utils/serverTime";
+import { formatServerTime, isNextServerDay } from "../../../utils/serverTime";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -14,19 +13,20 @@ type Props = {
     thirdColRef: any;
     streamMode: boolean;
     arrivalTimeDelay: number;
+    serverNow: Date;
 }
 
 export const TrainArrivalCell: React.FC<Props> = ({
     ttRow, trainDetails, trainHasPassedStation,
-    thirdColRef, streamMode, arrivalTimeDelay
+    thirdColRef, streamMode, arrivalTimeDelay, serverNow
 }) => {
     const {t} = useTranslation();
-    const isTheTrainTommorow = isTomorrow(ttRow.scheduledArrivalObject) 
+    const isTheTrainTomorrow = isNextServerDay(ttRow.scheduledArrivalObject, serverNow);
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="150" ref={thirdColRef}>
             <div className="flex items-center justify-center h-full">
                 {formatServerTime(ttRow.scheduledArrivalObject)}
-                {isTheTrainTommorow && <sup>+1</sup>}
+                {isTheTrainTomorrow && <sup>+1</sup>}
                 &nbsp;
                 {
                     !trainHasPassedStation && arrivalTimeDelay > 0

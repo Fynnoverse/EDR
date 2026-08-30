@@ -1,4 +1,4 @@
-import {toServerTime} from "../serverTime";
+import {isNextServerDay, toServerTime} from "../serverTime";
 import {nowUTC} from "../date";
 
 describe("toServerTime", () => {
@@ -32,5 +32,15 @@ describe("current server time", () => {
         const serverTime = Date.parse("2026-08-30T10:48:00.000Z");
 
         expect(nowUTC(serverTime).getUTCHours()).toBe(10);
+    });
+});
+
+describe("server calendar boundaries", () => {
+    const serverNow = new Date("2026-08-30T23:55:00.000Z");
+
+    it("marks only the next server-calendar day", () => {
+        expect(isNextServerDay(new Date("2026-08-31T00:05:00.000Z"), serverNow)).toBe(true);
+        expect(isNextServerDay(new Date("2026-08-30T23:59:00.000Z"), serverNow)).toBe(false);
+        expect(isNextServerDay(new Date("2026-09-01T00:05:00.000Z"), serverNow)).toBe(false);
     });
 });

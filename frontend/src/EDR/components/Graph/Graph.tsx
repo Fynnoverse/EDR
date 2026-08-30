@@ -33,8 +33,9 @@ export type GraphProps = {
     serverTzOffset: number;
 }
 
-const dateFormatter = (date: Date) => {
-    return formatServerTime(date);
+/** Formats both Date values and numeric Recharts axis ticks as server time. */
+const dateFormatter = (value: Date | number) => {
+    return formatServerTime(value instanceof Date ? value : new Date(value));
 };
 const makeDate = (dateAry: string[], serverTime: number | undefined) => {
     const dateNow = nowUTC(serverTime);

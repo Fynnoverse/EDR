@@ -114,6 +114,7 @@ const TableRow: React.FC<Props> = (
             thirdColRef={thirdColRef}
             streamMode={streamMode}
             arrivalTimeDelay={arrivalTimeDelay}
+            serverNow={dateNow}
         />
         <TrainFromCell headerFourthColRef={headerFourthColRef} ttRow={ttRow} secondaryPostData={secondaryPostData}
                        streamMode={streamMode} />

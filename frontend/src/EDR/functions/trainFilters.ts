@@ -1,6 +1,21 @@
-export const MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 1;
-export const MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 10;
-export const DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 10;
+export const MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 0.1;
+export const MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 5;
+export const DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 5;
+
+/**
+ * Determines whether the live train has moved beyond the selected post and
+ * all secondary timetable entries belonging to it.
+ *
+ * @param currentTimetableIndex - Current delayed timetable index of the train.
+ * @param stationIndex - Main timetable index of the selected post.
+ * @param secondaryStationIndices - Timetable indices of merged secondary posts.
+ * @returns Whether the train has passed the complete selected post.
+ */
+export const hasTrainPassedStation = (
+    currentTimetableIndex: number,
+    stationIndex: number,
+    secondaryStationIndices: number[] = [],
+) => currentTimetableIndex > Math.max(stationIndex, ...secondaryStationIndices);
 
 /**
  * The distance supplied by the live API is unsigned. It must therefore only
@@ -17,7 +32,7 @@ export const shouldHideDepartedTrain = (
     hideDistance: number,
 ) => trainHasPassedStation
     && distanceFromStation != null
-    && distanceFromStation >= hideDistance;
+    && distanceFromStation > hideDistance;
 
 /**
  * Applies the scheduled-time window unless live data reports an early train.

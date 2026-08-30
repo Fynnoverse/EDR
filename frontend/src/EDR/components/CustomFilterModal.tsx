@@ -13,6 +13,12 @@ type Props = {
     filterConfig: FilterConfig;
     setFilterConfig: (fc: FilterConfig) => void;
 }
+
+/** Formats the slider's kilometre value as metres below one kilometre. */
+const formatDepartedDistance = (distance: number) => distance < 1
+    ? `${Math.round(distance * 1000)} m`
+    : `${distance.toFixed(1).replace(/\.0$/, '')} km`;
+
 export const ColumnFilterModal: React.FC<Props> = ({filterConfig, setFilterConfig, isOpen, onClose}) => {
     const [pendingFilterConfig, setPendingFilterConfig] = React.useState(filterConfig);
     const { t } = useTranslation()
@@ -40,16 +46,16 @@ export const ColumnFilterModal: React.FC<Props> = ({filterConfig, setFilterConfi
                     <div className="m1">{t('EDR_UI_filter_hide_left')}  <Checkbox checked={pendingFilterConfig.onlyApproaching} onChange={() => applyPartialUpdateToFilterConfig('onlyApproaching', !pendingFilterConfig.onlyApproaching)}/></div>
                     <div className={`mb-4 mt-2 ${pendingFilterConfig.onlyApproaching ? '' : 'opacity-50'}`}>
                         <div className="mb-1 flex justify-between text-sm">
-                            <span>{MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM} km</span>
-                            <strong>{pendingFilterConfig.departedDistance} km</strong>
-                            <span>{MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM} km</span>
+                            <span>{formatDepartedDistance(MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM)}</span>
+                            <strong>{formatDepartedDistance(pendingFilterConfig.departedDistance)}</strong>
+                            <span>{formatDepartedDistance(MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM)}</span>
                         </div>
                         <input
                             id="departedTrainDistance"
                             type="range"
                             min={MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM}
                             max={MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM}
-                            step={1}
+                            step={0.1}
                             value={pendingFilterConfig.departedDistance}
                             disabled={!pendingFilterConfig.onlyApproaching}
                             aria-label={t('EDR_UI_filter_hide_left')}

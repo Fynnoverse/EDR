@@ -16,7 +16,7 @@ import {TrainToCell} from "./Cells/TrainToCell";
 import { ISteamUser } from "../../config/ISteamUser";
 import { StationConfig } from "../../config/stations";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
-import { shouldHideByScheduledTime, shouldHideDepartedTrain } from "../functions/trainFilters";
+import { hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrain } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 
 
@@ -53,7 +53,11 @@ const TableRow: React.FC<Props> = (
     const dateNow = nowUTC(serverTime);
 
     const trainHasPassedStation = trainDetails
-        ? trainDetails.TrainData.VDDelayedTimetableIndex > Math.max(ttRow.stationIndex, ...(ttRow.secondaryPostsRows || []).map(row => row.stationIndex))
+        ? hasTrainPassedStation(
+            trainDetails.TrainData.VDDelayedTimetableIndex,
+            ttRow.stationIndex,
+            (ttRow.secondaryPostsRows || []).map(row => row.stationIndex),
+        )
         : false;
     const departureExpectedHours = ttRow.scheduledDepartureObject.getUTCHours();
     const departureExpectedMinutes = ttRow.scheduledDepartureObject.getUTCMinutes();

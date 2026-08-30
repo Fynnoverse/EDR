@@ -1,14 +1,36 @@
-import { shouldHideByScheduledTime, shouldHideDepartedTrain } from "../trainFilters";
+import {
+    hasTrainPassedStation,
+    MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM,
+    MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM,
+    shouldHideByScheduledTime,
+    shouldHideDepartedTrain,
+} from "../trainFilters";
 
-describe("shouldHideDepartedTrain", () => {
-    it("keeps an approaching train visible even when it is more than 10 km away", () => {
-        expect(shouldHideDepartedTrain(false, 25, 10)).toBe(false);
+describe("hasTrainPassedStation", () => {
+    it("only recognizes a train as departed after it passes the station index", () => {
+        expect(hasTrainPassedStation(12, 12)).toBe(false);
+        expect(hasTrainPassedStation(13, 12)).toBe(true);
     });
 
-    it("uses the configured distance for a departed train", () => {
-        expect(shouldHideDepartedTrain(true, 5.99, 6)).toBe(false);
-        expect(shouldHideDepartedTrain(true, 6, 6)).toBe(true);
-        expect(shouldHideDepartedTrain(true, 10, 10)).toBe(true);
+    it("waits until the train has passed all merged secondary posts", () => {
+        expect(hasTrainPassedStation(13, 12, [14])).toBe(false);
+        expect(hasTrainPassedStation(14, 12, [14])).toBe(false);
+        expect(hasTrainPassedStation(15, 12, [14])).toBe(true);
+    });
+});
+
+describe("shouldHideDepartedTrain", () => {
+    it("keeps an approaching train visible even when it exceeds the selected distance", () => {
+        expect(shouldHideDepartedTrain(false, 25, MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM)).toBe(false);
+    });
+
+    it("hides a departed train only after it exceeds the selected distance", () => {
+        expect(shouldHideDepartedTrain(true, 0.09, MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM)).toBe(false);
+        expect(shouldHideDepartedTrain(true, 0.1, MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM)).toBe(false);
+        expect(shouldHideDepartedTrain(true, 0.11, MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM)).toBe(true);
+        expect(shouldHideDepartedTrain(true, 4.99, MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM)).toBe(false);
+        expect(shouldHideDepartedTrain(true, 5, MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM)).toBe(false);
+        expect(shouldHideDepartedTrain(true, 5.01, MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM)).toBe(true);
     });
 
     it("keeps a train visible when no live distance is available", () => {

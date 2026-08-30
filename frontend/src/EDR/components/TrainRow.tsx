@@ -25,7 +25,7 @@ type Props = {
     setModalTrainId: React.Dispatch<React.SetStateAction<string | undefined>>,
     setTimetableTrainId: React.Dispatch<React.SetStateAction<string | undefined>>,
     ttRow: TimeTableRow,
-    trainDetails: DetailedTrain,
+    trainDetails: DetailedTrain | undefined,
     serverTime: number | undefined,
     firstColRef: any,
     secondColRef: any,
@@ -52,7 +52,9 @@ const TableRow: React.FC<Props> = (
 ) => {
     const dateNow = nowUTC(serverTime);
 
-    const trainHasPassedStation = trainDetails?.TrainData.VDDelayedTimetableIndex > Math.max(ttRow.stationIndex, ...(ttRow.secondaryPostsRows || []).map(row => row.stationIndex));
+    const trainHasPassedStation = trainDetails
+        ? trainDetails.TrainData.VDDelayedTimetableIndex > Math.max(ttRow.stationIndex, ...(ttRow.secondaryPostsRows || []).map(row => row.stationIndex))
+        : false;
     const departureExpectedHours = ttRow.scheduledDepartureObject.getUTCHours();
     const departureExpectedMinutes = ttRow.scheduledDepartureObject.getUTCMinutes();
     // console_log("Is next day ? " + ttRow.train_number, isNextDay);

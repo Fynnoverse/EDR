@@ -167,7 +167,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
             setTrainsWithDetails(_keyBy('TrainNoLocal', onlineTrainsWithDetails));
         }, 1);
         // eslint-disable-next-line
-    }, [stations, JSON.stringify(trains), JSON.stringify(previousTrains.current), JSON.stringify(timetable), JSON.stringify(trainTimetables), serverTime]);
+    }, [stations, JSON.stringify(trains), JSON.stringify(previousTrains.current), JSON.stringify(timetable), JSON.stringify(trainTimetables), serverTime, tzOffset]);
 
     // Get missing train timetables when a new train spawns on the map
     React.useEffect(() => {

@@ -9,7 +9,7 @@ import { formatServerTime } from "../../../utils/serverTime";
 
 type Props = {
     ttRow: TimeTableRow;
-    trainDetails: DetailedTrain;
+    trainDetails: DetailedTrain | undefined;
     trainHasPassedStation: boolean;
     thirdColRef: any;
     streamMode: boolean;

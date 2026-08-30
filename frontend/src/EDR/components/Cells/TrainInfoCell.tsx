@@ -18,7 +18,7 @@ import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 
 type Props = {
     ttRow: TimeTableRow;
-    trainDetails: DetailedTrain;
+    trainDetails: DetailedTrain | undefined;
     trainBadgeColor: string;
     setModalTrainId: (trainId: string | undefined) => void;
     setTimetableTrainId: (trainId: string | undefined) => void;
@@ -41,10 +41,12 @@ export const TrainInfoCell: React.FC<Props> = ({
     const nextStation = trainDetails?.timetable?.find(entry => entry.indexOfPoint >= trainDetails?.TrainData?.VDDelayedTimetableIndex);
     const nextStationName = nextStation?.nameForPerson;
     const controllingPlayer = players?.find(player => player.steamid === trainDetails?.TrainData?.ControlledBySteamID);
-    const trainConfig = configByLoco[trainDetails?.Vehicles[0].split(':')[0]];
+    const locomotiveType = trainDetails?.Vehicles[0]?.split(':')[0];
+    const trainConfig = locomotiveType ? configByLoco[locomotiveType] : undefined;
     const icons = isWebpSupported ? edrWebpImagesMap : edrImagesMap;
     const trainIcon = isWebpSupported ? trainConfig?.iconWebp : trainConfig?.icon;
-    const isTrainApproaching = !trainHasPassedStation && trainDetails.distanceFromStation != null && ((nextStationName === postCfg?.srName || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName)) && trainDetails.distanceFromStation < 3);
+    const distanceFromStation = trainDetails?.distanceFromStation;
+    const isTrainApproaching = !trainHasPassedStation && distanceFromStation != null && ((nextStationName === postCfg?.srName || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName)) && distanceFromStation < 3);
 
     const CopyToClipboard = (stringToCopy: string) => {
         navigator.clipboard.writeText(stringToCopy);

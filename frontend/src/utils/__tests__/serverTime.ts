@@ -1,4 +1,5 @@
 import {toServerTime} from "../serverTime";
+import {nowUTC} from "../date";
 
 describe("toServerTime", () => {
     it("uses the SimRail server offset instead of the browser timezone", () => {
@@ -23,5 +24,13 @@ describe("toServerTime", () => {
         expect(before.getUTCMinutes()).toBe(30);
         expect(after.getUTCHours()).toBe(3);
         expect(before.valueOf()).toBeLessThan(after.valueOf());
+    });
+});
+
+describe("current server time", () => {
+    it("does not apply the timezone offset a second time", () => {
+        const serverTime = Date.parse("2026-08-30T10:48:00.000Z");
+
+        expect(nowUTC(serverTime).getUTCHours()).toBe(10);
     });
 });

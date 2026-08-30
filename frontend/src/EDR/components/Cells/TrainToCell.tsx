@@ -9,7 +9,7 @@ type Props = {
     headerSeventhColRef: any;
     secondaryPostData: TimeTableRow[];
     streamMode: boolean;
-    trainDetails: DetailedTrain;
+    trainDetails: DetailedTrain | undefined;
 }
 export const TrainToCell: React.FC<Props> = ({headerSeventhColRef, ttRow, secondaryPostData, streamMode, trainDetails}) => (
     <td className={tableCellCommonClassnames(streamMode)} ref={headerSeventhColRef} width="450">

@@ -117,7 +117,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
         }, 10000);
 
         return () => window.clearInterval(intervalId);
-    }, [serverTime])
+    }, [serverTime, serverTzOffset])
 
     React.useEffect(() => {
         const gottenPostConfig = postConfig[post];
@@ -191,7 +191,7 @@ const GraphContent: React.FC<GraphProps> = ({timetable, post, serverTime, server
         });
 
         setData(data);
-    }, [neighboursTimetables, onlyAnHourAround, currentHourSort, post, allPathsOfPosts, serverTime])
+    }, [neighboursTimetables, onlyAnHourAround, currentHourSort, post, allPathsOfPosts, serverTime, serverTzOffset])
 
     const TimeComponent = displayMode === "vertical" ? XAxis : YAxis;
     const PostComponent = displayMode === "vertical" ? YAxis : XAxis;

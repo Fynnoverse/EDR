@@ -10,6 +10,7 @@ const configuredBaseApiUrl = process.env.REACT_APP_API_URL ?? (
         ? `${window.location.protocol}//${window.location.hostname}:8080/`
         : "/"
 );
+/** Ensures endpoint paths can be appended to an API base URL without malformed separators. */
 export const normalizeBaseApiUrl = (baseUrl: string) => `${baseUrl.replace(/\/+$/, "")}/`;
 export const BASE_API_URL = normalizeBaseApiUrl(configuredBaseApiUrl);
 
@@ -42,6 +43,10 @@ const expectArray = <T>(data: unknown, endpoint: string): T[] => {
     return data as T[];
 };
 
+/**
+ * Validates the distance field of every train returned by the live post endpoint.
+ * The backend uses null when routing data is temporarily unavailable.
+ */
 export const expectExtendedTrainArray = (data: unknown): ExtendedTrain[] =>
     expectArray<unknown>(data, "trains for post").map((value, index) => {
         if (typeof value !== "object" || value === null || !("distanceFromStation" in value)) {

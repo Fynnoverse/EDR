@@ -22,12 +22,20 @@ const mergePostRows = (allPostsResponse: IFrontendStationTrainRow[][]) => {
         }
     ], new Array<IFrontendStationTrainRow>());
 
-    const keyedFirstPostTrains = _.keyBy(primaryPostRows, 'trainNoLocal');
+    const mergedTrainNumbers = new Set(primaryPostRows.map(train => train.trainNoLocal));
 
     secondaryPostsRows.map((secondary_post_trains) => {
         secondary_post_trains.map(train => {
-            if (!keyedFirstPostTrains[train.trainNoLocal]) {
-                mergedPostsRows.push(train);
+            if (!mergedTrainNumbers.has(train.trainNoLocal)) {
+                const matchingSecondaryRows = keyedSecondaryPostsRows
+                    .map((kspr) => kspr[train.trainNoLocal])
+                    .filter((row): row is Exclude<typeof row, undefined> => row !== undefined && row !== train);
+
+                mergedPostsRows.push({
+                    ...train,
+                    secondaryPostsRows: matchingSecondaryRows
+                });
+                mergedTrainNumbers.add(train.trainNoLocal);
             }
         });
     });

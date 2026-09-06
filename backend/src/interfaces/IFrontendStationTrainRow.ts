@@ -18,4 +18,5 @@ export interface IFrontendStationTrainRow extends Omit<IEdrServerTrain, 'timetab
     plannedStop: number,
     pointId: string,
     stationIndex: number,
+    secondaryPostsRows?: IFrontendStationTrainRow[],
 }

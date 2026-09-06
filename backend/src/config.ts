@@ -71,6 +71,8 @@ export const newInternalIdToSrId: {[k: string]: number} = {
     "SG_R52": StationId.sosnowiec_gl__pzs_r52,
     "SG": StationId.sosnowiec_glowny,
     "SK": StationId.skierniewice,
+    "SK_M_PZS": StationId.skierniewice_m_pzs,
+    "SK_P_PZS": StationId.skierniewice_p_pzs,
     "SLK": StationId.slawkow,
     "SM": StationId.slomniki,
     "ST": StationId.strzalki,
@@ -146,7 +148,11 @@ export const POSTS: { [key: string]: number[] } = {
     "SG_KAZ": [newInternalIdToSrId["SG_KAZ"]],
     "SG_PO": [newInternalIdToSrId["SG_PO"]],
     "SG": [newInternalIdToSrId["SG"], newInternalIdToSrId["SG_R52"]],
-    "SK": [newInternalIdToSrId["SK"]],
+    "SK": [
+        newInternalIdToSrId["SK"],
+        newInternalIdToSrId["SK_M_PZS"],
+        newInternalIdToSrId["SK_P_PZS"]
+    ],
     "SLK": [newInternalIdToSrId["SLK"]],
     "SM": [newInternalIdToSrId["SM"]],
     "ST": [newInternalIdToSrId["ST"]],

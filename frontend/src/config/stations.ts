@@ -957,7 +957,12 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Skierniewice",
         trainPosRange: 0.5,
         platformPosOverride: [20.151522, 51.967741],
-        secondaryPosts: ["SK_M_PZS", "SK_P_PZS"]
+        secondaryPosts: ["SK_GT_201_208", "SK_M_PZS", "SK_P_PZS", "SK_S_PZS"]
+    },
+    SK_GT_201_208: {
+        id: "SK_GT_201_208",
+        srName: "Skierniewice GT 201-208",
+        trainPosRange: 0.5
     },
     SK_M_PZS: {
         id: "SK_M_PZS",
@@ -967,6 +972,11 @@ export const postConfig: Dictionary<StationConfig> = {
     SK_P_PZS: {
         id: "SK_P_PZS",
         srName: "Skierniewice P PZS",
+        trainPosRange: 0.5
+    },
+    SK_S_PZS: {
+        id: "SK_S_PZS",
+        srName: "Skierniewice S PZS",
         trainPosRange: 0.5
     },
     PL: {

@@ -1069,7 +1069,13 @@ export const postConfig: Dictionary<StationConfig> = {
         id: "LG",
         srName: "Łowicz Główny",
         trainPosRange: 0.5,
-        platformPosOverride: [19.956626, 52.104493]
+        platformPosOverride: [19.956626, 52.104493],
+        secondaryPosts: ["LG_PZS_R12"]
+    },
+    LG_PZS_R12: {
+        id: "LG_PZS_R12",
+        srName: "Łowicz Główny PZS R12",
+        trainPosRange: 0.5
     },
     LP: {
         id: "LP",

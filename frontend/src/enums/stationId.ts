@@ -870,6 +870,7 @@ export enum StationId {
 	warszawa_powazki = 5472,
 	kije = 5475,
 	radziwillow_mazowiecki = 5516,
+	lowicz_glowny_pzs_r12 = 5523,
 	lodz_kaliska_r295 = 5576,
 	lodz_kaliska_pzs_r219_r227 = 5703,
 	klimontow_apo = 5706,

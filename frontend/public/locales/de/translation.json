@@ -112,5 +112,14 @@
   "DRIVER_DETAILS_header_arrival": "Ankunft",
   "DRIVER_DETAILS_header_station": "Station",
   "DRIVER_DETAILS_header_departure": "Abfahrt",
-  "DRIVER_DETAILS_header_layover": "Standzeit"
+  "DRIVER_DETAILS_header_layover": "Standzeit",
+  "EDR_TRAIN_CATEGORY_passenger": "Personenzug",
+  "EDR_TRAIN_CATEGORY_freight": "Güterzug",
+  "EDR_TRAIN_CATEGORY_service": "Dienst-/Wartungszug",
+  "EDR_TRAIN_CONSIST_label": "Zugreihung",
+  "EDR_TRAIN_CONSIST_vehicle_image": "Fahrzeugbild",
+  "EDR_TRAIN_CONSIST_units_one": "{{count}} Triebzug",
+  "EDR_TRAIN_CONSIST_units_other": "{{count}} Triebzüge",
+  "EDR_TRAIN_CONSIST_cars_one": "{{loco}} + {{count}} Wagen",
+  "EDR_TRAIN_CONSIST_cars_other": "{{loco}} + {{count}} Wagen"
 }

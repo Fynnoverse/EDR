@@ -5,7 +5,7 @@ import World from "../../../sounds/world.svg";
 import {tableCellCommonClassnames} from "../TrainRow";
 import {useTranslation} from "react-i18next";
 import { DetailedTrain } from "../../functions/trainDetails";
-import {configByLoco} from "../../../config/trains";
+import {TrainConsistDisplay} from "./TrainConsistDisplay";
 import Tooltip from "rc-tooltip";
 import classNames from "classnames";
 import TimetableIcon from "../../../images/icons/png/timetable.png";
@@ -41,10 +41,7 @@ export const TrainInfoCell: React.FC<Props> = ({
     const nextStation = trainDetails?.timetable?.find(entry => entry.indexOfPoint >= trainDetails?.TrainData?.VDDelayedTimetableIndex);
     const nextStationName = nextStation?.nameForPerson;
     const controllingPlayer = players?.find(player => player.steamid === trainDetails?.TrainData?.ControlledBySteamID);
-    const locomotiveType = trainDetails?.Vehicles[0]?.split(':')[0];
-    const trainConfig = locomotiveType ? configByLoco[locomotiveType] : undefined;
     const icons = isWebpSupported ? edrWebpImagesMap : edrImagesMap;
-    const trainIcon = isWebpSupported ? trainConfig?.iconWebp : trainConfig?.icon;
     const distanceFromStation = trainDetails?.distanceFromStation;
     const isTrainApproaching = !trainHasPassedStation && distanceFromStation != null && ((nextStationName === postCfg?.srName || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName)) && distanceFromStation < 3);
 
@@ -110,7 +107,12 @@ export const TrainInfoCell: React.FC<Props> = ({
                 </div>
                 <div className="flex md:inline">
                     <div className="flex justify-end">
-                        {trainConfig?.icon && <span className="hidden lg:block"><img src={trainIcon} height={streamMode ? 30 : 40} width={streamMode ? 52 : 94} alt="train-icon"/></span>}
+                        <TrainConsistDisplay
+                            vehicles={trainDetails?.Vehicles}
+                            trainType={ttRow.trainType}
+                            isWebpSupported={isWebpSupported}
+                            streamMode={streamMode}
+                        />
                     </div>
                     <div className="flex justify-end">
                         {

@@ -112,5 +112,14 @@
   "DRIVER_DETAILS_header_arrival": "Arrival",
   "DRIVER_DETAILS_header_station": "Station",
   "DRIVER_DETAILS_header_departure": "Departure",
-  "DRIVER_DETAILS_header_layover": "Layover"
+  "DRIVER_DETAILS_header_layover": "Layover",
+  "EDR_TRAIN_CATEGORY_passenger": "Passenger train",
+  "EDR_TRAIN_CATEGORY_freight": "Freight train",
+  "EDR_TRAIN_CATEGORY_service": "Service/maintenance train",
+  "EDR_TRAIN_CONSIST_label": "Train consist",
+  "EDR_TRAIN_CONSIST_vehicle_image": "Vehicle image",
+  "EDR_TRAIN_CONSIST_units_one": "{{count}} train unit",
+  "EDR_TRAIN_CONSIST_units_other": "{{count}} train units",
+  "EDR_TRAIN_CONSIST_cars_one": "{{loco}} + {{count}} car",
+  "EDR_TRAIN_CONSIST_cars_other": "{{loco}} + {{count}} cars"
 }

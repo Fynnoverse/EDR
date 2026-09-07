@@ -1,8 +1,8 @@
 import React from "react";
-import {Badge} from "flowbite-react";
 import {tableCellCommonClassnames} from "../TrainRow";
 import {DetailedTrain} from "../../functions/trainDetails";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
+import {TrainCategoryBadge} from "./TrainCategoryBadge";
 
 type Props = {
     secondColRef: any;
@@ -12,9 +12,9 @@ type Props = {
     streamMode: boolean;
 }
 export const TrainTypeCell: React.FC<Props> = ({secondColRef, trainBadgeColor, ttRow, trainDetails, streamMode}) =>
-    <td className={tableCellCommonClassnames(streamMode)}  ref={secondColRef} width="100">
-        <div className="flex justify-center items-center flex-col space-around">
-            <Badge className="" color={trainBadgeColor}>{ttRow.trainType}</Badge>&nbsp;
-            {Math.floor(trainDetails?.TrainData?.Velocity ?? 0)} km/h
+    <td className={tableCellCommonClassnames(streamMode)}  ref={secondColRef} width="135">
+        <div className="flex flex-col items-center justify-center gap-1">
+            <TrainCategoryBadge trainType={ttRow.trainType} vehicles={trainDetails?.Vehicles} badgeColor={trainBadgeColor} />
+            <span className="whitespace-nowrap">{Math.floor(trainDetails?.TrainData?.Velocity ?? 0)} km/h</span>
         </div>
     </td>;

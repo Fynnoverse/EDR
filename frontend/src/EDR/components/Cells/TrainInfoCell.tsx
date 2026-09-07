@@ -122,25 +122,20 @@ export const TrainInfoCell: React.FC<Props> = ({
                     </div>
                 </div>
             </div>
-            <div className="w-full flex flex-col md:flex-row">
+            <div className="mt-1 flex w-full flex-wrap items-baseline gap-x-1">
                 {  trainDetails
                     ? <div className="min-w-0 break-words">
-                        <span className="hidden md:inline">{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
+                        <span>{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
                         <span className={isTrainApproaching ? 'px-1 rounded bg-green-200 dark:bg-green-600 animate-pulse' : ''}>{nextStationName}</span>
-                        { trainDetails.distanceFromStation != null && <span>,&nbsp;
-                            <div className="inline-flex">
-                                {trainDetails.distanceFromStation > 0.5 && <span>
-                                    {trainDetails.distanceFromStation} km
-                                </span>}
-                                {trainDetails.distanceFromStation <= 0.5 && <span>
-                                    {`< 0.5 km`}
-                                </span>}
-                            </div>
-                        </span>}
+                        {distanceFromStation != null && Number.isFinite(distanceFromStation) && <>
+                            {', '}
+                            <span className="inline-block whitespace-nowrap" title={postCfg.srName}>
+                                {distanceFromStation.toFixed(2)}&nbsp;km
+                            </span>
+                        </>}
                     </div>
                     : <>{t('EDR_TRAINROW_train_offline')}</>
                 }
-                &nbsp;
                 {
                     trainHasPassedStation
                     ? <>({t("EDR_TRAINROW_train_away")})</>

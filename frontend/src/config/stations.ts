@@ -24,6 +24,7 @@ type StationNeighbours = {
 
 export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     [StationId.katowice_zawodzie]: {
+        down: [StationId.myslowice],
         left: [StationId.sosnowiec_gl__pzs_r52, StationId.szabelnia, StationId.katowice_szopienice_poludniowe],
         right: [StationId.katowice]
     },
@@ -51,10 +52,10 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.lazy]: {
         left: [StationId.lazy_lc],
-        right: [StationId.lazy_la, StationId.lazy_r52, StationId.lazy_grupa_weglarkowa_lgw]
+        right: [StationId.lazy_la, StationId.lazy_r52, StationId.lazy_grupa_weglarkowa_lgw, StationId.lazy_l11]
     },
     [StationId.lazy_la]: {
-        left: [StationId.lazy, StationId.lazy_r52],
+        left: [StationId.lazy, StationId.lazy_r52, StationId.lazy_grupa_weglarkowa_lgw, StationId.lazy_l11],
         right: [StationId.zawiercie, StationId.zawiercie_gt],
     },
     [StationId.lazy_lc]: {
@@ -104,7 +105,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.grodzisk_mazowiecki]: {
         left: [StationId.pruszkow, StationId.milanowek, StationId.grodzisk_maz__r58],
-        right: [StationId.zyrardow, StationId.korytow, StationId.grodzisk_mazowiecki_r64]
+        right: [StationId.zyrardow, StationId.jaktorow, StationId.korytow, StationId.grodzisk_mazowiecki_r64]
     },
     [StationId.sosnowiec_poludniowy]: {
         left: [StationId.sosnowiec_glowny],
@@ -125,7 +126,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.szeligi]: {
         left: [StationId.biala_rawska],
-        right: [StationId.korytow]
+        right: [StationId.korytow, StationId.markow]
     },
     [StationId.biala_rawska]: {
         left: [StationId.strzalki],
@@ -140,7 +141,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.dorota]
     },
     [StationId.katowice]: {
-        left: [StationId.brynow, StationId.katowice_tow__ktc, StationId.katowice_zaleze],
+        left: [StationId.brynow, StationId.katowice_tow__ktc, StationId.katowice_towarowe, StationId.katowice_zaleze],
         right: [StationId.katowice_zawodzie]
     },
     [StationId.slawkow]: {
@@ -156,7 +157,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.sosnowiec_maczki, StationId.sosnowiec_dandowka, StationId.sosnowiec_kazimierz_pzs_skz1, StationId.sosnowiec_kazimierz_pzs_skz2],
     },
     [StationId.bukowno]: {
-        left: [StationId.slawkow, StationId.bukowno_przymiarki],
+        left: [StationId.slawkow, StationId.bukowno_przymiarki, StationId.borowa_gorka],
         right: [StationId.olkusz],
     },
     [StationId.tunel]: {
@@ -165,7 +166,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.kozlow]: {
         left: [StationId.tunel, StationId.tunel_r13],
-        right: [StationId.sprowa, StationId.sedziszow, StationId.klimontow],
+        right: [StationId.sprowa, StationId.sedziszow, StationId.klimontow, StationId.klimontow_apo],
     },
     [StationId.pruszkow]: {
         left: [StationId.warszawa_wlochy, StationId.jozefinow, StationId.jozefinow_roz_2, StationId.piastow],
@@ -208,12 +209,104 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.lodz_olechow_loc, StationId.justynow, StationId.lodz_andrzejow]
     },
     [StationId.koluszki]: {
-        left: [StationId.koluszki_r59, StationId.rogow],
-        right: [StationId.koluszki_r121, StationId.koluszki_pzs_r145, StationId.koluszki_pzs_r154]
+        left: [StationId.koluszki_r59, StationId.rogow, StationId.wagry],
+        right: [StationId.koluszki_r121, StationId.koluszki_pzs_r145, StationId.koluszki_pzs_r154, StationId.slotwiny, StationId.zakowice_poludniowe]
     },
     [StationId.lodz_widzew]: {
-        left: [StationId.lodz_widzew_r9, StationId.lodz_widzew_pzs_r3],
-        right: [StationId.lodz_andrzejow]
+        left: [StationId.lodz_widzew_r9, StationId.lodz_widzew_pzs_r3, StationId.lodz_marysin, StationId.lodz_stoki, StationId.lodz_chojny, StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_zarzew],
+        right: [StationId.lodz_andrzejow, StationId.lodz_andrzejow_szosa, StationId.lodz_olechow_loc, StationId.lodz_olechow_pzs_r3]
+    },
+    [StationId.baby]: {
+        left: [StationId.rokiciny],
+        right: [StationId.moszczenica, StationId.piotrkow_trybunalski, StationId.wolborka]
+    },
+    [StationId.belchow]: {
+        left: [StationId.skierniewice_s_pzs, StationId.sierakowice_skierniewickie, StationId.mokra],
+        right: [StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12]
+    },
+    [StationId.gajewniki]: {
+        left: [StationId.borszewice],
+        right: [StationId.zdunska_wola, StationId.zdunska_wola_karsznice, StationId.dionizow]
+    },
+    [StationId.glinnik]: {
+        left: [StationId.zgierz, StationId.glinnik_wies],
+        right: [StationId.swedow, StationId.strykow]
+    },
+    [StationId.glowno]: {
+        left: [StationId.strykow, StationId.bratoszewice],
+        right: [StationId.glowno_polnocne, StationId.domaniewice]
+    },
+    [StationId.lask]: {
+        left: [StationId.pabianice, StationId.kolumna],
+        right: [StationId.borszewice, StationId.gajewniki]
+    },
+    [StationId.lodz_chojny]: {
+        left: [StationId.lodz_kaliska_pzs_r219_r227, StationId.lodz_pabianicka],
+        right: [StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_widzew, StationId.lodz_olechow_pzs_r3]
+    },
+    [StationId.lodz_lublinek]: {
+        left: [StationId.pabianice, StationId.pabianice_polnocne],
+        right: [StationId.retkinia, StationId.lodz_retkinia]
+    },
+    [StationId.lodz_zabieniec]: {
+        left: [StationId.lodz_kaliska],
+        right: [StationId.lodz_zabieniec_gt, StationId.zgierz]
+    },
+    [StationId.lowicz_glowny]: {
+        left: [StationId.lowicz_przedmiescie],
+        right: [StationId.jackowice, StationId.lowicz_glowny_pzs_r24_r31]
+    },
+    [StationId.lowicz_glowny_pzs_r1]: {
+        left: [StationId.lowicz_glowny_pzs_r12],
+        right: [StationId.bednary]
+    },
+    [StationId.lowicz_glowny_pzs_r12]: {
+        left: [StationId.belchow, StationId.bobrowniki],
+        right: [StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31]
+    },
+    [StationId.lowicz_glowny_pzs_r24_r31]: {
+        left: [StationId.lowicz_glowny, StationId.lowicz_glowny_pzs_r12],
+        right: [StationId.bednary]
+    },
+    [StationId.lowicz_przedmiescie]: {
+        left: [StationId.domaniewice, StationId.stare_grudze],
+        right: [StationId.lowicz_glowny]
+    },
+    [StationId.lodz_kaliska]: {
+        left: [StationId.lodz_zabieniec],
+        right: [StationId.retkinia, StationId.lodz_kaliska_pzs_r219_r227]
+    },
+    [StationId.lodz_kaliska_pzs_r219_r227]: {
+        left: [StationId.lodz_kaliska],
+        right: [StationId.retkinia, StationId.lodz_chojny, StationId.lodz_pabianicka]
+    },
+    [StationId.pabianice]: {
+        left: [StationId.lodz_lublinek, StationId.pabianice_polnocne],
+        right: [StationId.chechlo, StationId.dobron, StationId.lask]
+    },
+    [StationId.rokiciny]: {
+        left: [StationId.koluszki, StationId.koluszki_pzs_r154],
+        right: [StationId.baby, StationId.laznow, StationId.chrusty_nowe]
+    },
+    [StationId.retkinia]: {
+        left: [StationId.lodz_lublinek],
+        right: [StationId.lodz_retkinia, StationId.lodz_kaliska, StationId.lodz_kaliska_pzs_r219_r227]
+    },
+    [StationId.witonia]: {
+        left: [StationId.leczyca, StationId.gawrony],
+        right: [StationId.kutno]
+    },
+    [StationId.zdunska_wola]: {
+        left: [StationId.gajewniki, StationId.zdunska_wola_karsznice, StationId.dionizow],
+        right: [StationId.izabelow, StationId.sieradz]
+    },
+    [StationId.zgierz]: {
+        left: [StationId.lodz_zabieniec_gt, StationId.lodz_marysin, StationId.lodz_radogoszcz_zachod, StationId.lodz_radogoszcz_wschod],
+        right: [StationId.glinnik, StationId.zgierz_jaracza, StationId.zgierz_polnoc, StationId.zgierz_kontrewers, StationId.zgierz_rudunki]
+    },
+    [StationId.zgierz_polnoc]: {
+        left: [StationId.zgierz, StationId.zgierz_jaracza],
+        right: [StationId.zgierz_kontrewers]
     },
     [StationId.plycwia]: {
         left: [StationId.skierniewice_p_pzs, StationId.makow],
@@ -221,7 +314,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.rogow]: {
         left: [StationId.wagry, StationId.koluszki, StationId.koluszki_r59],
-        right: [StationId.plycwia_gt, StationId.przylek_duzy]
+        right: [StationId.plycwia_gt, StationId.przylek_duzy, StationId.lipce_reymontowskie]
     },
     [StationId.skierniewice]: {
         left: [StationId.skierniewice_p_pzs, StationId.skierniewice_s_pzs],
@@ -249,7 +342,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         up: [StationId.warszawa_golabki]
     },
     [StationId.zakowice_poludniowe]: {
-        left: [StationId.zakowice_pld_roz_5],
+        left: [StationId.zakowice_pld_roz_5, StationId.koluszki, StationId.slotwiny, StationId.mikolajow],
         right: [StationId.galkowek]
     },
     [StationId.zyrardow]: {

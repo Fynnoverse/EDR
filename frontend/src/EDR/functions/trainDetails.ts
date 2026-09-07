@@ -15,20 +15,30 @@ type ExtraStationConfig = {
 
 export type ExtendedStationConfig = StationConfig & ExtraStationConfig;
 
-const isUsableActualTime = (value: Date) => value.getUTCFullYear() > 1970 && value.getUTCFullYear() < 3000;
+const isUsableActualTime = (value: Date | undefined) => value instanceof Date && value.getUTCFullYear() > 1970 && value.getUTCFullYear() < 3000;
 
 export const getTrainDetails = (previousTrains: React.MutableRefObject<{[k: string]: DetailedTrain;} | null>, trainTimetables: Dictionary<TrainTimeTableRow[]>, dateNow: Date) =>(t: ExtendedTrain) => {
     const previousTrainData = previousTrains.current?.[t.TrainNoLocal as string];
     let lastDelay = previousTrainData?.lastDelay;
     const stationPassed = trainTimetables[t.TrainNoLocal]?.find(ttRow => ttRow.indexOfPoint === (t.TrainData.VDDelayedTimetableIndex - 1));
-    const actualDeparture = stationPassed && isUsableActualTime(stationPassed.actualDepartureObject)
+    const actualDeparture = stationPassed && isUsableActualTime(stationPassed.actualDepartureObject) && stationPassed.actualDepartureObject <= dateNow
         ? stationPassed.actualDepartureObject
         : undefined;
     const hasJustAdvanced = previousTrainData?.TrainData
-        && previousTrainData.TrainData.VDDelayedTimetableIndex < t.TrainData.VDDelayedTimetableIndex;
+        && previousTrainData.TrainData.VDDelayedTimetableIndex + 1 === t.TrainData.VDDelayedTimetableIndex
+        && (previousTrainData.receivedAt == null || Date.now() - previousTrainData.receivedAt <= 15000);
 
     if (stationPassed && (actualDeparture || hasJustAdvanced)) {
-        lastDelay = differenceInMinutes(actualDeparture ?? dateNow, stationPassed.scheduledDepartureObject);
+        const scheduled = isUsableActualTime(stationPassed.scheduledDepartureObject)
+            ? stationPassed.scheduledDepartureObject : stationPassed.scheduledArrivalObject;
+        if (isUsableActualTime(scheduled)) lastDelay = differenceInMinutes(actualDeparture ?? dateNow, scheduled);
+    }
+
+    // A reported arrival at the current point is newer than the previous departure.
+    const currentPoint = trainTimetables[t.TrainNoLocal]?.find(row => row.indexOfPoint === t.TrainData.VDDelayedTimetableIndex);
+    if (currentPoint && isUsableActualTime(currentPoint.actualArrivalObject)
+        && currentPoint.actualArrivalObject <= dateNow && isUsableActualTime(currentPoint.scheduledArrivalObject)) {
+        lastDelay = differenceInMinutes(currentPoint.actualArrivalObject, currentPoint.scheduledArrivalObject);
     }
 
     return {...t,

@@ -21,8 +21,16 @@ export const BASE_API_URL = normalizeBaseApiUrl(configuredBaseApiUrl);
 
 const baseApiCall = async <T>(URL: string): Promise<T> => {
     const outbound = BASE_API_URL + URL;
-    const response = await fetch(outbound);
-    const responseText = await response.text();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 20000);
+    let response: Response;
+    let responseText: string;
+    try {
+        response = await fetch(outbound, {signal: controller.signal, cache: "no-cache"});
+        responseText = await response.text();
+    } finally {
+        clearTimeout(timeout);
+    }
     let data: unknown;
 
     try {

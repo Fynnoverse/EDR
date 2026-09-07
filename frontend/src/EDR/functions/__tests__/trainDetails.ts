@@ -14,6 +14,18 @@ const checkpoint = (scheduled: string, actual: string) => ({
 } as TrainTimeTableRow);
 
 describe("live train deviation", () => {
+    it("does not manufacture an event time after a gap spanning multiple checkpoints", () => {
+        const timetables = {"100": [{...checkpoint("2026-09-07T10:00:00Z", "3001-01-31T00:00:00Z"), indexOfPoint: 4}]};
+        const previous = {current: {"100": {lastDelay: -2, TrainData: {VDDelayedTimetableIndex: 1}} as DetailedTrain}};
+        expect(getTrainDetails(previous, timetables, new Date("2026-09-07T10:30:00Z"))(train(5)).lastDelay).toBe(-2);
+    });
+
+    it("prefers the current API arrival over the previous departure", () => {
+        const timetables = {"100": [checkpoint("2026-09-07T10:00:00Z", "2026-09-07T10:05:00Z"),
+            {indexOfPoint: 2, scheduledArrivalObject: new Date("2026-09-07T10:15:00Z"),
+                actualArrivalObject: new Date("2026-09-07T10:16:00Z")} as TrainTimeTableRow]};
+        expect(getTrainDetails({current: null}, timetables, new Date("2026-09-07T10:17:00Z"))(train(2)).lastDelay).toBe(1);
+    });
     it("uses the recorded departure time when it is available", () => {
         const timetables = {"100": [checkpoint("2026-09-07T10:00:00Z", "2026-09-07T09:55:00Z")]};
         const details = getTrainDetails({current: null}, timetables, new Date("2026-09-07T10:30:00Z"))(train(2));

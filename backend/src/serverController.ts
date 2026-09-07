@@ -51,7 +51,7 @@ export function getStationsList(req: express.Request, res: express.Response) {
 export function getTrainsList(req: express.Request, res: express.Response) {
     return simrailClient.get(`trains-open?serverCode=${req.params.serverCode}`)?.then((e) => {
         return res
-            .setHeader("Cache-control", 'public, max-age=10, must-revalidate, stale-if-error=30')
+            .setHeader("Cache-control", 'public, max-age=2, must-revalidate')
             .send((e.data as ApiResponse<Train>).data);
     }).catch(() => {
         return res.sendStatus(500);
@@ -80,7 +80,7 @@ export async function getTrainsListForPost(req: express.Request, res: express.Re
         const trainList = (e.data as Train[]);
         let osrmFailureLogged = false;
         return res
-            .setHeader("Cache-control", 'public, max-age=10, must-revalidate, stale-if-error=30')
+            .setHeader("Cache-control", 'public, max-age=2, must-revalidate')
             .send(await Promise.all(trainList.map(async (train) => {
                 let osrmResult: IRouteData = {} as IRouteData;
                 const trainTimetable = trainTimetables.find(timetable => timetable.trainNoLocal === train.TrainNoLocal);

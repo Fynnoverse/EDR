@@ -2,4 +2,5 @@ import { Train } from "@simrail/types";
 
 export type ExtendedTrain = Train & {
     distanceFromStation: number | null,
+    receivedAt?: number,
 }

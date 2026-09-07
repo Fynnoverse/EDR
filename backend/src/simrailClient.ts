@@ -28,6 +28,7 @@ export const strictAwsSimrailClient = {
         // TODO: If this fails for any reason, the return value will be undefined which causes type-insecurity
         // Maybe handle exceptions one level above?
         return strictRlClient.get(URL, {
+            timeout: 10000,
             headers: srHeaders
         });
     },
@@ -51,6 +52,7 @@ export const selfClient = {
         // TODO: If this fails for any reason, the return value will be undefined which causes type-insecurity
         // Maybe handle exceptions one level above?
         return selfRlClient.get(URL, {
+            timeout: 10000,
             headers: srHeaders
         });
     },
@@ -62,6 +64,7 @@ export const osrmClient = {
         // TODO: If this fails for any reason, the return value will be undefined which causes type-insecurity
         // Maybe handle exceptions one level above?
         return osrmRlClient.get(URL, {
+            timeout: 3000,
             headers: srHeaders
         });
     },

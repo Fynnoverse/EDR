@@ -21,6 +21,41 @@ import { IEdrServerTrain } from "./interfaces/IEdrServerTrain.js";
 
 let completeTrainList: ICompleteTrainList = {};
 let speeds: ISpeedLimit[];
+// Share one upstream refresh per server across all open station views.
+const liveTimetableRefresh = new Map<string, {at: number; pending?: Promise<void>}>();
+async function refreshEdrTimes(serverCode: string) {
+    if (!completeTrainList[serverCode]) return;
+    const current = liveTimetableRefresh.get(serverCode);
+    if (current?.pending) return current.pending;
+    if (current && Date.now() - current.at < 30000) return;
+    const state: {at: number; pending?: Promise<void>} = {at: Date.now()};
+    liveTimetableRefresh.set(serverCode, state);
+    state.pending = (async () => {
+        try {
+            const response = await getEdrTimetable(serverCode);
+            if (!Array.isArray(response.data)) throw new Error("Invalid EDR timetable");
+            const observations = new Map((response.data as IEdrServerTrain[]).map(train => [train.trainNoLocal, train]));
+            completeTrainList[serverCode] = completeTrainList[serverCode].map(train => {
+                const observation = observations.get(train.trainNoLocal);
+                if (!observation) return train;
+                const points = new Map(observation.timetable.map(point => [point.indexOfPoint, point]));
+                return {...train, timetable: train.timetable.map(point => {
+                    const live = points.get(point.indexOfPoint);
+                    if (!live || String(live.pointId) !== String(point.pointId)) return point;
+                    return {...point, actualArrivalTime: live.actualArrivalTime,
+                        actualDepartureTime: live.actualDepartureTime, isStoped: live.isStoped,
+                        isConfirmed: live.isConfirmed, isActive: live.isActive, leftTrack: live.leftTrack};
+                })};
+            });
+        } catch {
+            console.warn(`Live EDR times unavailable for ${serverCode}; retaining last observations.`);
+        } finally {
+            state.at = Date.now();
+            state.pending = undefined;
+        }
+    })();
+    return state.pending;
+}
 const updateTimetable = () => {
     getServerCodeList().then(async serverList => {
         serverList.map(serverCode => {
@@ -129,8 +164,14 @@ app
     .get("/stations/:serverCode", getStationsList)
     .get("/trains/:serverCode", getTrainsList)
     .get("/trains/:serverCode/:post", (req: express.Request, res: express.Response) => getTrainsListForPost(req, res, completeTrainList[req.params.serverCode]))
-    .get("/dispatch/:serverCode/:post", (req: express.Request, res: express.Response) => dispatchController(req, res, completeTrainList[req.params.serverCode]))
-    .get("/train/:serverCode/:trainNo", (req: express.Request, res: express.Response) => trainTimetableController(req, res, completeTrainList[req.params.serverCode], speeds))
+    .get("/dispatch/:serverCode/:post", async (req: express.Request, res: express.Response) => {
+        await refreshEdrTimes(req.params.serverCode);
+        return dispatchController(req, res, completeTrainList[req.params.serverCode]);
+    })
+    .get("/train/:serverCode/:trainNo", async (req: express.Request, res: express.Response) => {
+        await refreshEdrTimes(req.params.serverCode);
+        return trainTimetableController(req, res, completeTrainList[req.params.serverCode], speeds);
+    })
     .get("/steam/:steamId", getPlayer);
 app.listen(process.env.LISTEN_PORT);
 

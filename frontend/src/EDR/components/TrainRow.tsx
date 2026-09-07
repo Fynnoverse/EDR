@@ -17,6 +17,7 @@ import { StationConfig } from "../../config/stations";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { isInactiveTrainAtStation } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
+import {getStationDeviation} from "../functions/stationDeviation";
 
 
 export const tableCellCommonClassnames = (streamMode: boolean = false) =>
@@ -50,6 +51,7 @@ const TableRow: React.FC<Props> = (
     }: Props
 ) => {
     const dateNow = nowUTC(serverTime);
+    const deviation = getStationDeviation(ttRow, trainDetails, postCfg, dateNow);
 
     const secondaryStationIndices = (ttRow.secondaryPostsRows || []).map(row => row.stationIndex);
     const trainHasPassedStation = trainDetails
@@ -63,7 +65,7 @@ const TableRow: React.FC<Props> = (
     const isDeparturePreviousDay = departureExpectedHours >= 20 && dateNow.getUTCHours() < 12; // TODO: less but still Clunky
     const expectedDeparture = getDateWithHourAndMinutes(dateNow, departureExpectedHours, departureExpectedMinutes, isDepartureNextDay, isDeparturePreviousDay);
 
-    const arrivalTimeDelay = trainDetails?.lastDelay ? trainDetails.lastDelay : 0;
+    const arrivalTimeDelay = deviation.arrivalMinutes ?? 0;
 
     const distanceFromStation = trainDetails?.distanceFromStation;
     const trainMustDepart = !trainHasPassedStation && distanceFromStation != null && distanceFromStation < 1.5 && (subMinutes(expectedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
@@ -105,6 +107,8 @@ const TableRow: React.FC<Props> = (
             streamMode={streamMode}
             arrivalTimeDelay={arrivalTimeDelay}
             serverNow={dateNow}
+            deviationMinutes={deviation.arrivalMinutes}
+            estimated={deviation.arrivalEstimated}
         />
         <TrainFromCell headerFourthColRef={headerFourthColRef} ttRow={ttRow} secondaryPostData={secondaryPostData}
                        streamMode={streamMode} />
@@ -118,7 +122,8 @@ const TableRow: React.FC<Props> = (
             playSoundNotification={playSoundNotification}
             streamMode={streamMode}
             isTrainOffline={!trainDetails}
-            deviationMinutes={trainDetails?.lastDelay}
+            deviationMinutes={deviation.departureMinutes}
+            estimated={deviation.departureEstimated}
             serverNow={dateNow}
         />
         <TrainToCell ttRow={ttRow} headerSeventhColRef={headerSeventhColRef} secondaryPostData={secondaryPostData}

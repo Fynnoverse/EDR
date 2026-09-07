@@ -17,8 +17,9 @@ type Props = {
     isTrainOffline: boolean;
     deviationMinutes?: number;
     serverNow: Date;
+    estimated?: boolean;
 }
-export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNotification, ttRow, headerSixthhColRef, trainHasPassedStation, streamMode, isTrainOffline, deviationMinutes, serverNow}) => {
+export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNotification, ttRow, headerSixthhColRef, trainHasPassedStation, streamMode, isTrainOffline, deviationMinutes, serverNow, estimated}) => {
     const {t} = useTranslation();
     const [notificationEnabled, setNotificationEnabled] = React.useState(false);
 
@@ -31,7 +32,7 @@ export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNo
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="190" style={{minWidth: 190}} ref={headerSixthhColRef}>
             <div className="flex items-center justify-start gap-3 h-full">
-                <TrainTimeDisplay scheduledTime={ttRow.scheduledDepartureObject} deviationMinutes={deviationMinutes} serverNow={serverNow} />
+                <TrainTimeDisplay scheduledTime={ttRow.scheduledDepartureObject} deviationMinutes={deviationMinutes} serverNow={serverNow} estimated={estimated} />
                 <div className="hidden lg:flex items-center justify-center shrink-0 min-w-[32px]">
                     {
                         !trainHasPassedStation && !isTrainOffline && (trainMustDepart ?

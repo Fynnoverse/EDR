@@ -14,17 +14,19 @@ type Props = {
     streamMode: boolean;
     arrivalTimeDelay: number;
     serverNow: Date;
+    deviationMinutes?: number;
+    estimated?: boolean;
 }
 
 export const TrainArrivalCell: React.FC<Props> = ({
     ttRow, trainDetails, trainHasPassedStation,
-    thirdColRef, streamMode, arrivalTimeDelay, serverNow
+    thirdColRef, streamMode, arrivalTimeDelay, serverNow, deviationMinutes, estimated
 }) => {
     const {t} = useTranslation();
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="150" ref={thirdColRef}>
             <div className="flex items-center justify-center h-full">
-                <TrainTimeDisplay scheduledTime={ttRow.scheduledArrivalObject} deviationMinutes={trainDetails?.lastDelay} serverNow={serverNow} />
+                <TrainTimeDisplay scheduledTime={ttRow.scheduledArrivalObject} deviationMinutes={deviationMinutes} serverNow={serverNow} estimated={estimated} />
             </div>
             <div className="flex justify-center">
                 {

@@ -3,18 +3,15 @@ import {getPlayer, getServerTime, getStations, getTimetable, getTrainsForPost, g
 import {Alert} from "flowbite-react";
 import {EDRTable} from "./components/Table";
 import _keyBy from "lodash/fp/keyBy";
-import _map from "lodash/fp/map";
 import {useTranslation} from "react-i18next";
-import {console_log} from "../utils/Logger";
 import _difference from "lodash/difference";
 
 import {LoadingScreen} from "./components/LoadingScreen";
 import {DetailedTrain, getTrainDetails} from "./functions/trainDetails";
 import {postConfig} from "../config/stations";
 import { Station } from "@simrail/types";
-import { Dictionary, flatMap, groupBy } from "lodash";
+import { Dictionary } from "lodash";
 import {redirect, useParams} from "react-router-dom";
-import { useSnackbar } from "notistack";
 import {StringParam, useQueryParam} from "use-query-params";
 import { ISteamUser } from "../config/ISteamUser";
 import { TrainTimeTableRow } from "../Sirius";
@@ -76,50 +73,95 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
     const [isGraphModalOpen, setGraphModalOpen] = React.useState<boolean>(false);
     const [filterConfig, setFilterConfig] = useLocalStorage<FilterConfig>("edr-filter-config", presetFilterConfig.default);
     const [serverTime, setServerTime] = React.useState<number | undefined>();
+    const clockAnchor = React.useRef<{time: number; receivedAt: number} | undefined>(undefined);
+    const [lastLiveReceipt, setLastLiveReceipt] = React.useState<number>();
+    const [liveRefreshFailed, setLiveRefreshFailed] = React.useState(false);
     const {t} = useTranslation();
-    const { enqueueSnackbar } = useSnackbar();
 
+    const dataGeneration = React.useRef(0);
+    const detailRequests = React.useRef(new Map<string, {index: number; at: number; pending: boolean}>());
     const previousTrains = React.useRef<{ [k: string]: DetailedTrain } | null>(null);
     const previousPlayers = React.useRef<ISteamUser[] | undefined>(undefined);
     const graphFullScreenMode = !!useQueryParam("graphFullScreenMode", StringParam)[0];
 
-    // Gets raw simrail data
-    const fetchAllData = () => {
-        if (!serverCode || !post) return;
-        Promise.all([getTzOffset(serverCode), getServerTime(serverCode)]).then((v) => {
-            setTzOffset(v[0]);
-            setServerTime(v[1]);
-            getTimetable(post, serverCode).then((data) => {
-                setTimetable(data.sort((row1, row2) => row1.scheduledArrivalObject.valueOf() - row2.scheduledArrivalObject.valueOf()));
-                getStations(serverCode).then((data) => {
-                    setStations(_keyBy('Name', data));
-                    getTrainsForPost(serverCode, post).then((data) => {
-                        setTrains(data);
-                        setLoading(false);
-                    }).catch(() => {
-                        enqueueSnackbar(t('EDR_train_refresh_failed'), { preventDuplicate: true, variant: 'error', autoHideDuration: 5000 });
-                    });
-                }).catch(() => {
-                    enqueueSnackbar(t('EDR_station_refresh_failed'), { preventDuplicate: true, variant: 'error', autoHideDuration: 5000 });
-                });
-            }).catch(() => {
-                enqueueSnackbar(t('EDR_timetable_refresh_failed'), { preventDuplicate: true, variant: 'error', autoHideDuration: 5000 });
-            });
-        }).catch(() => {
-            enqueueSnackbar(t('EDR_timetable_refresh_failed'), { preventDuplicate: true, variant: 'error', autoHideDuration: 5000 });
-        });
-    }
-
     const currentStation = post ? postConfig[post] : undefined;
 
-    // Launches the get from simrail
+    // One request cycle per view; an old view must never overwrite the current one.
     React.useEffect(() => {
+        if (!serverCode || !post || !currentStation) return;
+        let cancelled = false;
+        dataGeneration.current++;
+        detailRequests.current = new Map();
+        let timer: ReturnType<typeof setTimeout>;
+        let initialized = false;
+        let lastClockSync = 0;
         setLoading(true);
-        console_log("Current station : ", currentStation);
-        if (!serverCode || !currentStation) return;
-        fetchAllData();
+        setTrains(undefined);
+        setTrainTimetables(undefined);
+        setTrainsWithDetails(undefined);
+        setLastLiveReceipt(undefined);
+        setLiveRefreshFailed(false);
+        previousTrains.current = null;
+        clockAnchor.current = undefined;
+        const refresh = async () => {
+            const started = Date.now();
+            try {
+                if (!initialized) {
+                    const [offset, clock, schedule, stationList, liveTrains] = await Promise.all([
+                        getTzOffset(serverCode), getServerTime(serverCode).then(time => ({time, receivedAt: Date.now()})),
+                        getTimetable(post, serverCode), getStations(serverCode),
+                        getTrainsForPost(serverCode, post)
+                    ]);
+                    if (cancelled) return;
+                    const receivedAt = Date.now();
+                    setTzOffset(offset);
+                    clockAnchor.current = clock;
+                    setServerTime(clock.time + receivedAt - clock.receivedAt);
+                    lastClockSync = receivedAt;
+                    setTimetable(schedule.sort((a, b) => a.scheduledArrivalObject.valueOf() - b.scheduledArrivalObject.valueOf()));
+                    setStations(_keyBy('Name', stationList));
+                    setTrains(liveTrains.map(train => ({...train, receivedAt})));
+                    setLastLiveReceipt(receivedAt);
+                    setTrainTimetables({});
+                    setLoading(false);
+                    initialized = true;
+                } else {
+                    const liveTrains = await getTrainsForPost(serverCode, post);
+                    if (cancelled) return;
+                    const receivedAt = Date.now();
+                    setTrains(liveTrains.map(train => ({...train, receivedAt})));
+                    setLastLiveReceipt(receivedAt);
+                    if (receivedAt - lastClockSync >= 30000) {
+                        // Clock failure must not discard a successful train update.
+                        try {
+                            const clock = await getServerTime(serverCode);
+                            if (cancelled) return;
+                            clockAnchor.current = {time: clock, receivedAt: Date.now()};
+                            setServerTime(clock);
+                            lastClockSync = Date.now();
+                        } catch { /* Keep advancing the last synchronized clock. */ }
+                    }
+                }
+                if (!cancelled) setLiveRefreshFailed(false);
+            } catch {
+                if (!cancelled) setLiveRefreshFailed(true);
+            } finally {
+                if (!cancelled) timer = setTimeout(refresh, Math.max(1000, 5000 - (Date.now() - started)));
+            }
+        };
+        void refresh();
+        return () => { cancelled = true; dataGeneration.current++; clearTimeout(timer); };
         // eslint-disable-next-line
     }, [serverCode, post]);
+
+    // Advance from the clock anchor, including after a background-tab pause.
+    React.useEffect(() => {
+        const timer = setInterval(() => {
+            const anchor = clockAnchor.current;
+            if (anchor) setServerTime(anchor.time + Date.now() - anchor.receivedAt);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Keeps previous data in memory for comparing changes
     React.useEffect(() => {
@@ -130,58 +172,50 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
         previousPlayers.current = players;
     }, [players]);
 
-    // Refreshes the train positions every 10 seconds
+    // Recalculate when a new observation or timetable arrives, not on every clock tick.
     React.useEffect(() => {
-        window.trainsRefreshWebWorkerId = window.setInterval(() => {
-            if (!serverCode || !post) return;
-            getTrainsForPost(serverCode, post).then(setTrains);
-        }, 10000);
-        if (!window.trainsRefreshWebWorkerId) {
-            enqueueSnackbar(t('APP_fatal_error'), { preventDuplicate: true, variant: 'error', autoHideDuration: 10000 });
-            return;
-        }
-        return () => window.clearInterval(window.trainsRefreshWebWorkerId);
+        if (loading || !trains || !trainTimetables) return;
+        const addDetails = getTrainDetails(previousTrains, trainTimetables, nowUTC(serverTime));
+        setTrainsWithDetails(_keyBy('TrainNoLocal', trains.map(addDetails)));
         // eslint-disable-next-line
-    }, [serverCode]);
+    }, [trains, trainTimetables, loading]);
 
-    // Refreshes server time every 2 minutes
+    // Refresh details on checkpoint changes and periodically for API-recorded events.
     React.useEffect(() => {
-        window.serverTimeRefreshWebWorkerId = window.setInterval(() => {
-            if (!serverCode) return;
-            getServerTime(serverCode).then(setServerTime);
-        }, 120000);
-        if (!window.serverTimeRefreshWebWorkerId) {
-            enqueueSnackbar(t('APP_fatal_error'), { preventDuplicate: true, variant: 'error', autoHideDuration: 10000 });
-            return;
-        }
-        return () => window.clearInterval(window.serverTimeRefreshWebWorkerId);
-        // eslint-disable-next-line
-    }, [serverCode]);
-
-    // Adds all the calculated infos for online trains. Such as distance or closest station for example
-    React.useEffect(() => {
-        if (loading || !Array.isArray(trains) || trains.length === 0 || !previousTrains || !trainTimetables) return;
-        setTimeout(() => {
-            const addDetailsToTrains = getTrainDetails(previousTrains, trainTimetables, nowUTC(serverTime));
-            const onlineTrainsWithDetails = _map(addDetailsToTrains, trains);
-
-            setTrainsWithDetails(_keyBy('TrainNoLocal', onlineTrainsWithDetails));
-        }, 1);
-        // eslint-disable-next-line
-    }, [stations, JSON.stringify(trains), JSON.stringify(previousTrains.current), JSON.stringify(timetable), JSON.stringify(trainTimetables), serverTime, tzOffset]);
-
-    // Get missing train timetables when a new train spawns on the map
-    React.useEffect(() => {
-        if (!Array.isArray(trains) || !serverCode || tzOffset === undefined) return;
-        // Filter for trains that have a checkpoint at the current station
-        const allTrainIds = trains.map((t) => (timetable as TimeTableRow[])?.findIndex(entry => entry.trainNoLocal === t.TrainNoLocal) > -1 ? t.TrainNoLocal: null).filter((trainNumber): trainNumber is Exclude<typeof trainNumber, null> => trainNumber !== null);
-        const previousTrainIds = Object.keys(trainTimetables ?? []);
-        const difference = _difference(allTrainIds, previousTrainIds);
-        if (difference.length === 0) return;
-        Promise.all(difference.map(trainId => getTrainTimetable(trainId, serverCode))).then((timetables) => {
-            setTrainTimetables(groupBy(flatMap(timetables).concat(...Object.values(trainTimetables ?? {})), 'displayedTrainNumber'))
+        if (!trains || !serverCode || !timetable) return;
+        const generation = dataGeneration.current;
+        const requests = detailRequests.current;
+        const relevant = new Set(timetable.map(row => row.trainNoLocal));
+        trains.filter(train => relevant.has(train.TrainNoLocal)).forEach(train => {
+            const id = train.TrainNoLocal;
+            const index = train.TrainData.VDDelayedTimetableIndex;
+            const previous = requests.get(id);
+            if (previous?.pending || (previous?.index === index && Date.now() - previous.at < 30000)) return;
+            requests.set(id, {index, at: Date.now(), pending: true});
+            getTrainTimetable(id, serverCode).then(rows => {
+                if (generation !== dataGeneration.current) return;
+                setTrainTimetables(existing => ({...existing, [id]: rows}));
+                requests.set(id, {index, at: Date.now(), pending: false});
+            }).catch(() => {
+                requests.delete(id); // Retry on the next live cycle; keep the last usable timetable.
+            });
         });
-    }, [trains, timetable, trainTimetables, serverCode, tzOffset])
+    }, [trains, timetable, serverCode]);
+
+    React.useEffect(() => {
+        if (!serverCode || !post) return;
+        let cancelled = false;
+        let timer: ReturnType<typeof setTimeout>;
+        const refresh = async () => {
+            try {
+                const rows = await getTimetable(post, serverCode);
+                if (!cancelled) setTimetable(rows.sort((a, b) => a.scheduledArrivalObject.valueOf() - b.scheduledArrivalObject.valueOf()));
+            } catch { /* Keep the last station timetable and retry. */ }
+            finally { if (!cancelled) timer = setTimeout(refresh, 15000); }
+        };
+        timer = setTimeout(refresh, 15000);
+        return () => { cancelled = true; clearTimeout(timer); };
+    }, [serverCode, post]);
 
     // Get new player info when someone takes over a train
     React.useEffect(() => {
@@ -208,14 +242,18 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
         return <Alert color="failure">{t("APP_station_not_found")}</Alert>
 
     if (loading)
-        return <LoadingScreen timetable={timetable as TimeTableRow[]}
+        return <>{liveRefreshFailed && <Alert color="failure">Live-Daten konnten nicht geladen werden. Neuer Versuch läuft automatisch.</Alert>}<LoadingScreen timetable={timetable as TimeTableRow[]}
                               trains={trains}
                               stations={stations as Dictionary<Station>}
                               tzOffset={tzOffset}
                               trainSchedules={trainTimetables}
-        />
+        /></>
 
     return <>
+        <div className="px-4 py-1 text-xs text-gray-600 dark:text-gray-300" role="status">
+            {lastLiveReceipt ? `Live-Abruf vor ${Math.max(0, Math.floor((Date.now() - lastLiveReceipt) / 1000))} s` : "Warte auf Live-Daten"}
+            {liveRefreshFailed && " · Aktualisierung fehlgeschlagen; letzter Datenstand bleibt sichtbar"}
+        </div>
         {
             timetable && tzOffset !== undefined && post && timetable.length && (isGraphModalOpen || graphFullScreenMode)
                 ? <Graph

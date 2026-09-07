@@ -12,7 +12,7 @@ type Props = {
 const MAX_VISIBLE_VEHICLES = 14;
 
 export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, isWebpSupported, streamMode}) => {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     if (vehicles.length === 0) return null;
 
     const trainConfig = getTrainImageConfig(vehicles[0]);
@@ -21,20 +21,33 @@ export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, 
     const hiddenVehicleCount = vehicles.length - visibleVehicles.length;
     const allVehiclesAreUnits = vehicles.every(isTractionVehicle);
     const leadingVehicle = cleanVehicleName(vehicles[0]);
+    const isGerman = i18n.resolvedLanguage?.startsWith("de") ?? i18n.language?.startsWith("de");
+    const trailingVehicleCount = vehicles.length - 1;
     const consistLabel = allVehiclesAreUnits && vehicles.length > 1
-        ? t("EDR_TRAIN_CONSIST_units", {count: vehicles.length})
+        ? t("EDR_TRAIN_CONSIST_units", {
+            count: vehicles.length,
+            defaultValue: isGerman ? `${vehicles.length} Triebzüge` : `${vehicles.length} train units`
+        })
         : vehicles.length > 1
-            ? t("EDR_TRAIN_CONSIST_cars", {loco: leadingVehicle, count: vehicles.length - 1})
+            ? t("EDR_TRAIN_CONSIST_cars", {
+                loco: leadingVehicle,
+                count: trailingVehicleCount,
+                defaultValue: isGerman
+                    ? `${leadingVehicle} + ${trailingVehicleCount} Wagen`
+                    : `${leadingVehicle} + ${trailingVehicleCount} ${trailingVehicleCount === 1 ? "car" : "cars"}`
+            })
             : leadingVehicle;
     const fullConsist = vehicles.map(cleanVehicleName).join(" → ");
+    const consistDescription = t("EDR_TRAIN_CONSIST_label", {defaultValue: isGerman ? "Zugreihung" : "Train consist"});
+    const vehicleImageDescription = t("EDR_TRAIN_CONSIST_vehicle_image", {defaultValue: isGerman ? "Fahrzeugbild" : "Vehicle image"});
 
-    return <div className="hidden max-w-[190px] flex-col items-end lg:flex" title={fullConsist} aria-label={`${t("EDR_TRAIN_CONSIST_label")}: ${fullConsist}`}>
+    return <div className="hidden max-w-[190px] flex-col items-end lg:flex" title={fullConsist} aria-label={`${consistDescription}: ${fullConsist}`}>
         {trainImage && <img
             src={trainImage}
             className="object-contain"
             height={streamMode ? 30 : 40}
             width={streamMode ? 72 : 120}
-            alt={`${t("EDR_TRAIN_CONSIST_vehicle_image")}: ${leadingVehicle}`}
+            alt={`${vehicleImageDescription}: ${leadingVehicle}`}
         />}
         <div className="mt-1 flex max-w-full items-end gap-px" aria-hidden="true">
             {visibleVehicles.map((vehicle, index) => {

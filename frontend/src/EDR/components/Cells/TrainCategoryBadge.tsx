@@ -30,12 +30,22 @@ const CategoryIcon: React.FC<{category: TrainCategory}> = ({category}) => {
 };
 
 export const TrainCategoryBadge: React.FC<Props> = ({trainType, vehicles, badgeColor}) => {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
     const category = getTrainCategory(trainType, vehicles);
+    const isGerman = i18n.resolvedLanguage?.startsWith("de") ?? i18n.language?.startsWith("de");
+    const fallbackLabels: Record<TrainCategory, string> = isGerman ? {
+        passenger: "Personenzug",
+        freight: "Güterzug",
+        service: "Dienst-/Wartungszug"
+    } : {
+        passenger: "Passenger train",
+        freight: "Freight train",
+        service: "Service/maintenance train"
+    };
     const labels: Record<TrainCategory, string> = {
-        passenger: t("EDR_TRAIN_CATEGORY_passenger"),
-        freight: t("EDR_TRAIN_CATEGORY_freight"),
-        service: t("EDR_TRAIN_CATEGORY_service")
+        passenger: t("EDR_TRAIN_CATEGORY_passenger", {defaultValue: fallbackLabels.passenger}),
+        freight: t("EDR_TRAIN_CATEGORY_freight", {defaultValue: fallbackLabels.freight}),
+        service: t("EDR_TRAIN_CATEGORY_service", {defaultValue: fallbackLabels.service})
     };
 
     return <div className="flex flex-col items-center gap-1">

@@ -3,7 +3,6 @@ import {Table} from "flowbite-react";
 import {nowUTC} from "../../utils/date";
 import { getDateWithHourAndMinutes } from "../functions/timeUtils";
 import {configByType} from "../../config/trains";
-import {FilterConfig} from "..";
 import { DetailedTrain } from "../functions/trainDetails";
 import { subMinutes } from "date-fns";
 import {TrainInfoCell} from "./Cells/TrainInfoCell";
@@ -16,7 +15,7 @@ import {TrainToCell} from "./Cells/TrainToCell";
 import { ISteamUser } from "../../config/ISteamUser";
 import { StationConfig } from "../../config/stations";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
-import { isInactiveTrainAtStation, shouldHideByScheduledTime, shouldHideDepartedTrain } from "../functions/trainFilters";
+import { isInactiveTrainAtStation } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 
 
@@ -37,7 +36,6 @@ type Props = {
     playSoundNotification: any,
     isWebpSupported: boolean,
     streamMode: boolean;
-    filterConfig: FilterConfig;
     serverCode: string;
     players: ISteamUser[] | undefined;
     postCfg: StationConfig;
@@ -46,7 +44,7 @@ type Props = {
 const TableRow: React.FC<Props> = (
     {setModalTrainId, ttRow, trainDetails, serverTime,
         firstColRef, secondColRef, thirdColRef, headerFourthColRef, headerFifthColRef, headerSixthhColRef, headerSeventhColRef,
-        playSoundNotification, isWebpSupported, streamMode, setTimetableTrainId, filterConfig,
+        playSoundNotification, isWebpSupported, streamMode, setTimetableTrainId,
         serverCode, players, postCfg
     }: Props
 ) => {
@@ -64,23 +62,12 @@ const TableRow: React.FC<Props> = (
     const isDeparturePreviousDay = departureExpectedHours >= 20 && dateNow.getUTCHours() < 12; // TODO: less but still Clunky
     const expectedDeparture = getDateWithHourAndMinutes(dateNow, departureExpectedHours, departureExpectedMinutes, isDepartureNextDay, isDeparturePreviousDay);
 
-    const arrivalExpectedHours = ttRow.scheduledArrivalObject.getUTCHours();
-    const arrivalExpectedMinutes = ttRow.scheduledArrivalObject.getUTCMinutes();
-    const isArrivalNextDay = dateNow.getUTCHours() >= 20 && arrivalExpectedHours < 12;  // TODO: less but still clunky
-    const isArrivalPreviousDay = arrivalExpectedHours >= 20 && dateNow.getUTCHours() < 12; // TODO: less but still Clunky
-    const expectedArrival = getDateWithHourAndMinutes(dateNow, arrivalExpectedHours, arrivalExpectedMinutes, isArrivalNextDay, isArrivalPreviousDay);
     const arrivalTimeDelay = trainDetails?.lastDelay ? trainDetails.lastDelay : 0;
 
     const distanceFromStation = trainDetails?.distanceFromStation;
     const trainMustDepart = !trainHasPassedStation && distanceFromStation != null && distanceFromStation < 1.5 && (subMinutes(expectedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
-
-    if (filterConfig.onlyApproaching && shouldHideDepartedTrain(trainHasPassedStation, trainDetails?.distanceFromStation, filterConfig.departedDistance)) return null;
-    if (filterConfig.maxRange && distanceFromStation != null && distanceFromStation > filterConfig.maxRange) return null;
-    const expectedArrivalInMinutes = (expectedArrival.getUTCHours() * 60 + expectedArrival.getUTCMinutes()) - (dateNow.getUTCHours() * 60 + dateNow.getUTCMinutes());
-    if (shouldHideByScheduledTime(filterConfig.maxTime, expectedArrivalInMinutes, trainDetails?.lastDelay)) return null;
-
 
     return <Table.Row
         className={`
@@ -130,6 +117,8 @@ const TableRow: React.FC<Props> = (
             playSoundNotification={playSoundNotification}
             streamMode={streamMode}
             isTrainOffline={!trainDetails}
+            deviationMinutes={trainDetails?.lastDelay}
+            serverNow={dateNow}
         />
         <TrainToCell ttRow={ttRow} headerSeventhColRef={headerSeventhColRef} secondaryPostData={secondaryPostData}
                      streamMode={streamMode} trainDetails={trainDetails}/>
@@ -139,5 +128,5 @@ const TableRow: React.FC<Props> = (
 export default React.memo(TableRow, (prevProps, nextProps) => {
     return JSON.stringify(prevProps.trainDetails) === JSON.stringify(nextProps.trainDetails)
     && JSON.stringify(prevProps.ttRow) === JSON.stringify(nextProps.ttRow)
-    && JSON.stringify(prevProps.filterConfig) === JSON.stringify(nextProps.filterConfig)
+    && prevProps.serverTime === nextProps.serverTime
 })

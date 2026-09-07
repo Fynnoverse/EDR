@@ -64,9 +64,8 @@ export const shouldHideDepartedTrain = (
     && distanceFromStation > hideDistance;
 
 /**
- * Applies the scheduled-time window unless live data reports an early train.
- * Early trains remain operationally relevant even when their scheduled arrival
- * is still outside the configured timetable window.
+ * Applies the configured time window to the predicted arrival. The prediction
+ * is the scheduled difference plus the latest live deviation.
  *
  * @param maxTime - Configured schedule window in minutes, or no limit.
  * @param scheduledTimeDifference - Minutes between now and scheduled arrival.
@@ -78,5 +77,4 @@ export const shouldHideByScheduledTime = (
     scheduledTimeDifference: number,
     liveDelay: number | undefined,
 ) => maxTime !== undefined
-    && !(liveDelay !== undefined && liveDelay < 0)
-    && Math.abs(scheduledTimeDifference) > maxTime;
+    && Math.abs(scheduledTimeDifference + (liveDelay ?? 0)) > maxTime;

@@ -15,14 +15,20 @@ type ExtraStationConfig = {
 
 export type ExtendedStationConfig = StationConfig & ExtraStationConfig;
 
+const isUsableActualTime = (value: Date) => value.getUTCFullYear() > 1970 && value.getUTCFullYear() < 3000;
+
 export const getTrainDetails = (previousTrains: React.MutableRefObject<{[k: string]: DetailedTrain;} | null>, trainTimetables: Dictionary<TrainTimeTableRow[]>, dateNow: Date) =>(t: ExtendedTrain) => {
     const previousTrainData = previousTrains.current?.[t.TrainNoLocal as string];
     let lastDelay = previousTrainData?.lastDelay;
-    if (previousTrainData?.TrainData && previousTrainData?.TrainData.VDDelayedTimetableIndex < t.TrainData.VDDelayedTimetableIndex) {
-        const stationPassed = trainTimetables[t.TrainNoLocal]?.find(ttRow => ttRow.indexOfPoint === (t.TrainData.VDDelayedTimetableIndex - 1));
-        if (stationPassed && dateNow) {
-            lastDelay = differenceInMinutes(new Date(Date.UTC(stationPassed.scheduledDepartureObject.getUTCFullYear(), stationPassed.scheduledDepartureObject.getUTCMonth(), stationPassed.scheduledDepartureObject.getUTCDate(), dateNow.getUTCHours(), dateNow.getUTCMinutes())), stationPassed.scheduledDepartureObject);
-        }
+    const stationPassed = trainTimetables[t.TrainNoLocal]?.find(ttRow => ttRow.indexOfPoint === (t.TrainData.VDDelayedTimetableIndex - 1));
+    const actualDeparture = stationPassed && isUsableActualTime(stationPassed.actualDepartureObject)
+        ? stationPassed.actualDepartureObject
+        : undefined;
+    const hasJustAdvanced = previousTrainData?.TrainData
+        && previousTrainData.TrainData.VDDelayedTimetableIndex < t.TrainData.VDDelayedTimetableIndex;
+
+    if (stationPassed && (actualDeparture || hasJustAdvanced)) {
+        lastDelay = differenceInMinutes(actualDeparture ?? dateNow, stationPassed.scheduledDepartureObject);
     }
 
     return {...t,

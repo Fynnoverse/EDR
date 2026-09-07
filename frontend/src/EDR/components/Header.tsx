@@ -9,6 +9,7 @@ import {Link} from "react-router-dom";
 import _minBy from "lodash/fp/minBy";
 import {ColumnFilterModal} from "./CustomFilterModal";
 import {FilterConfig, presetFilterConfig} from "../index";
+import {SortDirection, TrainSortKey} from "../functions/trainSorting";
 
 type Props = {
     serverTzOffset: number;
@@ -24,6 +25,9 @@ type Props = {
     setStreamMode: (v: boolean) => void;
     filterConfig: FilterConfig;
     setFilterConfig: (fc: FilterConfig) => void;
+    sortKey: TrainSortKey | undefined;
+    sortDirection: SortDirection;
+    onSort: (key: TrainSortKey) => void;
 }
 
 
@@ -57,7 +61,8 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 
 export const Header: React.FC<Props> = ({
     serverTzOffset, serverCode, postCfg, bounds, timetableLength, serverTime,
-    setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig
+    setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
+    sortKey, sortDirection, onSort
 }) => {
     const {t} = useTranslation();
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
@@ -114,7 +119,7 @@ export const Header: React.FC<Props> = ({
             <div>
                 <div>
                     {!streamMode &&
-                        <TableHead {...bounds} />
+                        <TableHead {...bounds} sortKey={sortKey} sortDirection={sortDirection} onSort={onSort} />
                     }
                 </div>
             </div>

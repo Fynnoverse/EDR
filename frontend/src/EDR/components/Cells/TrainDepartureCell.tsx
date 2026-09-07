@@ -5,7 +5,7 @@ import {tableCellCommonClassnames} from "../TrainRow";
 import {useTranslation} from "react-i18next";
 import Tooltip from "rc-tooltip";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
-import { formatServerTime } from "../../../utils/serverTime";
+import {TrainTimeDisplay} from "./TrainTimeDisplay";
 
 type Props = {
     headerSixthhColRef: any;
@@ -15,8 +15,10 @@ type Props = {
     playSoundNotification: (callBack: () => void) => void
     streamMode: boolean;
     isTrainOffline: boolean;
+    deviationMinutes?: number;
+    serverNow: Date;
 }
-export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNotification, ttRow, headerSixthhColRef, trainHasPassedStation, streamMode, isTrainOffline}) => {
+export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNotification, ttRow, headerSixthhColRef, trainHasPassedStation, streamMode, isTrainOffline, deviationMinutes, serverNow}) => {
     const {t} = useTranslation();
     const [notificationEnabled, setNotificationEnabled] = React.useState(false);
 
@@ -29,7 +31,7 @@ export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNo
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="150" style={{minWidth: 150}} ref={headerSixthhColRef}>
             <div className="flex items-center justify-start h-full">
-                {formatServerTime(ttRow.scheduledDepartureObject)}
+                <TrainTimeDisplay scheduledTime={ttRow.scheduledDepartureObject} deviationMinutes={deviationMinutes} serverNow={serverNow} />
                 <div className="inline-flex items-center h-full pl-4 hidden lg:block">
                     {
                         !trainHasPassedStation && !isTrainOffline && (trainMustDepart ?

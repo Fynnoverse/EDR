@@ -66,16 +66,16 @@ describe("shouldHideDepartedTrain", () => {
 });
 
 describe("shouldHideByScheduledTime", () => {
-    it("keeps early trains visible outside the scheduled window", () => {
-        expect(shouldHideByScheduledTime(30, 90, -1)).toBe(false);
-        expect(shouldHideByScheduledTime(30, 90, -15)).toBe(false);
+    it("applies earliness to the scheduled difference", () => {
+        expect(shouldHideByScheduledTime(30, 40, -15)).toBe(false);
+        expect(shouldHideByScheduledTime(30, 90, -15)).toBe(true);
     });
 
-    it("continues to filter non-early trains by their scheduled time", () => {
+    it("applies delays to the scheduled difference", () => {
         expect(shouldHideByScheduledTime(30, 90, undefined)).toBe(true);
         expect(shouldHideByScheduledTime(30, 90, 0)).toBe(true);
-        expect(shouldHideByScheduledTime(30, 90, 10)).toBe(true);
         expect(shouldHideByScheduledTime(30, 20, 10)).toBe(false);
+        expect(shouldHideByScheduledTime(30, 20, 11)).toBe(true);
     });
 
     it("does not hide trains when the schedule filter is disabled", () => {

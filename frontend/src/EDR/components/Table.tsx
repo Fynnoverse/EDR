@@ -15,6 +15,10 @@ import { TrainTimeTableRow } from "../../Sirius";
 import { Dictionary } from "lodash";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { isInactiveTrainAtStation, moveInactiveRowsLast } from "../functions/trainFilters";
+import {hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrain} from "../functions/trainFilters";
+import {SortDirection, sortTimetable, TrainSortKey} from "../functions/trainSorting";
+import {differenceInMinutes} from "date-fns";
+import {nowUTC} from "../../utils/date";
 
 export type Bounds = {
     firstColBounds: RectReadOnly;
@@ -50,6 +54,8 @@ export const EDRTable: React.FC<Props> = ({
     const [mapModalTrainId, setMapModalTrainId] = React.useState<string | undefined>();
     const [timetableModalTrainId, setTimetableModalTrainId] = React.useState<string | undefined>();
     const [streamMode, setStreamMode] = React.useState(false);
+    const [sortKey, setSortKey] = React.useState<TrainSortKey | undefined>();
+    const [sortDirection, setSortDirection] = React.useState<SortDirection>("ascending");
 
     const [headerFirstColRef, firstColBounds] = useMeasure();
     const [headerSecondColRef, secondColBounds] = useMeasure();
@@ -72,14 +78,44 @@ export const EDRTable: React.FC<Props> = ({
     if (!trainsWithDetails || !post || !serverTime) return null;
     const postCfg = postConfig[post];
     const showStopColumn = timetable.length > 0 && timetable.some((row) => row.platform || Math.ceil(row.plannedStop) !== 0);
-    const visibleTimetable = moveInactiveRowsLast(
-        timetable
+    const changeSort = (key: TrainSortKey) => {
+        if (sortKey === key) {
+            setSortDirection(direction => direction === "ascending" ? "descending" : "ascending");
+        } else {
+            setSortKey(key);
+            setSortDirection("ascending");
+        }
+    };
+
+    const dateNow = nowUTC(serverTime);
+    const filteredTimetable = timetable
             .filter((tt) => filter ?
                 filter.replace(/\s+/g, '')
                     .split(searchSeparator)
                     .filter(n => n)
                     .some((trainFilter) => tt.trainNoLocal.startsWith(trainFilter)) : true)
-            .filter((tt) => filterConfig.onlyOnTrack ? !!trainsWithDetails[tt.trainNoLocal] : true),
+            .filter((tt) => filterConfig.onlyOnTrack ? !!trainsWithDetails[tt.trainNoLocal] : true)
+            .filter((tt) => {
+                const train = trainsWithDetails[tt.trainNoLocal];
+                const secondaryStationIndices = (tt.secondaryPostsRows || []).map(row => row.stationIndex);
+                const hasPassed = train !== undefined && hasTrainPassedStation(
+                    train.TrainData.VDDelayedTimetableIndex,
+                    tt.stationIndex,
+                    secondaryStationIndices,
+                );
+
+                if (filterConfig.onlyApproaching && shouldHideDepartedTrain(hasPassed, train?.distanceFromStation, filterConfig.departedDistance)) return false;
+                if (filterConfig.maxRange !== undefined && train?.distanceFromStation != null && train.distanceFromStation > filterConfig.maxRange) return false;
+
+                return !shouldHideByScheduledTime(
+                    filterConfig.maxTime,
+                    differenceInMinutes(tt.scheduledArrivalObject, dateNow),
+                    train?.lastDelay,
+                );
+            });
+    const visibleTimetable = sortKey
+        ? sortTimetable(filteredTimetable, sortKey, sortDirection, trainsWithDetails)
+        : moveInactiveRowsLast(filteredTimetable,
         (tt) => isInactiveTrainAtStation(
             trainsWithDetails[tt.trainNoLocal]?.TrainData.VDDelayedTimetableIndex,
             tt.stationIndex,
@@ -102,6 +138,9 @@ export const EDRTable: React.FC<Props> = ({
             setStreamMode={setStreamMode}
             filterConfig={filterConfig}
             setFilterConfig={setFilterConfig}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSort={changeSort}
         />
         <div className={classNames(
             "child:overflow-y-scroll ",
@@ -128,7 +167,6 @@ export const EDRTable: React.FC<Props> = ({
                         setTimetableTrainId={setTimetableModalTrainId}
                         isWebpSupported={isWebpSupported}
                         streamMode={streamMode}
-                        filterConfig={filterConfig}
                         serverCode={serverCode}
                         players={players}
                         postCfg={postCfg}

@@ -4,7 +4,7 @@ import {tableCellCommonClassnames} from "../TrainRow";
 import {DetailedTrain} from "../../functions/trainDetails";
 import {useTranslation} from "react-i18next";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
-import { formatServerTime, isNextServerDay } from "../../../utils/serverTime";
+import {TrainTimeDisplay} from "./TrainTimeDisplay";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -21,27 +21,10 @@ export const TrainArrivalCell: React.FC<Props> = ({
     thirdColRef, streamMode, arrivalTimeDelay, serverNow
 }) => {
     const {t} = useTranslation();
-    const isTheTrainTomorrow = isNextServerDay(ttRow.scheduledArrivalObject, serverNow);
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="150" ref={thirdColRef}>
             <div className="flex items-center justify-center h-full">
-                {formatServerTime(ttRow.scheduledArrivalObject)}
-                {isTheTrainTomorrow && <sup>+1</sup>}
-                &nbsp;
-                {
-                    !trainHasPassedStation && arrivalTimeDelay > 0
-                        ? <span
-                            className="text-red-600 font-bold">{t("EDR_TRAINROW_train_late_sign")}{arrivalTimeDelay}</span>
-                        : undefined
-                }
-
-                {
-                    !trainHasPassedStation && arrivalTimeDelay < 0
-                        ? <span
-                            className="text-green-600 font-bold">{t("EDR_TRAINROW_train_early_sign")}{Math.abs(arrivalTimeDelay)}</span>
-                        : undefined
-                }
-
+                <TrainTimeDisplay scheduledTime={ttRow.scheduledArrivalObject} deviationMinutes={trainDetails?.lastDelay} serverNow={serverNow} />
             </div>
             <div className="flex justify-center">
                 {

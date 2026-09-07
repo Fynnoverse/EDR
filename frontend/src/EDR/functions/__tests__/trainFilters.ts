@@ -1,4 +1,5 @@
 import {
+    departureDistance,
     hasTrainPassedStation,
     isInactiveTrainAtStation,
     MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM,
@@ -7,6 +8,28 @@ import {
     shouldHideByScheduledTime,
     shouldHideDepartedTrain,
 } from "../trainFilters";
+
+describe("departed trains with unavailable routing", () => {
+    const station: [number, number] = [20.151522, 51.967741];
+
+    it.each([null, undefined, 0, NaN])("hides confirmed departures beyond 100 m with route distance %s", route => {
+        const distance = departureDistance(route, station[0], station[1] + 0.002, station);
+        expect(shouldHideDepartedTrain(true, distance, 0.1)).toBe(true);
+        expect(shouldHideDepartedTrain(false, distance, 0.1)).toBe(false);
+    });
+
+    it("keeps departures within 100 m visible", () => {
+        const distance = departureDistance(null, station[0], station[1] + 0.0004, station);
+        expect(shouldHideDepartedTrain(true, distance, 0.1)).toBe(false);
+    });
+
+    it("retains routed distance and rejects missing coordinates", () => {
+        expect(departureDistance(2, station[0], station[1], station)).toBe(2);
+        expect(departureDistance(null, 0, 0, station)).toBeUndefined();
+        expect(departureDistance(null, NaN, NaN, station)).toBeUndefined();
+        expect(departureDistance(null, station[0], station[1])).toBeUndefined();
+    });
+});
 
 describe("hasTrainPassedStation", () => {
     it("only recognizes a train as departed after it passes the station index", () => {

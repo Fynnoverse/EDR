@@ -15,7 +15,7 @@ import { TrainTimeTableRow } from "../../Sirius";
 import { Dictionary } from "lodash";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { isInactiveTrainAtStation, moveInactiveRowsLast } from "../functions/trainFilters";
-import {hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrain} from "../functions/trainFilters";
+import {departureDistance, hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrain} from "../functions/trainFilters";
 import {SortDirection, sortTimetable, TrainSortKey} from "../functions/trainSorting";
 import {differenceInMinutes} from "date-fns";
 import {nowUTC} from "../../utils/date";
@@ -112,7 +112,13 @@ export const EDRTable: React.FC<Props> = ({
                     secondaryStationIndices,
                 );
 
-                if (filterConfig.onlyApproaching && shouldHideDepartedTrain(hasPassed, train?.distanceFromStation, filterConfig.departedDistance)) return false;
+                const distanceAfterDeparture = train && hasPassed ? departureDistance(
+                    train.distanceFromStation,
+                    train.TrainData.Longitute,
+                    train.TrainData.Latititute,
+                    postCfg.platformPosOverride,
+                ) : undefined;
+                if (filterConfig.onlyApproaching && shouldHideDepartedTrain(hasPassed, distanceAfterDeparture, filterConfig.departedDistance)) return false;
                 if (filterConfig.maxRange !== undefined && train?.distanceFromStation != null && train.distanceFromStation > filterConfig.maxRange) return false;
 
                 return !shouldHideByScheduledTime(

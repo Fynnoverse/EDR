@@ -2,6 +2,7 @@ import React from "react";
 import {Button, Checkbox, Modal} from "flowbite-react";
 import {FilterConfig, presetFilterConfig} from "../index";
 import { useTranslation } from "react-i18next";
+import {useLocalStorage} from "usehooks-ts";
 import {
     MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM,
     MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM,
@@ -20,12 +21,20 @@ const formatDepartedDistance = (distance: number) => distance < 1
     : `${distance.toFixed(1).replace(/\.0$/, '')} km`;
 
 export const ColumnFilterModal: React.FC<Props> = ({filterConfig, setFilterConfig, isOpen, onClose}) => {
-    const [pendingFilterConfig, setPendingFilterConfig] = React.useState(filterConfig);
+    // Keep the custom profile independently of the currently selected preset.
+    // Existing active settings seed the profile on first use.
+    const [savedFilterConfig, setSavedFilterConfig] = useLocalStorage<FilterConfig>("edr-custom-filter-config", filterConfig);
+    const [pendingFilterConfig, setPendingFilterConfig] = React.useState(savedFilterConfig);
     const { t } = useTranslation()
 
     React.useEffect(() => {
-        if (isOpen) setPendingFilterConfig(filterConfig);
-    }, [filterConfig, isOpen]);
+        if (isOpen) setPendingFilterConfig(savedFilterConfig);
+    }, [savedFilterConfig, isOpen]);
+
+    const saveFilterConfig = (config: FilterConfig) => {
+        setSavedFilterConfig(config);
+        setFilterConfig(config);
+    };
 
     const applyPartialUpdateToFilterConfig = (field: string, value: string | number | boolean | undefined) => {
         setPendingFilterConfig({
@@ -82,10 +91,10 @@ export const ColumnFilterModal: React.FC<Props> = ({filterConfig, setFilterConfi
             </Modal.Body>
             <Modal.Footer>
                 <div className="w-full flex justify-between">
-                <Button color="gray" onClick={() => {setFilterConfig(presetFilterConfig.default); onClose();}}>{t('EDR_UI_reset_button')}</Button>
+                <Button color="gray" onClick={() => {saveFilterConfig(presetFilterConfig.default); onClose();}}>{t('EDR_UI_reset_button')}</Button>
                 <div className="flex gap-2">
-                    <Button color="gray" onClick={() => setFilterConfig(pendingFilterConfig)}>{t('EDR_UI_save_button')}</Button>
-                    <Button onClick={() => {setFilterConfig(pendingFilterConfig); onClose();}}>{t('EDR_UI_save_and_close_button')}</Button>
+                    <Button color="gray" onClick={() => saveFilterConfig(pendingFilterConfig)}>{t('EDR_UI_save_button')}</Button>
+                    <Button onClick={() => {saveFilterConfig(pendingFilterConfig); onClose();}}>{t('EDR_UI_save_and_close_button')}</Button>
                 </div>
                 </div>
             </Modal.Footer>

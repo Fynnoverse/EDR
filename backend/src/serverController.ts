@@ -110,7 +110,7 @@ export async function getTrainsListForPost(req: express.Request, res: express.Re
                         }
                         return {
                             ...train,
-                            distanceFromStation: osrmResult?.routes?.[0]?.distance !== undefined ? Math.round(osrmResult.routes[0].distance / 10) / 100 : 0,
+                            distanceFromStation: osrmResult?.routes?.[0]?.distance !== undefined ? Math.round(osrmResult.routes[0].distance / 10) / 100 : null,
                         };
                     }
                 }

@@ -48,6 +48,7 @@ export const newInternalIdToSrId: {[k: string]: number} = {
     "LG": StationId.lowicz_glowny,
     "LG_PZS_R1": StationId.lowicz_glowny_pzs_r1,
     "LG_PZS_R12": StationId.lowicz_glowny_pzs_r12,
+    "LG_PZS_R24_R31": StationId.lowicz_glowny_pzs_r24_r31,
     "LP": StationId.lowicz_przedmiescie,
     "LK": StationId.lodz_kaliska,
     "LK_PZS": StationId.lodz_kaliska_pzs_r219_r227,
@@ -131,7 +132,8 @@ export const POSTS: { [key: string]: number[] } = {
     "LG": [
         newInternalIdToSrId["LG"],
         newInternalIdToSrId["LG_PZS_R1"],
-        newInternalIdToSrId["LG_PZS_R12"]
+        newInternalIdToSrId["LG_PZS_R12"],
+        newInternalIdToSrId["LG_PZS_R24_R31"]
     ],
     "LP": [newInternalIdToSrId["LP"]],
     "LK": [newInternalIdToSrId["LK"], newInternalIdToSrId["LK_PZS"]],

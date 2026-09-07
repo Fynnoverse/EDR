@@ -225,7 +225,23 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.skierniewice]: {
         left: [StationId.skierniewice_p_pzs, StationId.skierniewice_s_pzs],
-        right: [StationId.skierniewice_gt_201_208]
+        right: [StationId.skierniewice_gt_201_208, StationId.skierniewice_m_pzs, StationId.puszcza_marianska]
+    },
+    [StationId.skierniewice_gt_201_208]: {
+        left: [StationId.skierniewice],
+        right: [StationId.skierniewice_m_pzs, StationId.puszcza_marianska]
+    },
+    [StationId.skierniewice_m_pzs]: {
+        left: [StationId.skierniewice_gt_201_208, StationId.skierniewice],
+        right: [StationId.skierniewice_rawka, StationId.radziwillow_mazowiecki, StationId.puszcza_marianska]
+    },
+    [StationId.skierniewice_p_pzs]: {
+        left: [StationId.plycwia, StationId.dabrowice_skierniewickie],
+        right: [StationId.skierniewice, StationId.skierniewice_s_pzs]
+    },
+    [StationId.skierniewice_s_pzs]: {
+        left: [StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie],
+        right: [StationId.skierniewice, StationId.skierniewice_p_pzs]
     },
     [StationId.warszawa_wlochy]: {
         left: [StationId.jozefinow, StationId.warszawa_ursus_polnocny, StationId.warszawa_ursus],
@@ -1080,7 +1096,7 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Łowicz Główny",
         trainPosRange: 0.5,
         platformPosOverride: [19.956626, 52.104493],
-        secondaryPosts: ["LG_PZS_R1", "LG_PZS_R12"]
+        secondaryPosts: ["LG_PZS_R1", "LG_PZS_R12", "LG_PZS_R24_R31"]
     },
     LG_PZS_R1: {
         id: "LG_PZS_R1",
@@ -1090,6 +1106,11 @@ export const postConfig: Dictionary<StationConfig> = {
     LG_PZS_R12: {
         id: "LG_PZS_R12",
         srName: "Łowicz Główny PZS R12",
+        trainPosRange: 0.5
+    },
+    LG_PZS_R24_R31: {
+        id: "LG_PZS_R24_R31",
+        srName: "Łowicz Główny PZS R24-R31",
         trainPosRange: 0.5
     },
     LP: {

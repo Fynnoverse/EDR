@@ -19,7 +19,8 @@ import { isInactiveTrainAtStation } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 
 
-export const tableCellCommonClassnames = (streamMode: boolean = false) => streamMode ? "p-2" : "p-4";
+export const tableCellCommonClassnames = (streamMode: boolean = false) =>
+    streamMode ? "px-2 py-1.5 align-middle" : "px-4 py-2 align-middle";
 type Props = {
     setModalTrainId: React.Dispatch<React.SetStateAction<string | undefined>>,
     setTimetableTrainId: React.Dispatch<React.SetStateAction<string | undefined>>,

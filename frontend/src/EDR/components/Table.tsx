@@ -152,7 +152,7 @@ export const EDRTable: React.FC<Props> = ({
             "child:overflow-y-scroll ",
                 streamMode ? "child:h-[calc(100vh-102px)]" : "child:h-[calc(100vh-166px)]"
             )}>
-            <Table striped={true}>
+            <Table striped={true} className="table-fixed">
             <Table.Body>
                 {timetable.length > 0
                     ? visibleTimetable.map(tr =>

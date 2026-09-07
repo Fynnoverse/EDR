@@ -9,7 +9,7 @@ type Props = {
     streamMode: boolean;
 }
 
-const MAX_VISIBLE_VEHICLES = 14;
+const MAX_VISIBLE_VEHICLES = 10;
 
 export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, isWebpSupported, streamMode}) => {
     const {t, i18n} = useTranslation();
@@ -26,7 +26,7 @@ export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, 
     const consistLabel = allVehiclesAreUnits && vehicles.length > 1
         ? t("EDR_TRAIN_CONSIST_units", {
             count: vehicles.length,
-            defaultValue: isGerman ? `${vehicles.length} Triebzüge` : `${vehicles.length} train units`
+            defaultValue: isGerman ? `${vehicles.length} Triebwagen` : `${vehicles.length} train units`
         })
         : vehicles.length > 1
             ? t("EDR_TRAIN_CONSIST_cars", {
@@ -41,15 +41,20 @@ export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, 
     const consistDescription = t("EDR_TRAIN_CONSIST_label", {defaultValue: isGerman ? "Zugreihung" : "Train consist"});
     const vehicleImageDescription = t("EDR_TRAIN_CONSIST_vehicle_image", {defaultValue: isGerman ? "Fahrzeugbild" : "Vehicle image"});
 
-    return <div className="hidden max-w-[190px] flex-col items-end lg:flex" title={fullConsist} aria-label={`${consistDescription}: ${fullConsist}`}>
-        {trainImage && <img
-            src={trainImage}
-            className="object-contain"
-            height={streamMode ? 30 : 40}
-            width={streamMode ? 72 : 120}
-            alt={`${vehicleImageDescription}: ${leadingVehicle}`}
-        />}
-        <div className="mt-1 flex max-w-full items-end gap-px" aria-hidden="true">
+    return <div
+        className={`${streamMode ? "h-[46px] w-[150px]" : "h-[54px] w-[180px]"} hidden shrink-0 flex-col items-end overflow-hidden lg:flex`}
+        title={fullConsist}
+        aria-label={`${consistDescription}: ${fullConsist}`}
+    >
+        <div className={`${streamMode ? "h-[22px]" : "h-[30px]"} flex w-full shrink-0 items-center justify-end overflow-hidden`}>
+            {trainImage && <img
+                src={trainImage}
+                className="max-h-full max-w-[120px] object-contain"
+                alt={`${vehicleImageDescription}: ${leadingVehicle}`}
+            />}
+        </div>
+        <span className="block h-3 w-full shrink-0 truncate text-right text-[10px] leading-3 text-gray-600 dark:text-gray-300">{consistLabel}</span>
+        <div className="flex h-3 w-full shrink-0 items-end justify-end gap-px overflow-hidden" aria-hidden="true">
             {visibleVehicles.map((vehicle, index) => {
                 const category = getTrainCategory(trainType, [vehicle]);
                 const isTraction = isTractionVehicle(vehicle);
@@ -61,12 +66,11 @@ export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, 
 
                 return <span
                     key={`${vehicle}-${index}`}
-                    className={`${isTraction ? "h-3 w-6 rounded-l-md" : "h-2.5 w-3"} inline-block border ${color}`}
+                    className={`${isTraction ? "h-3 w-6 rounded-l-md" : "h-2.5 w-2.5"} inline-block shrink-0 border ${color}`}
                     title={`${index + 1}. ${cleanVehicleName(vehicle)}`}
                 />;
             })}
             {hiddenVehicleCount > 0 && <span className="ml-1 text-[10px] font-semibold">+{hiddenVehicleCount}</span>}
         </div>
-        <span className="mt-0.5 max-w-full truncate text-[10px] leading-tight text-gray-600 dark:text-gray-300">{consistLabel}</span>
     </div>;
 };

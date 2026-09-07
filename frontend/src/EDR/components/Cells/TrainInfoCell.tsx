@@ -105,8 +105,8 @@ export const TrainInfoCell: React.FC<Props> = ({
                         }
                     </span> }
                 </div>
-                <div className="flex md:inline">
-                    <div className="flex justify-end">
+                <div className="flex min-w-0 md:inline">
+                    <div className="flex min-w-0 justify-end overflow-hidden">
                         <TrainConsistDisplay
                             vehicles={trainDetails?.Vehicles}
                             trainType={ttRow.trainType}

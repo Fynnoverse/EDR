@@ -1,10 +1,11 @@
 import {configByLoco} from "../../config/trains";
 
 export type TrainCategory = "passenger" | "freight" | "service";
+export type PassengerService = "regional" | "longDistance";
 
-const passengerTypePrefixes = ["E", "M", "P", "R"];
+const passengerTypePrefixes = ["A", "E", "M", "R"];
 const freightTypePrefixes = ["T"];
-const serviceTypePrefixes = ["L", "Z"];
+const serviceTypePrefixes = ["L", "P", "Z"];
 
 const representativeLocoByFamily: Record<string, string> = {
     "Pendolino": "Pendolino/ED250-018 Variant",
@@ -37,6 +38,12 @@ export const getTrainCategory = (trainType: string, vehicles: string[] = []): Tr
     if (hasFreightVehicles) return "freight";
     if (vehicles.some(vehicle => /^(11xa|Z2)\//.test(vehicle)) || vehicles.every(isTractionVehicle)) return "passenger";
     return "service";
+};
+
+export const getPassengerService = (trainType: string): PassengerService | undefined => {
+    if (trainType.startsWith("R") || trainType.startsWith("A")) return "regional";
+    if (trainType.startsWith("E") || trainType.startsWith("M")) return "longDistance";
+    return undefined;
 };
 
 export const getTrainImageConfig = (vehicle?: string) => {

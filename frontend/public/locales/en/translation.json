@@ -114,6 +114,8 @@
   "DRIVER_DETAILS_header_departure": "Departure",
   "DRIVER_DETAILS_header_layover": "Layover",
   "EDR_TRAIN_CATEGORY_passenger": "Passenger train",
+  "EDR_TRAIN_CATEGORY_regional": "Regional train",
+  "EDR_TRAIN_CATEGORY_long_distance": "Long-distance train",
   "EDR_TRAIN_CATEGORY_freight": "Freight train",
   "EDR_TRAIN_CATEGORY_service": "Service/maintenance train",
   "EDR_TRAIN_CONSIST_label": "Train consist",

@@ -114,6 +114,8 @@
   "DRIVER_DETAILS_header_departure": "Abfahrt",
   "DRIVER_DETAILS_header_layover": "Standzeit",
   "EDR_TRAIN_CATEGORY_passenger": "Personenzug",
+  "EDR_TRAIN_CATEGORY_regional": "Regionalzug",
+  "EDR_TRAIN_CATEGORY_long_distance": "Fernverkehr",
   "EDR_TRAIN_CATEGORY_freight": "Güterzug",
   "EDR_TRAIN_CATEGORY_service": "Dienst-/Wartungszug",
   "EDR_TRAIN_CONSIST_label": "Zugreihung",

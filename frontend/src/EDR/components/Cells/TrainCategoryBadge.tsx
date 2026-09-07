@@ -1,7 +1,7 @@
 import React from "react";
 import {Badge} from "flowbite-react";
 import {useTranslation} from "react-i18next";
-import {getTrainCategory, TrainCategory} from "../../functions/trainPresentation";
+import {getPassengerService, getTrainCategory, TrainCategory} from "../../functions/trainPresentation";
 
 type Props = {
     trainType: string;
@@ -32,6 +32,7 @@ const CategoryIcon: React.FC<{category: TrainCategory}> = ({category}) => {
 export const TrainCategoryBadge: React.FC<Props> = ({trainType, vehicles, badgeColor}) => {
     const {t, i18n} = useTranslation();
     const category = getTrainCategory(trainType, vehicles);
+    const passengerService = category === "passenger" ? getPassengerService(trainType) : undefined;
     const isGerman = i18n.resolvedLanguage?.startsWith("de") ?? i18n.language?.startsWith("de");
     const fallbackLabels: Record<TrainCategory, string> = isGerman ? {
         passenger: "Personenzug",
@@ -43,7 +44,11 @@ export const TrainCategoryBadge: React.FC<Props> = ({trainType, vehicles, badgeC
         service: "Service/maintenance train"
     };
     const labels: Record<TrainCategory, string> = {
-        passenger: t("EDR_TRAIN_CATEGORY_passenger", {defaultValue: fallbackLabels.passenger}),
+        passenger: passengerService === "regional"
+            ? t("EDR_TRAIN_CATEGORY_regional", {defaultValue: isGerman ? "Regionalzug" : "Regional train"})
+            : passengerService === "longDistance"
+                ? t("EDR_TRAIN_CATEGORY_long_distance", {defaultValue: isGerman ? "Fernverkehr" : "Long-distance train"})
+                : t("EDR_TRAIN_CATEGORY_passenger", {defaultValue: fallbackLabels.passenger}),
         freight: t("EDR_TRAIN_CATEGORY_freight", {defaultValue: fallbackLabels.freight}),
         service: t("EDR_TRAIN_CATEGORY_service", {defaultValue: fallbackLabels.service})
     };

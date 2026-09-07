@@ -53,7 +53,7 @@ describe("DirectionIndicator", () => {
     });
 });
 
-// Regression examples checked against the dispatch-panel images linked in the audit.
+// Regression examples checked against the in-game dispatch-panel images.
 describe("dispatch-panel branches", () => {
     it.each([
         [StationId.lowicz_glowny, StationId.jackowice, "rechts"],

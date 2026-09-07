@@ -15,6 +15,7 @@ import { ISteamUser } from "../../../config/ISteamUser";
 import { postConfig, StationConfig } from "../../../config/stations";
 import { edrImagesMap, edrWebpImagesMap } from "../../../config";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
+import {getDisplayDistance} from "../../functions/displayDistance";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -43,6 +44,9 @@ export const TrainInfoCell: React.FC<Props> = ({
     const controllingPlayer = players?.find(player => player.steamid === trainDetails?.TrainData?.ControlledBySteamID);
     const icons = isWebpSupported ? edrWebpImagesMap : edrImagesMap;
     const distanceFromStation = trainDetails?.distanceFromStation;
+    const displayDistance = getDisplayDistance(distanceFromStation,
+        trainDetails?.TrainData?.Longitute, trainDetails?.TrainData?.Latititute,
+        postCfg.platformPosOverride);
     const isTrainApproaching = !trainHasPassedStation && distanceFromStation != null && ((nextStationName === postCfg?.srName || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName)) && distanceFromStation < 3);
 
     const CopyToClipboard = (stringToCopy: string) => {
@@ -127,10 +131,13 @@ export const TrainInfoCell: React.FC<Props> = ({
                     ? <div className="min-w-0 break-words">
                         <span>{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
                         <span className={isTrainApproaching ? 'px-1 rounded bg-green-200 dark:bg-green-600 animate-pulse' : ''}>{nextStationName}</span>
-                        {distanceFromStation != null && Number.isFinite(distanceFromStation) && <>
+                        {displayDistance && <>
                             {', '}
-                            <span className="inline-block whitespace-nowrap" title={postCfg.srName}>
-                                {distanceFromStation.toFixed(2)}&nbsp;km
+                            <span className="inline-block whitespace-nowrap" title={displayDistance.approximate
+                                ? `Luftlinie zu ${postCfg.srName}; Streckenentfernung derzeit nicht verfügbar`
+                                : postCfg.srName}>
+                                {displayDistance.approximate ? '≈ ' : ''}{displayDistance.km.toFixed(2)}&nbsp;km
+                                {displayDistance.approximate && <span className="ml-1 text-xs">(Luftlinie)</span>}
                             </span>
                         </>}
                     </div>

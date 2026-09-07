@@ -24,7 +24,6 @@ type StationNeighbours = {
 
 // Branch positions on the in-game dispatch panel, not compass bearings.
 // An upper/lower branch remains up/down even when its last segment is horizontal.
-// Image references and route-specific exceptions: docs/dispatch-direction-audit.md.
 // Define each viewpoint independently: A -> B being up does not imply B -> A is down.
 // Include intermediate timetable points on the same branch as their destination.
 export const dispatchDirections: NumericDictionary<StationNeighbours> = {

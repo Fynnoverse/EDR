@@ -29,17 +29,30 @@ export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNo
     }, [notificationEnabled, trainMustDepart]);
 
     return (
-        <td className={tableCellCommonClassnames(streamMode)} width="150" style={{minWidth: 150}} ref={headerSixthhColRef}>
-            <div className="flex items-center justify-start h-full">
+        <td className={tableCellCommonClassnames(streamMode)} width="190" style={{minWidth: 190}} ref={headerSixthhColRef}>
+            <div className="flex items-center justify-start gap-3 h-full">
                 <TrainTimeDisplay scheduledTime={ttRow.scheduledDepartureObject} deviationMinutes={deviationMinutes} serverNow={serverNow} />
-                <div className="inline-flex items-center h-full pl-4 hidden lg:block">
+                <div className="hidden lg:flex items-center justify-center shrink-0 min-w-[32px]">
                     {
                         !trainHasPassedStation && !isTrainOffline && (trainMustDepart ?
                                 <Badge className="animate-pulse duration-1000" color="warning">{t('EDR_TRAINROW_train_departing')}</Badge>
                                 :
                             <Tooltip placement="top" overlay={<span>{t("EDR_TRAINROW_notify")}</span>}>
-                                    <Button outline color="light" className="dark:bg-slate-200" pill size="xs">
-                                        <img height={16} width={16} src={notificationEnabled ? edrImagesMap.CHECK : edrImagesMap.BELL} alt={t("EDR_TRAINROW_notify") ?? 'notify'} onClick={() => setNotificationEnabled(!notificationEnabled)}/>
+                                    <Button
+                                        outline
+                                        color="light"
+                                        className="w-8 h-8 min-w-8 min-h-8 p-0 flex shrink-0 items-center justify-center overflow-visible dark:bg-slate-200"
+                                        pill
+                                        size="xs"
+                                        aria-label={t("EDR_TRAINROW_notify") ?? 'notify'}
+                                        onClick={() => setNotificationEnabled(!notificationEnabled)}
+                                    >
+                                        <img
+                                            className="block w-5 h-5 min-w-5 min-h-5 max-w-none object-contain"
+                                            src={notificationEnabled ? edrImagesMap.CHECK : edrImagesMap.BELL}
+                                            alt=""
+                                            aria-hidden="true"
+                                        />
                                     </Button>
                             </Tooltip>
                         )

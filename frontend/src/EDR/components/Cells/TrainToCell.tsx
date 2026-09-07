@@ -22,7 +22,7 @@ export const TrainToCell: React.FC<Props> = ({headerSeventhColRef, ttRow, second
         <td className={tableCellCommonClassnames(streamMode)} ref={headerSeventhColRef} width="450">
             {visibleRows.map((row, index) => <React.Fragment key={`${row.pointId}-${row.toPostId ?? row.toPost}`}>
                 {index > 0 && <hr />}
-                <div className="inline-flex"><CellLineData ttRow={row} trainDetails={trainDetails} /></div>
+                <div className="inline-flex items-center"><CellLineData ttRow={row} trainDetails={trainDetails} /></div>
             </React.Fragment>)}
         </td>
     );

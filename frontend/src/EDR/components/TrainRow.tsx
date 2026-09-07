@@ -130,4 +130,5 @@ export default React.memo(TableRow, (prevProps, nextProps) => {
     return JSON.stringify(prevProps.trainDetails) === JSON.stringify(nextProps.trainDetails)
     && JSON.stringify(prevProps.ttRow) === JSON.stringify(nextProps.ttRow)
     && prevProps.serverTime === nextProps.serverTime
+    && prevProps.streamMode === nextProps.streamMode
 })

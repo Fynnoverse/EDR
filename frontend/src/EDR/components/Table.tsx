@@ -9,7 +9,7 @@ import {postConfig} from "../../config/stations";
 import {FilterConfig} from "..";
 import { DetailedTrain } from "../functions/trainDetails";
 import {TrainTimetableModal} from "./TrainTimetableModal";
-import classNames from "classnames";
+import {TableHead} from "./TableHead";
 import { ISteamUser } from "../../config/ISteamUser";
 import { TrainTimeTableRow } from "../../Sirius";
 import { Dictionary } from "lodash";
@@ -137,7 +137,7 @@ export const EDRTable: React.FC<Props> = ({
         ),
     );
 
-    return <DirectionTextContext.Provider value={showDirectionText}><div>
+    return <DirectionTextContext.Provider value={showDirectionText}><div className="edr-layout">
         <SimRailMapModal serverCode={serverCode} trainId={mapModalTrainId} setModalTrainId={setMapModalTrainId} />
         <TrainTimetableModal trainDetails={timetableModalTrainId ? trainsWithDetails[timetableModalTrainId] : undefined} setModalTrainId={setTimetableModalTrainId} trainTimetable={timetableModalTrainId ? trainTimetables[timetableModalTrainId] : undefined}/>
         <Header
@@ -160,11 +160,9 @@ export const EDRTable: React.FC<Props> = ({
             onSort={changeSort}
             onResetSort={resetSort}
         />
-        <div className={classNames(
-            "child:overflow-y-scroll ",
-                streamMode ? "child:h-[calc(100vh-102px)]" : "child:h-[calc(100vh-166px)]"
-            )}>
-            <Table striped={true} className="table-fixed">
+        <div className="edr-table-scroll" tabIndex={0}>
+            <Table striped={true} className="edr-table">
+            {!streamMode && <TableHead {...bounds} showStopColumn={showStopColumn} sortKey={sortKey} sortDirection={sortDirection} onSort={changeSort} />}
             <Table.Body>
                 {timetable.length > 0
                     ? visibleTimetable.map(tr =>
@@ -188,7 +186,7 @@ export const EDRTable: React.FC<Props> = ({
                         serverCode={serverCode}
                         players={players}
                         postCfg={postCfg}
-                    />) : <div className="w-full text-center"><Spinner /></div>
+                    />) : <tr><td colSpan={7} className="text-center p-4"><Spinner /></td></tr>
                 }
             </Table.Body>
             </Table>

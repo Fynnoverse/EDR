@@ -52,8 +52,8 @@ export const TrainInfoCell: React.FC<Props> = ({
 
     return (
         <td className={tableCellCommonClassnames(streamMode)} ref={firstColRef} width="550">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-y-2">
                     <Badge color={trainBadgeColor} size={streamMode ? "xs" : "sm"}>
                         <Tooltip placement="top" overlay={<span>{t("EDR_TRAINROW_click_to_copy")}</span>}>
                             <span className={classNames("!font-bold cursor-pointer", streamMode ? "text-base" : "text-lg")} onClick={() => CopyToClipboard(ttRow.trainNoLocal)}>
@@ -61,7 +61,7 @@ export const TrainInfoCell: React.FC<Props> = ({
                             </span>
                         </Tooltip>
                     </Badge>
-                    { trainDetails && <span className="ml-1 flex">
+                    { trainDetails && <span className="ml-1 flex flex-wrap gap-y-2">
                         <Tooltip placement="top" overlay={<span>{t("EDR_TRAINROW_show_on_map")}</span>}>
                             <Button size="xs" onClick={() => !!trainDetails && setModalTrainId(ttRow.trainNoLocal)}><img src={World} height={streamMode ? 8 : 16} width={streamMode ? 8 : 16} alt="Show on map"/></Button>
                         </Tooltip>
@@ -124,7 +124,7 @@ export const TrainInfoCell: React.FC<Props> = ({
             </div>
             <div className="w-full flex flex-col md:flex-row">
                 {  trainDetails
-                    ? <div className="max-w-[70px] md:max-w-full max-h-[1.3rem] overflow-hidden">
+                    ? <div className="min-w-0 break-words">
                         <span className="hidden md:inline">{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
                         <span className={isTrainApproaching ? 'px-1 rounded bg-green-200 dark:bg-green-600 animate-pulse' : ''}>{nextStationName}</span>
                         { trainDetails.distanceFromStation != null && <span>,&nbsp;

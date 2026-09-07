@@ -4,7 +4,7 @@ import classNames from "classnames";
 import {Bounds} from "./Table";
 import {SortDirection, TrainSortKey} from "../functions/trainSorting";
 
-const tableHeadCommonClassName = "p-4 max-h-[56px] truncate"
+const tableHeadCommonClassName = "px-3 py-3 text-left bg-white text-gray-800 dark:bg-slate-800 dark:text-gray-100"
 type Props = Bounds & {
     sortKey: TrainSortKey | undefined;
     sortDirection: SortDirection;
@@ -22,31 +22,31 @@ const SortableLabel: React.FC<{column: TrainSortKey; activeColumn?: TrainSortKey
     {children} <span aria-hidden="true">{activeColumn === column ? (direction === "ascending" ? "▲" : "▼") : "↕"}</span>
 </button>;
 
-export const TableHead: React.FC<Props> = ({firstColBounds, secondColBounds, thirdColBounds, fourthColBounds, fifthColBounds, sixthColBounds, seventhColBounds, showStopColumn, sortKey, sortDirection, onSort}) => {
+export const TableHead: React.FC<Props> = ({firstColBounds, showStopColumn, sortKey, sortDirection, onSort}) => {
     const {t} = useTranslation();
     if (!firstColBounds) return null;
     // console_log("Fourth bou,ds", fourthColBounds)
-    return <div className="flex items-center font-bold max-w-screen">
-        <div className={tableHeadCommonClassName} style={{minWidth: firstColBounds.width}}>
+    return <thead><tr className="font-bold">
+        <th scope="col" className={tableHeadCommonClassName}>
             <SortableLabel column="trainNumber" activeColumn={sortKey} direction={sortDirection} onSort={onSort}>{t('EDR_TRAINHEADER_train_number')}</SortableLabel>
-        </div>
-        <div className={classNames(tableHeadCommonClassName, 'text-center')}  style={{minWidth: secondColBounds.width}}>
+        </th>
+        <th scope="col" className={classNames(tableHeadCommonClassName, 'text-center')} >
             <SortableLabel column="trainType" activeColumn={sortKey} direction={sortDirection} onSort={onSort}>{t('EDR_TRAINHEADER_train_type')}</SortableLabel>
-        </div>
-        <div className={tableHeadCommonClassName} style={{width: thirdColBounds.width}}>
+        </th>
+        <th scope="col" className={tableHeadCommonClassName}>
             <SortableLabel column="arrival" activeColumn={sortKey} direction={sortDirection} onSort={onSort}>{t('EDR_TRAINHEADER_train_arrival_time')}</SortableLabel>
-        </div>
-        <div className={tableHeadCommonClassName} style={{width: fourthColBounds.width}}>
+        </th>
+        <th scope="col" className={tableHeadCommonClassName}>
             <SortableLabel column="from" activeColumn={sortKey} direction={sortDirection} onSort={onSort}>{t('EDR_TRAINHEADER_train_from')}</SortableLabel>
-        </div>
-        <div className={tableHeadCommonClassName} style={{width: fifthColBounds.width}}>
+        </th>
+        <th scope="col" className={tableHeadCommonClassName}>
         {showStopColumn && <SortableLabel column="stop" activeColumn={sortKey} direction={sortDirection} onSort={onSort}>{t('EDR_TRAINHEADER_train_stop')}</SortableLabel>}
-        </div>
-        <div className={tableHeadCommonClassName} style={{width: sixthColBounds.width}}>
+        </th>
+        <th scope="col" className={tableHeadCommonClassName}>
             <SortableLabel column="departure" activeColumn={sortKey} direction={sortDirection} onSort={onSort}>{t('EDR_TRAINHEADER_train_departure_time')}</SortableLabel>
-        </div>
-        <div className={tableHeadCommonClassName} style={{width: seventhColBounds.width}}>
+        </th>
+        <th scope="col" className={tableHeadCommonClassName}>
             <SortableLabel column="to" activeColumn={sortKey} direction={sortDirection} onSort={onSort}>{t('EDR_TRAINHEADER_train_to')}</SortableLabel>
-        </div>
-    </div>;
+        </th>
+    </tr></thead>;
 }

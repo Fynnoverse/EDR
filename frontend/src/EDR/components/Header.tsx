@@ -3,7 +3,7 @@ import {Button, DarkThemeToggle, TextInput} from "flowbite-react";
 import {useTranslation} from "react-i18next";
 import {DateTimeDisplay} from "./DateTimeDisplay";
 import {Bounds} from "./Table";
-import {TableHead} from "./TableHead";
+
 import { StationConfig } from "../../config/stations";
 import {Link} from "react-router-dom";
 import _minBy from "lodash/fp/minBy";
@@ -64,9 +64,9 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 }
 
 export const Header: React.FC<Props> = ({
-    serverTzOffset, serverCode, postCfg, bounds, timetableLength, serverTime,
+    serverTzOffset, serverCode, postCfg, timetableLength, serverTime,
     filter, setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
-    sortKey, sortDirection, onSort, onResetSort, showDirectionText, setShowDirectionText
+    sortKey, onResetSort, showDirectionText, setShowDirectionText
 }) => {
     const {t} = useTranslation();
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
@@ -80,8 +80,8 @@ export const Header: React.FC<Props> = ({
     const displayMode = getDisplayMode(filterConfig);
 
     return (
-        <div style={{overflow: 'auto', position: "sticky", top: 0, zIndex: 99999}} className="w-full bg-white shadow-md dark:bg-slate-800">
-            <div className="flex items-center justify-between px-4  max-w-screen">
+        <div className="w-full bg-white text-gray-800 shadow-md dark:bg-slate-800 dark:text-gray-100">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-3 py-2">
                 <div className="flex flex-col">
                     <span>{postCfg.srName}</span>
                     <Link to={`/${serverCode}`} className="underline flex">
@@ -92,7 +92,7 @@ export const Header: React.FC<Props> = ({
                     </Link>
                 </div>
                 <DateTimeDisplay serverTzOffset={serverTzOffset} serverCode={serverCode} serverTime={serverTime}/>
-                <div className="flex items-center">
+                <div className="flex flex-wrap items-center gap-2">
                     <label className="mr-3 inline-flex items-center gap-1 text-xs cursor-pointer">
                         <input type="checkbox" checked={showDirectionText} onChange={event => setShowDirectionText(event.target.checked)} />
                         {t("EDR_UI_direction_text", {defaultValue: "Text an Pfeilen"})}
@@ -102,9 +102,9 @@ export const Header: React.FC<Props> = ({
                     <DarkThemeToggle />
                 </div>
             </div>
-            <div className="flex items-center justify-between w-full px-4 mt-2">
+            <div className="flex flex-wrap items-center gap-2 w-full px-3 mt-2">
                 <TextInput sizing={streamMode ? "sm" : "md"} id="trainNumberFilter" className="mb-2 min-w-[100px] grow" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('EDR_UI_train_number') ?? ''}/>
-                <div className="flex ml-4 mb-2">
+                <div className="flex flex-wrap gap-1 mb-2">
                     {sortKey && <Button
                         size={streamMode ? "xs" : "md"}
                         className="shrink-0 mr-2"
@@ -132,13 +132,6 @@ export const Header: React.FC<Props> = ({
                 </div>
             </div>
             <ColumnFilterModal isOpen={configModalOpen} onClose={() => setConfigModaOpen(false)} setFilterConfig={setFilterConfig} filterConfig={filterConfig}/>
-            <div>
-                <div>
-                    {!streamMode &&
-                        <TableHead {...bounds} sortKey={sortKey} sortDirection={sortDirection} onSort={onSort} />
-                    }
-                </div>
-            </div>
         </div>
     )
 }

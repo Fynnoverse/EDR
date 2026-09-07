@@ -22,6 +22,9 @@ type StationNeighbours = {
     up?: Array<StationId>;
 }
 
+// Local schematic sides as seen from each dispatch post, not compass bearings.
+// Define each viewpoint independently: A -> B being up does not imply B -> A is down.
+// Include intermediate timetable points on the same branch as their destination.
 export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     [StationId.katowice_zawodzie]: {
         down: [StationId.myslowice],
@@ -210,10 +213,13 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.koluszki]: {
         left: [StationId.koluszki_r59, StationId.rogow, StationId.wagry],
-        right: [StationId.koluszki_r121, StationId.koluszki_pzs_r145, StationId.koluszki_pzs_r154, StationId.slotwiny, StationId.zakowice_poludniowe]
+        right: [StationId.koluszki_r121, StationId.koluszki_pzs_r154, StationId.slotwiny, StationId.rokiciny],
+        down: [StationId.koluszki_pzs_r145, StationId.zakowice, StationId.zakowice_poludniowe, StationId.galkowek]
     },
     [StationId.lodz_widzew]: {
-        left: [StationId.lodz_widzew_r9, StationId.lodz_widzew_pzs_r3, StationId.lodz_marysin, StationId.lodz_stoki, StationId.lodz_chojny, StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_zarzew],
+        left: [StationId.lodz_widzew_r9, StationId.lodz_widzew_pzs_r3],
+        up: [StationId.lodz_marysin, StationId.lodz_stoki, StationId.zgierz],
+        down: [StationId.lodz_chojny, StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_zarzew],
         right: [StationId.lodz_andrzejow, StationId.lodz_andrzejow_szosa, StationId.lodz_olechow_loc, StationId.lodz_olechow_pzs_r3]
     },
     [StationId.baby]: {
@@ -221,8 +227,9 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.moszczenica, StationId.piotrkow_trybunalski, StationId.wolborka]
     },
     [StationId.belchow]: {
-        left: [StationId.skierniewice_s_pzs, StationId.sierakowice_skierniewickie, StationId.mokra],
-        right: [StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12]
+        left: [StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12, StationId.lowicz_glowny],
+        right: [StationId.skierniewice, StationId.skierniewice_s_pzs, StationId.sierakowice_skierniewickie, StationId.mokra],
+        down: [StationId.lowicz_przedmiescie]
     },
     [StationId.gajewniki]: {
         left: [StationId.borszewice],
@@ -253,24 +260,30 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.lodz_zabieniec_gt, StationId.zgierz]
     },
     [StationId.lowicz_glowny]: {
-        left: [StationId.lowicz_przedmiescie],
-        right: [StationId.jackowice, StationId.lowicz_glowny_pzs_r24_r31]
+        left: [StationId.jackowice],
+        right: [StationId.bednary, StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31],
+        down: [StationId.lowicz_przedmiescie],
+        up: [StationId.belchow, StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12]
     },
     [StationId.lowicz_glowny_pzs_r1]: {
         left: [StationId.lowicz_glowny_pzs_r12],
         right: [StationId.bednary]
     },
     [StationId.lowicz_glowny_pzs_r12]: {
-        left: [StationId.belchow, StationId.bobrowniki],
+        up: [StationId.belchow, StationId.bobrowniki],
+        left: [StationId.lowicz_glowny],
+        down: [StationId.lowicz_przedmiescie],
         right: [StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31]
     },
     [StationId.lowicz_glowny_pzs_r24_r31]: {
-        left: [StationId.lowicz_glowny, StationId.lowicz_glowny_pzs_r12],
+        left: [StationId.lowicz_glowny],
+        up: [StationId.lowicz_glowny_pzs_r12, StationId.belchow, StationId.bobrowniki],
         right: [StationId.bednary]
     },
     [StationId.lowicz_przedmiescie]: {
         left: [StationId.domaniewice, StationId.stare_grudze],
-        right: [StationId.lowicz_glowny]
+        right: [StationId.lowicz_glowny],
+        up: [StationId.belchow, StationId.lowicz_glowny_pzs_r12]
     },
     [StationId.lodz_kaliska]: {
         left: [StationId.lodz_zabieniec],
@@ -297,12 +310,15 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.kutno]
     },
     [StationId.zdunska_wola]: {
-        left: [StationId.gajewniki, StationId.zdunska_wola_karsznice, StationId.dionizow],
+        left: [StationId.gajewniki],
+        down: [StationId.zdunska_wola_karsznice, StationId.dionizow],
         right: [StationId.izabelow, StationId.sieradz]
     },
     [StationId.zgierz]: {
-        left: [StationId.lodz_zabieniec_gt, StationId.lodz_marysin, StationId.lodz_radogoszcz_zachod, StationId.lodz_radogoszcz_wschod],
-        right: [StationId.glinnik, StationId.zgierz_jaracza, StationId.zgierz_polnoc, StationId.zgierz_kontrewers, StationId.zgierz_rudunki]
+        left: [StationId.lodz_zabieniec, StationId.lodz_zabieniec_gt, StationId.lodz_radogoszcz_zachod],
+        right: [StationId.glinnik, StationId.zgierz_rudunki],
+        up: [StationId.zgierz_jaracza, StationId.zgierz_polnoc, StationId.zgierz_kontrewers],
+        down: [StationId.lodz_marysin, StationId.lodz_radogoszcz_wschod, StationId.lodz_widzew]
     },
     [StationId.zgierz_polnoc]: {
         left: [StationId.zgierz, StationId.zgierz_jaracza],
@@ -317,7 +333,8 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.plycwia_gt, StationId.przylek_duzy, StationId.lipce_reymontowskie]
     },
     [StationId.skierniewice]: {
-        left: [StationId.skierniewice_p_pzs, StationId.skierniewice_s_pzs],
+        left: [StationId.skierniewice_p_pzs, StationId.plycwia, StationId.dabrowice_skierniewickie, StationId.makow],
+        up: [StationId.skierniewice_s_pzs, StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie],
         right: [StationId.skierniewice_gt_201_208, StationId.skierniewice_m_pzs, StationId.puszcza_marianska]
     },
     [StationId.skierniewice_gt_201_208]: {
@@ -330,11 +347,13 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.skierniewice_p_pzs]: {
         left: [StationId.plycwia, StationId.dabrowice_skierniewickie],
-        right: [StationId.skierniewice, StationId.skierniewice_s_pzs]
+        right: [StationId.skierniewice],
+        up: [StationId.skierniewice_s_pzs, StationId.belchow]
     },
     [StationId.skierniewice_s_pzs]: {
-        left: [StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie],
-        right: [StationId.skierniewice, StationId.skierniewice_p_pzs]
+        up: [StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie],
+        left: [StationId.skierniewice_p_pzs, StationId.plycwia],
+        right: [StationId.skierniewice]
     },
     [StationId.warszawa_wlochy]: {
         left: [StationId.jozefinow, StationId.warszawa_ursus_polnocny, StationId.warszawa_ursus],

@@ -260,8 +260,8 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.lodz_zabieniec_gt, StationId.zgierz]
     },
     [StationId.lowicz_glowny]: {
-        left: [StationId.jackowice],
-        right: [StationId.bednary, StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31],
+        left: [StationId.bednary, StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31],
+        right: [StationId.jackowice],
         down: [StationId.lowicz_przedmiescie],
         up: [StationId.belchow, StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12]
     },
@@ -310,15 +310,12 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.kutno]
     },
     [StationId.zdunska_wola]: {
-        left: [StationId.gajewniki],
-        down: [StationId.zdunska_wola_karsznice, StationId.dionizow],
+        left: [StationId.gajewniki, StationId.zdunska_wola_karsznice, StationId.dionizow],
         right: [StationId.izabelow, StationId.sieradz]
     },
     [StationId.zgierz]: {
-        left: [StationId.lodz_zabieniec, StationId.lodz_zabieniec_gt, StationId.lodz_radogoszcz_zachod],
-        right: [StationId.glinnik, StationId.zgierz_rudunki],
-        up: [StationId.zgierz_jaracza, StationId.zgierz_polnoc, StationId.zgierz_kontrewers],
-        down: [StationId.lodz_marysin, StationId.lodz_radogoszcz_wschod, StationId.lodz_widzew]
+        left: [StationId.lodz_zabieniec, StationId.lodz_zabieniec_gt, StationId.lodz_radogoszcz_zachod, StationId.lodz_marysin, StationId.lodz_radogoszcz_wschod, StationId.lodz_widzew],
+        right: [StationId.glinnik, StationId.zgierz_rudunki, StationId.zgierz_jaracza, StationId.zgierz_polnoc, StationId.zgierz_kontrewers]
     },
     [StationId.zgierz_polnoc]: {
         left: [StationId.zgierz, StationId.zgierz_jaracza],

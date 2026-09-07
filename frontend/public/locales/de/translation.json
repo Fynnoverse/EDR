@@ -91,6 +91,7 @@
   "EDR_UI_filter_hide_left": "Verstecke abgefahrene Züge",
   "EDR_UI_filter_radius": "Nach Umkreis filtern (km)",
   "EDR_UI_reset_button": "Zurücksetzen",
+  "EDR_UI_reset_sort": "Sortierung zurücksetzen",
   "EDR_UI_save_button": "Speichern",
   "EDR_UI_save_and_close_button": "Speichern und schließen",
   "EDR_UI_timetable_times": "Zeiten",

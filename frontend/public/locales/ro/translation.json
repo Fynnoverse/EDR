@@ -49,6 +49,7 @@
   "EDR_TRAINROW_train_departing": "plecare",
   "EDR_TRAINROW_train_early_sign": "-",
   "EDR_TRAINROW_train_late_sign": "+",
+  "EDR_TRAINROW_scheduled": "Plan",
   "EDR_TRAINROW_waiting_for_data":"Se așteaptă datele...",
   "EDR_TRAINROW_notify": "Notificare de plecare",
   "EDR_TRAINROW_show_on_map": "Arată pe hartă",

@@ -91,6 +91,7 @@
   "EDR_UI_filter_hide_left": "Hide trains that have already left",
   "EDR_UI_filter_radius": "Filter by radius (km)",
   "EDR_UI_reset_button": "Reset",
+  "EDR_UI_reset_sort": "Reset sorting",
   "EDR_UI_save_button": "Save",
   "EDR_UI_save_and_close_button": "Save and close",
   "EDR_UI_timetable_times": "Times",

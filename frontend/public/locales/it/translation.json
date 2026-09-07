@@ -49,6 +49,7 @@
   "EDR_TRAINROW_train_departing": "in partenza",
   "EDR_TRAINROW_train_early_sign": "-",
   "EDR_TRAINROW_train_late_sign": "+",
+  "EDR_TRAINROW_scheduled": "Prev.",
   "EDR_TRAINROW_waiting_for_data":"In attesa dei dati...",
   "EDR_TRAINROW_notify": "Notifica Partenza",
   "EDR_TRAINROW_show_on_map": "Mostra sulla mappa",

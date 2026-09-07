@@ -87,6 +87,11 @@ export const EDRTable: React.FC<Props> = ({
         }
     };
 
+    const resetSort = () => {
+        setSortKey(undefined);
+        setSortDirection("ascending");
+    };
+
     const dateNow = nowUTC(serverTime);
     const filteredTimetable = timetable
             .filter((tt) => filter ?
@@ -141,6 +146,7 @@ export const EDRTable: React.FC<Props> = ({
             sortKey={sortKey}
             sortDirection={sortDirection}
             onSort={changeSort}
+            onResetSort={resetSort}
         />
         <div className={classNames(
             "child:overflow-y-scroll ",

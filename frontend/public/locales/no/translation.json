@@ -49,6 +49,7 @@
   "EDR_TRAINROW_train_departing": "avreise",
   "EDR_TRAINROW_train_early_sign": "-",
   "EDR_TRAINROW_train_late_sign": "+",
+  "EDR_TRAINROW_scheduled": "Plan",
   "EDR_TRAINROW_waiting_for_data":"Venter på data...",
   "EDR_TRAINROW_notify": "Meld avreise",
   "EDR_TRAINROW_show_on_map": "Vis på kartet",

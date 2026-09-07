@@ -28,6 +28,7 @@ type Props = {
     sortKey: TrainSortKey | undefined;
     sortDirection: SortDirection;
     onSort: (key: TrainSortKey) => void;
+    onResetSort: () => void;
 }
 
 
@@ -62,7 +63,7 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 export const Header: React.FC<Props> = ({
     serverTzOffset, serverCode, postCfg, bounds, timetableLength, serverTime,
     setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
-    sortKey, sortDirection, onSort
+    sortKey, sortDirection, onSort, onResetSort
 }) => {
     const {t} = useTranslation();
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
@@ -97,6 +98,14 @@ export const Header: React.FC<Props> = ({
             <div className="flex items-center justify-between w-full px-4 mt-2">
                 <TextInput sizing={streamMode ? "sm" : "md"} id="trainNumberFilter" className="mb-2 min-w-[100px] grow" onChange={(e) => setFilter(e.target.value)} placeholder={t('EDR_UI_train_number') ?? ''}/>
                 <div className="flex ml-4 mb-2">
+                    {sortKey && <Button
+                        size={streamMode ? "xs" : "md"}
+                        className="shrink-0 mr-2"
+                        color="gray"
+                        onClick={onResetSort}
+                    >
+                        {t('EDR_UI_reset_sort') ?? ''}
+                    </Button>}
                     <Button size={streamMode ? "xs" : "md"} className="shrink-0" color={displayMode !== "default" ? "default" : undefined}
                             onClick={() => { setFilterConfig(presetFilterConfig.default); scrollToNearestTrain(timetableLength); }}>
                         {t('EDR_UI_filter_train_all') ?? ''}

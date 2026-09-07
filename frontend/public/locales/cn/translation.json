@@ -49,6 +49,7 @@
   "EDR_TRAINROW_train_departing": "正在出站",
   "EDR_TRAINROW_train_early_sign": "-",
   "EDR_TRAINROW_train_late_sign": "+",
+  "EDR_TRAINROW_scheduled": "计划",
   "EDR_TRAINROW_waiting_for_data":"等待数据接收完毕......",
   "EDR_TRAINROW_notify": "发车提醒",
   "EDR_TRAINROW_show_on_map": "在地图上显示",

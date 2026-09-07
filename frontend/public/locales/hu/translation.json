@@ -49,6 +49,7 @@
   "EDR_TRAINROW_train_departing": "Indul",
   "EDR_TRAINROW_train_early_sign": "-",
   "EDR_TRAINROW_train_late_sign": "+",
+  "EDR_TRAINROW_scheduled": "Terv",
   "EDR_TRAINROW_waiting_for_data":"Adatra vár.",
   "EDR_TRAINROW_notify": "Hangjelzés induláskor",
   "EDR_TRAINROW_show_on_map": "Mutasd a térképen",

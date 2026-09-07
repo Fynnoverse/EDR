@@ -11,11 +11,19 @@ type Props = {
     streamMode: boolean;
     trainDetails: DetailedTrain | undefined;
 }
-export const TrainToCell: React.FC<Props> = ({headerSeventhColRef, ttRow, secondaryPostData, streamMode, trainDetails}) => (
-    <td className={tableCellCommonClassnames(streamMode)} ref={headerSeventhColRef} width="450">
-        <div className="inline-flex">
-            <CellLineData ttRow={ttRow} trainDetails={trainDetails} />
-        </div>
-        { secondaryPostData.map((spd: TimeTableRow, i: number) => <span key={spd.trainNoLocal + i}><hr /><div className="inline-flex"><CellLineData ttRow={spd} trainDetails={trainDetails} /></div></span>)}
-    </td>
-)
+export const TrainToCell: React.FC<Props> = ({headerSeventhColRef, ttRow, secondaryPostData, streamMode, trainDetails}) => {
+    const visibleRows = [ttRow, ...secondaryPostData].filter((row, index, rows) =>
+        row.toPost && rows.findIndex(candidate =>
+            (candidate.toPostId ?? candidate.toPost) === (row.toPostId ?? row.toPost)
+        ) === index
+    );
+
+    return (
+        <td className={tableCellCommonClassnames(streamMode)} ref={headerSeventhColRef} width="450">
+            {visibleRows.map((row, index) => <React.Fragment key={`${row.pointId}-${row.toPostId ?? row.toPost}`}>
+                {index > 0 && <hr />}
+                <div className="inline-flex"><CellLineData ttRow={row} trainDetails={trainDetails} /></div>
+            </React.Fragment>)}
+        </td>
+    );
+}

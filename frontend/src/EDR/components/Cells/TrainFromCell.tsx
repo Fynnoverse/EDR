@@ -10,31 +10,22 @@ type Props = {
     streamMode: boolean;
 }
 export const TrainFromCell: React.FC<Props> = ({headerFourthColRef, ttRow, secondaryPostData, streamMode}) => {
-    const directions = dispatchDirections[parseInt(ttRow.pointId)];
-    const isFromLeft = ttRow.fromPostId ? directions?.left?.includes(parseInt(ttRow.fromPostId)) : false;
-    const isFromRight = ttRow.fromPostId ? directions?.right?.includes(parseInt(ttRow.fromPostId)) : false;
-    const isFromUp = ttRow.fromPostId ? directions?.up?.includes(parseInt(ttRow.fromPostId)) : false;
-    const isFromDown = ttRow.fromPostId ? directions?.down?.includes(parseInt(ttRow.fromPostId)) : false;
+    const visibleRows = [ttRow, ...secondaryPostData].filter((row, index, rows) =>
+        row.fromPost && rows.findIndex(candidate =>
+            (candidate.fromPostId ?? candidate.fromPost) === (row.fromPostId ?? row.fromPost)
+        ) === index
+    );
 
     return (<td className={tableCellCommonClassnames(streamMode)} ref={headerFourthColRef}>
-        <div className="inline-flex">
-            <span className="pr-2">
-                { isFromLeft && <span className="font-bold text-teal-400">【🢂】</span>}
-                { isFromRight && <span className="font-bold text-orange-400">【🢀】</span>}
-                { isFromUp && <span className="font-bold text-purple-400">【🢃】</span>}
-                { isFromDown && <span className="font-bold text-green-400">【🢁】</span>}
-            </span>
-            {ttRow.fromPost}
-        </div>
-        
-        { secondaryPostData.map((spd: TimeTableRow, i: number) => {
-            const directions = dispatchDirections[parseInt(spd.pointId)];
-            const isFromLeft = spd.fromPostId ? directions?.left?.includes(parseInt(spd.fromPostId)) : false;
-            const isFromRight = spd.fromPostId ? directions?.right?.includes(parseInt(spd.fromPostId)) : false;
-            const isFromUp = spd.fromPostId ? directions?.up?.includes(parseInt(spd.fromPostId)) : false;
-            const isFromDown = spd.fromPostId ? directions?.down?.includes(parseInt(spd.fromPostId)) : false;
+        {visibleRows.map((row, index) => {
+            const directions = dispatchDirections[parseInt(row.pointId)];
+            const isFromLeft = row.fromPostId ? directions?.left?.includes(parseInt(row.fromPostId)) : false;
+            const isFromRight = row.fromPostId ? directions?.right?.includes(parseInt(row.fromPostId)) : false;
+            const isFromUp = row.fromPostId ? directions?.up?.includes(parseInt(row.fromPostId)) : false;
+            const isFromDown = row.fromPostId ? directions?.down?.includes(parseInt(row.fromPostId)) : false;
             
-            return (<span key={spd.trainNoLocal + i}><hr />
+            return (<React.Fragment key={`${row.pointId}-${row.fromPostId ?? row.fromPost}`}>
+                {index > 0 && <hr />}
                 <div className="inline-flex">
                     <span className="pr-2">
                         { isFromLeft && <span className="font-bold text-teal-400">【🢂】</span>}
@@ -43,10 +34,10 @@ export const TrainFromCell: React.FC<Props> = ({headerFourthColRef, ttRow, secon
                         { isFromDown && <span className="font-bold text-green-400">【🢁】</span>}
                     </span>
                     <span>
-                        {spd.fromPost}
+                        {row.fromPost}
                     </span>
                 </div>
-            </span>
+            </React.Fragment>
             );
         })}
     </td>);

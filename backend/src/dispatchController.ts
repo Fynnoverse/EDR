@@ -61,7 +61,7 @@ export async function dispatchController(req: express.Request, res: express.Resp
     try {
         const mergePosts = req.query.mergePosts === "true";
         const postsToFetch = mergePosts ? POSTS[post] : [newInternalIdToSrId[post]];
-        const data = await Promise.all(postsToFetch.map(post => getStationTimetable(post, trainList)));
+        const data = await Promise.all(postsToFetch.map(post => getStationTimetable(post, trainList, postsToFetch)));
         const mergedPosts = mergePostRows(data);
         return res
             .setHeader("Cache-control", 'public, max-age=28800 stale-if-error=604800 must-revalidate')

@@ -2,7 +2,8 @@ import _ from "lodash";
 import { IEdrServerTrain } from "../interfaces/IEdrServerTrain.js";
 import { IFrontendStationTrainRow } from "../interfaces/IFrontendStationTrainRow.js";
 
-export const getStationTimetable = async (stationId: number, trainList: IEdrServerTrain[]) => {
+export const getStationTimetable = async (stationId: number, trainList: IEdrServerTrain[], groupedStationIds: number[] = [stationId]) => {
+    const ownStationIds = new Set(groupedStationIds);
     const trainsForStation = trainList.filter(train => train.timetable.some(checkpoint => parseInt(checkpoint.pointId) === stationId));
     const withDynamicData: Promise<IFrontendStationTrainRow>[] = trainsForStation.map(async (train) => {
         const stationEntry = train.timetable.find(checkpoint => parseInt(checkpoint.pointId) === stationId);
@@ -13,12 +14,18 @@ export const getStationTimetable = async (stationId: number, trainList: IEdrServ
         const stationIndex = train.timetable.findIndex(checkpoint => parseInt(checkpoint.pointId) === stationId);
         let previousEntry = null;
         if (stationIndex > 0) {
-            previousEntry = train.timetable[stationIndex - 1];
+            const candidate = train.timetable[stationIndex - 1];
+            if (!ownStationIds.has(parseInt(candidate.pointId))) {
+                previousEntry = candidate;
+            }
         }
 
         let nextEntry = null;
         if (stationIndex < train.timetable.length - 1) {
-            nextEntry = train.timetable[stationIndex + 1];
+            const candidate = train.timetable[stationIndex + 1];
+            if (!ownStationIds.has(parseInt(candidate.pointId))) {
+                nextEntry = candidate;
+            }
         }
 
         return {

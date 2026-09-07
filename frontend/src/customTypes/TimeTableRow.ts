@@ -12,6 +12,8 @@ export type TimeTableRow = {
     isOverWeight: boolean,
     isQualityTracked: boolean,
     line: number,
+    fromLine?: number,
+    toLine?: number,
     maxSpeed: number,
     ownNotes: string | null,
     plannedStop: number,

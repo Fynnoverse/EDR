@@ -15,6 +15,8 @@ export interface IFrontendStationTrainRow extends Omit<IEdrServerTrain, 'timetab
     toPost: string | undefined,
     toPostId: string | undefined,
     line: number,
+    fromLine?: number,
+    toLine?: number,
     plannedStop: number,
     pointId: string,
     stationIndex: number,

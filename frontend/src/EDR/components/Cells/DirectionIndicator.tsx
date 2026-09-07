@@ -1,5 +1,5 @@
 import React from "react";
-import {dispatchDirections} from "../../../config/stations";
+import {dispatchDirections, dispatchLineDirections} from "../../../config/stations";
 import {StationId} from "../../../enums/stationId";
 
 type TrackSide = "left" | "right" | "up" | "down";
@@ -11,6 +11,7 @@ type Props = {
     pointId: string;
     adjacentPostId?: string;
     relation: "from" | "to";
+    line?: number;
 }
 
 const arrowPaths: Record<ArrowDirection, string> = {
@@ -42,19 +43,21 @@ const directionNames: Record<ArrowDirection, string> = {
     down: "unten"
 };
 
-const getTrackSide = (pointId: string, adjacentPostId?: string): TrackSide | undefined => {
+const getTrackSide = (pointId: string, adjacentPostId?: string, line?: number): TrackSide | undefined => {
     if (!adjacentPostId) return undefined;
 
     const directions = dispatchDirections[parseInt(pointId)];
     const adjacentId = parseInt(adjacentPostId) as StationId;
+    const lineDirections = dispatchLineDirections[parseInt(pointId)]?.[adjacentId];
+    if (lineDirections) return line === undefined ? undefined : lineDirections[line];
 
     return (["left", "right", "up", "down"] as TrackSide[])
         .find(side => directions?.[side]?.includes(adjacentId));
 };
 
-export const DirectionIndicator: React.FC<Props> = ({pointId, adjacentPostId, relation}) => {
+export const DirectionIndicator: React.FC<Props> = ({pointId, adjacentPostId, relation, line}) => {
     const showText = React.useContext(DirectionTextContext);
-    const side = getTrackSide(pointId, adjacentPostId);
+    const side = getTrackSide(pointId, adjacentPostId, line);
     if (!side) return null;
 
     const arrowDirection = relation === "from" ? movementFromSide[side] : side;

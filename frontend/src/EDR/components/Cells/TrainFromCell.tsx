@@ -21,7 +21,7 @@ export const TrainFromCell: React.FC<Props> = ({headerFourthColRef, ttRow, secon
             return (<React.Fragment key={`${row.pointId}-${row.fromPostId ?? row.fromPost}`}>
                 {index > 0 && <hr />}
                 <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
-                    <DirectionIndicator pointId={row.pointId} adjacentPostId={row.fromPostId} relation="from" />
+                    <DirectionIndicator pointId={row.pointId} adjacentPostId={row.fromPostId} relation="from" line={row.fromLine ?? row.line} />
                     <span>
                         {row.fromPost}
                     </span>

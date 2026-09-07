@@ -22,7 +22,9 @@ type StationNeighbours = {
     up?: Array<StationId>;
 }
 
-// Local schematic sides as seen from each dispatch post, not compass bearings.
+// Branch positions on the in-game dispatch panel, not compass bearings.
+// An upper/lower branch remains up/down even when its last segment is horizontal.
+// Image references and route-specific exceptions: docs/dispatch-direction-audit.md.
 // Define each viewpoint independently: A -> B being up does not imply B -> A is down.
 // Include intermediate timetable points on the same branch as their destination.
 export const dispatchDirections: NumericDictionary<StationNeighbours> = {
@@ -208,36 +210,39 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.koniecpol, StationId.psary, StationId.psary_roz_40],
     },
     [StationId.galkowek]: {
-        left: [StationId.koluszki_pzs_r145, StationId.zakowice, StationId.zakowice_poludniowe],
-        right: [StationId.lodz_olechow_loc, StationId.justynow, StationId.lodz_andrzejow]
+        left: [StationId.koluszki_pzs_r145, StationId.zakowice, StationId.koluszki],
+        right: [StationId.justynow, StationId.lodz_andrzejow, StationId.lodz_widzew],
+        up: [StationId.zakowice_poludniowe, StationId.lodz_olechow_loc]
     },
     [StationId.koluszki]: {
         left: [StationId.koluszki_r59, StationId.rogow, StationId.wagry],
-        right: [StationId.koluszki_r121, StationId.koluszki_pzs_r154, StationId.slotwiny, StationId.rokiciny],
-        down: [StationId.koluszki_pzs_r145, StationId.zakowice, StationId.zakowice_poludniowe, StationId.galkowek]
+        right: [StationId.koluszki_r121, StationId.koluszki_pzs_r154, StationId.rokiciny, StationId.chrusty_nowe],
+        up: [StationId.slotwiny, StationId.zakowice_poludniowe],
+        down: [StationId.koluszki_pzs_r145, StationId.zakowice, StationId.galkowek]
     },
     [StationId.lodz_widzew]: {
-        left: [StationId.lodz_widzew_r9, StationId.lodz_widzew_pzs_r3],
+        left: [StationId.lodz_widzew_r9, StationId.lodz_widzew_pzs_r3, StationId.lodz_fabryczna],
         up: [StationId.lodz_marysin, StationId.lodz_stoki, StationId.zgierz],
-        down: [StationId.lodz_chojny, StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_zarzew],
-        right: [StationId.lodz_andrzejow, StationId.lodz_andrzejow_szosa, StationId.lodz_olechow_loc, StationId.lodz_olechow_pzs_r3]
+        down: [StationId.lodz_chojny, StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_zarzew, StationId.lodz_olechow_loc, StationId.lodz_olechow_pzs_r3],
+        right: [StationId.lodz_andrzejow, StationId.lodz_andrzejow_szosa, StationId.galkowek]
     },
     [StationId.baby]: {
-        left: [StationId.rokiciny],
-        right: [StationId.moszczenica, StationId.piotrkow_trybunalski, StationId.wolborka]
+        left: [StationId.rokiciny, StationId.laznow, StationId.wolborka],
+        right: [StationId.moszczenica, StationId.piotrkow_trybunalski]
     },
     [StationId.belchow]: {
-        left: [StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12, StationId.lowicz_glowny],
-        right: [StationId.skierniewice, StationId.skierniewice_s_pzs, StationId.sierakowice_skierniewickie, StationId.mokra],
-        down: [StationId.lowicz_przedmiescie]
+        left: [StationId.skierniewice, StationId.skierniewice_s_pzs, StationId.sierakowice_skierniewickie, StationId.mokra],
+        right: [StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12, StationId.lowicz_glowny, StationId.lowicz_przedmiescie]
     },
     [StationId.gajewniki]: {
-        left: [StationId.borszewice],
-        right: [StationId.zdunska_wola, StationId.zdunska_wola_karsznice, StationId.dionizow]
+        left: [StationId.borszewice, StationId.lask],
+        right: [StationId.zdunska_wola],
+        up: [StationId.zdunska_wola_karsznice],
+        down: [StationId.dionizow]
     },
     [StationId.glinnik]: {
-        left: [StationId.zgierz, StationId.glinnik_wies],
-        right: [StationId.swedow, StationId.strykow]
+        left: [StationId.swedow, StationId.strykow],
+        right: [StationId.zgierz, StationId.glinnik_wies, StationId.zgierz_rudunki]
     },
     [StationId.glowno]: {
         left: [StationId.strykow, StationId.bratoszewice],
@@ -248,8 +253,9 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.borszewice, StationId.gajewniki]
     },
     [StationId.lodz_chojny]: {
-        left: [StationId.lodz_kaliska_pzs_r219_r227, StationId.lodz_pabianicka],
-        right: [StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_widzew, StationId.lodz_olechow_pzs_r3]
+        left: [StationId.lodz_kaliska_pzs_r219_r227, StationId.lodz_pabianicka, StationId.lodz_kaliska],
+        right: [StationId.lodz_widzew, StationId.lodz_zarzew],
+        down: [StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_olechow_pzs_r3]
     },
     [StationId.lodz_lublinek]: {
         left: [StationId.pabianice, StationId.pabianice_polnocne],
@@ -262,44 +268,46 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     [StationId.lowicz_glowny]: {
         left: [StationId.bednary, StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31],
         right: [StationId.jackowice],
-        down: [StationId.lowicz_przedmiescie],
-        up: [StationId.belchow, StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12]
+        up: [StationId.lowicz_przedmiescie, StationId.belchow, StationId.bobrowniki, StationId.lowicz_glowny_pzs_r12]
     },
     [StationId.lowicz_glowny_pzs_r1]: {
-        left: [StationId.lowicz_glowny_pzs_r12],
-        right: [StationId.bednary]
+        left: [StationId.bednary],
+        up: [StationId.lowicz_glowny_pzs_r12, StationId.belchow, StationId.bobrowniki, StationId.lowicz_przedmiescie],
+        right: [StationId.lowicz_glowny, StationId.lowicz_glowny_pzs_r24_r31, StationId.jackowice]
     },
     [StationId.lowicz_glowny_pzs_r12]: {
-        up: [StationId.belchow, StationId.bobrowniki],
-        left: [StationId.lowicz_glowny],
-        down: [StationId.lowicz_przedmiescie],
-        right: [StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31]
+        up: [StationId.belchow, StationId.bobrowniki, StationId.lowicz_przedmiescie],
+        right: [StationId.lowicz_glowny, StationId.lowicz_glowny_pzs_r24_r31, StationId.jackowice],
+        down: [StationId.lowicz_glowny_pzs_r1],
+        left: [StationId.bednary]
     },
     [StationId.lowicz_glowny_pzs_r24_r31]: {
-        left: [StationId.lowicz_glowny],
-        up: [StationId.lowicz_glowny_pzs_r12, StationId.belchow, StationId.bobrowniki],
-        right: [StationId.bednary]
+        right: [StationId.lowicz_glowny, StationId.jackowice],
+        up: [StationId.lowicz_glowny_pzs_r12, StationId.belchow, StationId.bobrowniki, StationId.lowicz_przedmiescie],
+        left: [StationId.bednary, StationId.lowicz_glowny_pzs_r1]
     },
     [StationId.lowicz_przedmiescie]: {
         left: [StationId.domaniewice, StationId.stare_grudze],
-        right: [StationId.lowicz_glowny],
-        up: [StationId.belchow, StationId.lowicz_glowny_pzs_r12]
+        right: [StationId.belchow, StationId.lowicz_glowny_pzs_r12, StationId.bobrowniki],
+        down: [StationId.bednary, StationId.lowicz_glowny_pzs_r1]
     },
     [StationId.lodz_kaliska]: {
         left: [StationId.lodz_zabieniec],
-        right: [StationId.retkinia, StationId.lodz_kaliska_pzs_r219_r227]
+        right: [StationId.retkinia, StationId.lodz_kaliska_pzs_r219_r227],
+        up: [StationId.lodz_chojny, StationId.lodz_pabianicka]
     },
     [StationId.lodz_kaliska_pzs_r219_r227]: {
         left: [StationId.lodz_kaliska],
-        right: [StationId.retkinia, StationId.lodz_chojny, StationId.lodz_pabianicka]
+        right: [StationId.retkinia],
+        up: [StationId.lodz_chojny, StationId.lodz_pabianicka]
     },
     [StationId.pabianice]: {
         left: [StationId.lodz_lublinek, StationId.pabianice_polnocne],
         right: [StationId.chechlo, StationId.dobron, StationId.lask]
     },
     [StationId.rokiciny]: {
-        left: [StationId.koluszki, StationId.koluszki_pzs_r154],
-        right: [StationId.baby, StationId.laznow, StationId.chrusty_nowe]
+        left: [StationId.koluszki, StationId.koluszki_pzs_r154, StationId.chrusty_nowe],
+        right: [StationId.baby, StationId.laznow, StationId.wolborka]
     },
     [StationId.retkinia]: {
         left: [StationId.lodz_lublinek],
@@ -310,12 +318,16 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.kutno]
     },
     [StationId.zdunska_wola]: {
-        left: [StationId.gajewniki, StationId.zdunska_wola_karsznice, StationId.dionizow],
-        right: [StationId.izabelow, StationId.sieradz]
+        left: [StationId.gajewniki],
+        right: [StationId.izabelow, StationId.sieradz],
+        up: [StationId.zdunska_wola_karsznice],
+        down: [StationId.dionizow]
     },
     [StationId.zgierz]: {
-        left: [StationId.lodz_zabieniec, StationId.lodz_zabieniec_gt, StationId.lodz_radogoszcz_zachod, StationId.lodz_marysin, StationId.lodz_radogoszcz_wschod, StationId.lodz_widzew],
-        right: [StationId.glinnik, StationId.zgierz_rudunki, StationId.zgierz_jaracza, StationId.zgierz_polnoc, StationId.zgierz_kontrewers]
+        left: [StationId.lodz_zabieniec, StationId.lodz_zabieniec_gt, StationId.lodz_radogoszcz_zachod],
+        right: [StationId.glinnik, StationId.zgierz_rudunki, StationId.glinnik_wies],
+        up: [StationId.zgierz_jaracza, StationId.zgierz_polnoc, StationId.zgierz_kontrewers],
+        down: [StationId.lodz_marysin, StationId.lodz_radogoszcz_wschod, StationId.lodz_widzew]
     },
     [StationId.zgierz_polnoc]: {
         left: [StationId.zgierz, StationId.zgierz_jaracza],
@@ -331,24 +343,27 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.skierniewice]: {
         left: [StationId.skierniewice_p_pzs, StationId.plycwia, StationId.dabrowice_skierniewickie, StationId.makow],
-        up: [StationId.skierniewice_s_pzs, StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie],
-        right: [StationId.skierniewice_gt_201_208, StationId.skierniewice_m_pzs, StationId.puszcza_marianska]
+        up: [StationId.skierniewice_s_pzs, StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie, StationId.bobrowniki, StationId.lowicz_glowny, StationId.lowicz_przedmiescie, StationId.lowicz_glowny_pzs_r12],
+        right: [StationId.skierniewice_gt_201_208, StationId.skierniewice_m_pzs, StationId.skierniewice_rawka, StationId.radziwillow_mazowiecki],
+        down: [StationId.puszcza_marianska]
     },
     [StationId.skierniewice_gt_201_208]: {
         left: [StationId.skierniewice],
-        right: [StationId.skierniewice_m_pzs, StationId.puszcza_marianska]
+        right: [StationId.skierniewice_m_pzs, StationId.skierniewice_rawka, StationId.radziwillow_mazowiecki],
+        down: [StationId.puszcza_marianska]
     },
     [StationId.skierniewice_m_pzs]: {
         left: [StationId.skierniewice_gt_201_208, StationId.skierniewice],
-        right: [StationId.skierniewice_rawka, StationId.radziwillow_mazowiecki, StationId.puszcza_marianska]
+        right: [StationId.skierniewice_rawka, StationId.radziwillow_mazowiecki],
+        down: [StationId.puszcza_marianska]
     },
     [StationId.skierniewice_p_pzs]: {
-        left: [StationId.plycwia, StationId.dabrowice_skierniewickie],
+        left: [StationId.plycwia, StationId.dabrowice_skierniewickie, StationId.makow],
         right: [StationId.skierniewice],
-        up: [StationId.skierniewice_s_pzs, StationId.belchow]
+        up: [StationId.skierniewice_s_pzs, StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie, StationId.bobrowniki, StationId.lowicz_glowny, StationId.lowicz_przedmiescie, StationId.lowicz_glowny_pzs_r12]
     },
     [StationId.skierniewice_s_pzs]: {
-        up: [StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie],
+        up: [StationId.belchow, StationId.mokra, StationId.sierakowice_skierniewickie, StationId.bobrowniki, StationId.lowicz_glowny, StationId.lowicz_przedmiescie, StationId.lowicz_glowny_pzs_r12],
         left: [StationId.skierniewice_p_pzs, StationId.plycwia],
         right: [StationId.skierniewice]
     },
@@ -358,14 +373,24 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         up: [StationId.warszawa_golabki]
     },
     [StationId.zakowice_poludniowe]: {
-        left: [StationId.zakowice_pld_roz_5, StationId.koluszki, StationId.slotwiny, StationId.mikolajow],
-        right: [StationId.galkowek]
+        left: [StationId.mikolajow],
+        right: [StationId.galkowek],
+        down: [StationId.zakowice_pld_roz_5, StationId.koluszki, StationId.slotwiny]
     },
     [StationId.zyrardow]: {
         left: [StationId.radziwillow_mazowiecki, StationId.sucha_zyrardowska],
         right: [StationId.miedzyborow, StationId.grodzisk_mazowiecki, StationId.grodzisk_mazowiecki_r64],
     }
 }
+
+// A destination can use different branches. Missing route data must not select
+// an arbitrary side. Timetable lines identify the segment arriving at a point;
+// departure therefore uses the NEXT timetable point's line.
+export const dispatchLineDirections: NumericDictionary<NumericDictionary<Partial<Record<number, "left" | "right" | "up" | "down">>>> = {
+    [StationId.lowicz_przedmiescie]: {
+        [StationId.lowicz_glowny]: {532: "up", 531: "right", 15: "down"}
+    }
+};
 
 export const postConfig: Dictionary<StationConfig> = {
     GW: {

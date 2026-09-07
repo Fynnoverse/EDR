@@ -18,7 +18,8 @@ const arrowPaths: Record<ArrowDirection, string> = {
     down: "m5 16 7 7 7-7M12 23V9"
 };
 
-const colors: Record<ArrowDirection, string> = {
+// Color identifies the branch side; the arrow identifies train movement.
+const colors: Record<TrackSide, string> = {
     left: "text-orange-400",
     right: "text-teal-400",
     up: "text-green-400",
@@ -54,20 +55,20 @@ export const DirectionIndicator: React.FC<Props> = ({pointId, adjacentPostId, re
     if (!side) return null;
 
     const arrowDirection = relation === "from" ? movementFromSide[side] : side;
+    const caption = `${relation === "from" ? "von" : "nach"} ${directionNames[side]}`;
     const label = relation === "from"
-        ? `Zug kommt von ${directionNames[side]} und fährt nach ${directionNames[arrowDirection]}`
-        : `Zug fährt nach ${directionNames[arrowDirection]}`;
+        ? `Einfahrt von ${directionNames[side]} ins Stellwerk. Der Pfeil zeigt die Einfahrbewegung, nicht das spätere Ziel.`
+        : `Ausfahrt nach ${directionNames[side]} aus dem Stellwerk. Ein- und Ausfahrt auf derselben Seite können unterschiedliche Gleise oder Strecken betreffen.`;
 
     return <span
-        className={`mr-2 inline-flex h-6 min-w-9 shrink-0 items-center justify-center font-bold ${colors[arrowDirection]}`}
+        className={`mr-2 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded border border-current px-1 py-0.5 text-xs font-bold ${colors[side]}`}
         title={label}
         role="img"
         aria-label={label}
     >
-        <span aria-hidden="true">【</span>
+        <span aria-hidden="true">{caption}</span>
         <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 32 32" fill="none">
             <path d={arrowPaths[arrowDirection]} stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span aria-hidden="true">】</span>
     </span>;
 };

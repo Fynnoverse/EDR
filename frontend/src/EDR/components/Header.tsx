@@ -23,6 +23,8 @@ type Props = {
     setFilter: (value: string | undefined) => void;
     streamMode: boolean;
     setStreamMode: (v: boolean) => void;
+    showDirectionText: boolean;
+    setShowDirectionText: (value: boolean) => void;
     filterConfig: FilterConfig;
     setFilterConfig: (fc: FilterConfig) => void;
     sortKey: TrainSortKey | undefined;
@@ -63,7 +65,7 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 export const Header: React.FC<Props> = ({
     serverTzOffset, serverCode, postCfg, bounds, timetableLength, serverTime,
     setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
-    sortKey, sortDirection, onSort, onResetSort
+    sortKey, sortDirection, onSort, onResetSort, showDirectionText, setShowDirectionText
 }) => {
     const {t} = useTranslation();
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
@@ -90,6 +92,10 @@ export const Header: React.FC<Props> = ({
                 </div>
                 <DateTimeDisplay serverTzOffset={serverTzOffset} serverCode={serverCode} serverTime={serverTime}/>
                 <div className="flex items-center">
+                    <label className="mr-3 inline-flex items-center gap-1 text-xs cursor-pointer">
+                        <input type="checkbox" checked={showDirectionText} onChange={event => setShowDirectionText(event.target.checked)} />
+                        {t("EDR_UI_direction_text", {defaultValue: "Text an Pfeilen"})}
+                    </label>
                     <Button size="xs" className="mr-2" onClick={() => setStreamMode(!streamMode)}>{t("EDR_UI_stream_mode")}</Button>
                     <>{t('EDR_UI_dark_light_mode_switch') ?? ''} :&nbsp;</>
                     <DarkThemeToggle />

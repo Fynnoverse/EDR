@@ -19,6 +19,8 @@ import {hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrai
 import {SortDirection, sortTimetable, TrainSortKey} from "../functions/trainSorting";
 import {differenceInMinutes} from "date-fns";
 import {nowUTC} from "../../utils/date";
+import {useLocalStorage} from "usehooks-ts";
+import {DirectionTextContext} from "./Cells/DirectionIndicator";
 
 export type Bounds = {
     firstColBounds: RectReadOnly;
@@ -54,6 +56,7 @@ export const EDRTable: React.FC<Props> = ({
     const [mapModalTrainId, setMapModalTrainId] = React.useState<string | undefined>();
     const [timetableModalTrainId, setTimetableModalTrainId] = React.useState<string | undefined>();
     const [streamMode, setStreamMode] = React.useState(false);
+    const [showDirectionText, setShowDirectionText] = useLocalStorage("edr-show-direction-text", false);
     const [sortKey, setSortKey] = React.useState<TrainSortKey | undefined>();
     const [sortDirection, setSortDirection] = React.useState<SortDirection>("ascending");
 
@@ -128,7 +131,7 @@ export const EDRTable: React.FC<Props> = ({
         ),
     );
 
-    return <div>
+    return <DirectionTextContext.Provider value={showDirectionText}><div>
         <SimRailMapModal serverCode={serverCode} trainId={mapModalTrainId} setModalTrainId={setMapModalTrainId} />
         <TrainTimetableModal trainDetails={timetableModalTrainId ? trainsWithDetails[timetableModalTrainId] : undefined} setModalTrainId={setTimetableModalTrainId} trainTimetable={timetableModalTrainId ? trainTimetables[timetableModalTrainId] : undefined}/>
         <Header
@@ -141,6 +144,8 @@ export const EDRTable: React.FC<Props> = ({
             setFilter={setFilter}
             streamMode={streamMode}
             setStreamMode={setStreamMode}
+            showDirectionText={showDirectionText}
+            setShowDirectionText={setShowDirectionText}
             filterConfig={filterConfig}
             setFilterConfig={setFilterConfig}
             sortKey={sortKey}
@@ -181,5 +186,5 @@ export const EDRTable: React.FC<Props> = ({
             </Table.Body>
             </Table>
         </div>
-        </div>
+        </div></DirectionTextContext.Provider>
 }

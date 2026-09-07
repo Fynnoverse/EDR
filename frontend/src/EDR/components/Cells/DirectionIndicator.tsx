@@ -5,6 +5,8 @@ import {StationId} from "../../../enums/stationId";
 type TrackSide = "left" | "right" | "up" | "down";
 type ArrowDirection = TrackSide;
 
+export const DirectionTextContext = React.createContext(false);
+
 type Props = {
     pointId: string;
     adjacentPostId?: string;
@@ -51,6 +53,7 @@ const getTrackSide = (pointId: string, adjacentPostId?: string): TrackSide | und
 };
 
 export const DirectionIndicator: React.FC<Props> = ({pointId, adjacentPostId, relation}) => {
+    const showText = React.useContext(DirectionTextContext);
     const side = getTrackSide(pointId, adjacentPostId);
     if (!side) return null;
 
@@ -61,14 +64,15 @@ export const DirectionIndicator: React.FC<Props> = ({pointId, adjacentPostId, re
         : `Ausfahrt nach ${directionNames[side]} aus dem Stellwerk. Ein- und Ausfahrt auf derselben Seite können unterschiedliche Gleise oder Strecken betreffen.`;
 
     return <span
-        className={`mr-2 inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded border border-current px-1 py-0.5 text-xs font-bold ${colors[side]}`}
+        className={`mr-2 inline-flex shrink-0 items-center justify-center whitespace-nowrap font-bold ${colors[side]} ${showText ? "gap-1 rounded border border-current px-1 py-0.5 text-xs" : "h-6 min-w-9"}`}
         title={label}
         role="img"
         aria-label={label}
     >
-        <span aria-hidden="true">{caption}</span>
+        <span aria-hidden="true">{showText ? caption : "【"}</span>
         <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 32 32" fill="none">
             <path d={arrowPaths[arrowDirection]} stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
+        {!showText && <span aria-hidden="true">】</span>}
     </span>;
 };

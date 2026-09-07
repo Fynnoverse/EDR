@@ -22,6 +22,7 @@ import { TimeTableRow } from "../customTypes/TimeTableRow";
 import { ExtendedTrain } from "../customTypes/ExtendedTrain";
 import { nowUTC } from "../utils/date";
 import { DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM } from "./functions/trainFilters";
+import {useLocalStorage} from "usehooks-ts";
 const Graph = React.lazy(() => import("./components/Graph"));
 
 type Props = {
@@ -73,7 +74,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
     const [tzOffset, setTzOffset] = React.useState<number | undefined>();
     const [trainsWithDetails, setTrainsWithDetails] = React.useState<{ [k: string]: DetailedTrain } | undefined>();
     const [isGraphModalOpen, setGraphModalOpen] = React.useState<boolean>(false);
-    const [filterConfig, setFilterConfig] = React.useState<FilterConfig>(presetFilterConfig.default);
+    const [filterConfig, setFilterConfig] = useLocalStorage<FilterConfig>("edr-filter-config", presetFilterConfig.default);
     const [serverTime, setServerTime] = React.useState<number | undefined>();
     const {t} = useTranslation();
     const { enqueueSnackbar } = useSnackbar();

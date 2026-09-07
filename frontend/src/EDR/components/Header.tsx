@@ -20,7 +20,8 @@ type Props = {
     bounds: Bounds;
     timetableLength: number;
 
-    setFilter: (value: string | undefined) => void;
+    filter: string;
+    setFilter: (value: string) => void;
     streamMode: boolean;
     setStreamMode: (v: boolean) => void;
     showDirectionText: boolean;
@@ -64,7 +65,7 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 
 export const Header: React.FC<Props> = ({
     serverTzOffset, serverCode, postCfg, bounds, timetableLength, serverTime,
-    setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
+    filter, setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
     sortKey, sortDirection, onSort, onResetSort, showDirectionText, setShowDirectionText
 }) => {
     const {t} = useTranslation();
@@ -102,7 +103,7 @@ export const Header: React.FC<Props> = ({
                 </div>
             </div>
             <div className="flex items-center justify-between w-full px-4 mt-2">
-                <TextInput sizing={streamMode ? "sm" : "md"} id="trainNumberFilter" className="mb-2 min-w-[100px] grow" onChange={(e) => setFilter(e.target.value)} placeholder={t('EDR_UI_train_number') ?? ''}/>
+                <TextInput sizing={streamMode ? "sm" : "md"} id="trainNumberFilter" className="mb-2 min-w-[100px] grow" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('EDR_UI_train_number') ?? ''}/>
                 <div className="flex ml-4 mb-2">
                     {sortKey && <Button
                         size={streamMode ? "xs" : "md"}

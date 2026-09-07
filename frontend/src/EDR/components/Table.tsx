@@ -52,7 +52,7 @@ export const EDRTable: React.FC<Props> = ({
       playSoundNotification, timetable, trainsWithDetails, serverTzOffset, serverTime,
       post, serverCode, isWebpSupported, filterConfig, setFilterConfig, players, trainTimetables
     }) => {
-    const [filter, setFilter] = React.useState<string | undefined>();
+    const [filter, setFilter] = React.useState("");
     const [mapModalTrainId, setMapModalTrainId] = React.useState<string | undefined>();
     const [timetableModalTrainId, setTimetableModalTrainId] = React.useState<string | undefined>();
     const [streamMode, setStreamMode] = React.useState(false);
@@ -142,6 +142,7 @@ export const EDRTable: React.FC<Props> = ({
             bounds={{...bounds, showStopColumn}}
             timetableLength={timetable.length}
             setFilter={setFilter}
+            filter={filter}
             streamMode={streamMode}
             setStreamMode={setStreamMode}
             showDirectionText={showDirectionText}

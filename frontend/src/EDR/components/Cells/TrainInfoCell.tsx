@@ -136,8 +136,7 @@ export const TrainInfoCell: React.FC<Props> = ({
                             <span className="inline-block whitespace-nowrap" title={displayDistance.approximate
                                 ? `Luftlinie zu ${postCfg.srName}; Streckenentfernung derzeit nicht verfügbar`
                                 : postCfg.srName}>
-                                {displayDistance.approximate ? '≈ ' : ''}{displayDistance.km.toFixed(2)}&nbsp;km
-                                {displayDistance.approximate && <span className="ml-1 text-xs">(Luftlinie)</span>}
+                                {displayDistance.approximate ? '≈ ' : '= '}{displayDistance.km.toFixed(2)}&nbsp;km
                             </span>
                         </>}
                     </div>

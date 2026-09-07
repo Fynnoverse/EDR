@@ -28,8 +28,8 @@ describe("distance to the selected station", () => {
         /></tr></tbody></table>);
         expect(screen.getByText("Nächste:")).toBeVisible();
         expect(screen.getByText("Skierniewice")).toBeVisible();
-        expect(screen.getByText("1.15 km")).toBeVisible();
-        expect(screen.getByText("1.15 km")).toHaveAttribute("title", "Skierniewice");
+        expect(screen.getByText("= 1.15 km")).toBeVisible();
+        expect(screen.getByText("= 1.15 km")).toHaveAttribute("title", "Skierniewice");
     });
 });
 
@@ -50,7 +50,7 @@ describe("missing live routed distance", () => {
         const distance = screen.getByTitle(/Luftlinie zu Łowicz Główny/);
         expect(distance).toBeVisible();
         expect(distance).toHaveTextContent(/≈ 1\.93\s*km/);
-        expect(distance).toHaveTextContent("(Luftlinie)");
+        expect(distance).not.toHaveTextContent("(Luftlinie)");
     });
 
     it("prefers the route and preserves zero", () => {

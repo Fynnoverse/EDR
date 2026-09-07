@@ -37,4 +37,14 @@ describe("TrainTimeDisplay", () => {
         expect(predicted).not.toHaveTextContent("-1");
         expect(scheduled).toHaveTextContent("Plan 13:42-1");
     });
+
+    it("always shows the scheduled time with a neutral deviation while no live value is known", () => {
+        render(<TrainTimeDisplay
+            scheduledTime={new Date("2026-09-07T13:51:00Z")}
+            serverNow={serverNow}
+        />);
+
+        expect(screen.getByTestId("predicted-train-time")).toHaveTextContent("13:51");
+        expect(screen.getByTestId("scheduled-train-time")).toHaveTextContent("Plan 13:51±0");
+    });
 });

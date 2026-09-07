@@ -13,7 +13,7 @@ type Props = {
 export const TrainTimeDisplay: React.FC<Props> = ({scheduledTime, deviationMinutes, serverNow}) => {
     const {t} = useTranslation();
     const predictedTime = getPredictedTrainTime(scheduledTime, deviationMinutes);
-    const hasDeviation = deviationMinutes !== undefined && deviationMinutes !== 0;
+    const effectiveDeviation = deviationMinutes ?? 0;
     const scheduledLabel = t("EDR_TRAINROW_scheduled", {defaultValue: "Plan"});
 
     return <div className="flex flex-col leading-tight">
@@ -21,12 +21,16 @@ export const TrainTimeDisplay: React.FC<Props> = ({scheduledTime, deviationMinut
             {formatServerTime(predictedTime)}
             {isNextServerDay(predictedTime, serverNow) && <sup>+1</sup>}
         </div>
-        {hasDeviation && <div className="text-xs font-normal text-gray-500 dark:text-gray-400 whitespace-nowrap" title={scheduledLabel} data-testid="scheduled-train-time">
+        <div className="text-xs font-normal text-gray-500 dark:text-gray-400 whitespace-nowrap" title={scheduledLabel} data-testid="scheduled-train-time">
             {scheduledLabel} {formatServerTime(scheduledTime)}
             {isNextServerDay(scheduledTime, serverNow) && <sup>+1</sup>}
-            <span className={deviationMinutes > 0 ? "text-red-600 ml-1 font-bold" : "text-green-600 ml-1 font-bold"}>
-                {deviationMinutes > 0 ? "+" : "-"}{Math.abs(deviationMinutes)}
+            <span className={effectiveDeviation > 0
+                ? "text-red-600 ml-1 font-bold"
+                : effectiveDeviation < 0
+                    ? "text-green-600 ml-1 font-bold"
+                    : "text-gray-500 dark:text-gray-400 ml-1 font-bold"}>
+                {effectiveDeviation > 0 ? "+" : effectiveDeviation < 0 ? "-" : "±"}{Math.abs(effectiveDeviation)}
             </span>
-        </div>}
+        </div>
     </div>;
 };

@@ -115,8 +115,9 @@ export const TrainInfoCell: React.FC<Props> = ({
                         />
                     </div>
                     {controllingPlayer?.personaname && <Tooltip placement="top" overlay={<span>{controllingPlayer.personaname}</span>}>
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full">
-                            <img className="h-5 w-5 object-cover" src={controllingPlayer.avatar} alt={controllingPlayer.personaname} />
+                        <span className="flex h-6 max-w-[112px] shrink-0 items-center justify-end gap-1 overflow-hidden whitespace-nowrap">
+                            <span className="max-w-[84px] truncate text-xs">{controllingPlayer.personaname}</span>
+                            <img className="h-5 w-5 shrink-0 rounded-full object-cover" src={controllingPlayer.avatar} alt={controllingPlayer.personaname} />
                         </span>
                     </Tooltip>}
                 </div>

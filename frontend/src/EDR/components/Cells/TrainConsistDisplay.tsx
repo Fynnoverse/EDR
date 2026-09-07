@@ -54,7 +54,7 @@ export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, 
             />}
         </div>
         <span className="block h-3 w-full shrink-0 truncate text-right text-[10px] leading-3 text-gray-600 dark:text-gray-300">{consistLabel}</span>
-        <div className="flex h-3 w-full shrink-0 items-end justify-end gap-px overflow-hidden" aria-hidden="true">
+        <div className="flex h-3 w-full shrink-0 items-center justify-end gap-px overflow-hidden" aria-hidden="true">
             {visibleVehicles.map((vehicle, index) => {
                 const category = getTrainCategory(trainType, [vehicle]);
                 const isTraction = isTractionVehicle(vehicle);
@@ -70,7 +70,7 @@ export const TrainConsistDisplay: React.FC<Props> = ({vehicles = [], trainType, 
                     title={`${index + 1}. ${cleanVehicleName(vehicle)}`}
                 />;
             })}
-            {hiddenVehicleCount > 0 && <span className="ml-1 text-[10px] font-semibold">+{hiddenVehicleCount}</span>}
+            {hiddenVehicleCount > 0 && <span className="ml-1 inline-flex h-3 shrink-0 items-center text-[10px] font-semibold leading-none">+{hiddenVehicleCount}</span>}
         </div>
     </div>;
 };

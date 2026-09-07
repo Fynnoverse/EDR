@@ -105,8 +105,8 @@ export const TrainInfoCell: React.FC<Props> = ({
                         }
                     </span> }
                 </div>
-                <div className="flex min-w-0 md:inline">
-                    <div className="flex min-w-0 justify-end overflow-hidden">
+                <div className="flex min-w-0 shrink-0 items-center justify-end gap-2 overflow-hidden">
+                    <div className="flex min-w-0 shrink-0 justify-end overflow-hidden">
                         <TrainConsistDisplay
                             vehicles={trainDetails?.Vehicles}
                             trainType={ttRow.trainType}
@@ -114,13 +114,11 @@ export const TrainInfoCell: React.FC<Props> = ({
                             streamMode={streamMode}
                         />
                     </div>
-                    <div className="flex justify-end">
-                        {
-                            controllingPlayer?.personaname
-                                ? <span className="flex items-center"><span className="hidden md:inline">{streamMode ? '' : controllingPlayer?.personaname}</span><img className="mx-2" width={16} src={controllingPlayer?.avatar} alt="avatar" /></span>
-                                : <></>
-                        }
-                    </div>
+                    {controllingPlayer?.personaname && <Tooltip placement="top" overlay={<span>{controllingPlayer.personaname}</span>}>
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full">
+                            <img className="h-5 w-5 object-cover" src={controllingPlayer.avatar} alt={controllingPlayer.personaname} />
+                        </span>
+                    </Tooltip>}
                 </div>
             </div>
             <div className="w-full flex flex-col md:flex-row">

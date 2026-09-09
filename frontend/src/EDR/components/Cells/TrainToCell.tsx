@@ -19,7 +19,7 @@ export const TrainToCell: React.FC<Props> = ({headerSeventhColRef, ttRow, second
 
     return (
         <td className={tableCellCommonClassnames(streamMode)} ref={headerSeventhColRef} width="450">
-            {visibleRows.map((row, index) => <React.Fragment key={`${row.pointId}-${row.toPostId ?? row.toPost}`}>
+            {visibleRows.map((row, index) => <React.Fragment key={`${row.pointId}-${row.toPostId ?? row.toPost}-${row.toLine ?? row.line}`}>
                 {index > 0 && <hr />}
                 <div className="flex flex-wrap items-center gap-x-1 gap-y-2"><CellLineData ttRow={row} /></div>
             </React.Fragment>)}

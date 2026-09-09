@@ -19,7 +19,7 @@ export const TrainFromCell: React.FC<Props> = ({headerFourthColRef, ttRow, secon
 
     return (<td className={tableCellCommonClassnames(streamMode)} ref={headerFourthColRef}>
         {visibleRows.map((row, index) => {
-            return (<React.Fragment key={`${row.pointId}-${row.fromPostId ?? row.fromPost}`}>
+            return (<React.Fragment key={`${row.pointId}-${row.fromPostId ?? row.fromPost}-${row.fromLine}`}>
                 {index > 0 && <hr />}
                 <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
                     <DirectionIndicator pointId={row.pointId} adjacentPostId={row.fromPostId} relation="from" line={row.fromLine} />

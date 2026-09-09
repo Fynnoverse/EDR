@@ -1144,7 +1144,18 @@ export const postConfig: Dictionary<StationConfig> = {
         id: "KOL",
         srName: "Koluszki",
         trainPosRange: 0.5,
-        platformPosOverride: [19.818625, 51.743419]
+        platformPosOverride: [19.818625, 51.743419],
+        secondaryPosts: ["KOL_PZS_R145", "KOL_PZS_R154"]
+    },
+    KOL_PZS_R145: {
+        id: "KOL_PZS_R145",
+        srName: "Koluszki PZS R145",
+        trainPosRange: 0.5
+    },
+    KOL_PZS_R154: {
+        id: "KOL_PZS_R154",
+        srName: "Koluszki PZS R154",
+        trainPosRange: 0.5
     },
     ZP: {
         id: "ZP",
@@ -1168,7 +1179,13 @@ export const postConfig: Dictionary<StationConfig> = {
         id: "LK",
         srName: "Łódź Kaliska",
         trainPosRange: 0.5,
-        platformPosOverride: [19.430088, 51.757714]
+        platformPosOverride: [19.430088, 51.757714],
+        secondaryPosts: ["LK_PZS"]
+    },
+    LK_PZS: {
+        id: "LK_PZS",
+        srName: "Łódź Kaliska PZS R219 R227",
+        trainPosRange: 0.5
     },
     BA: {
         id: "BA",

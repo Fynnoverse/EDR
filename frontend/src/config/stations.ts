@@ -522,6 +522,7 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Sosnowiec Kazimierz",
         trainPosRange: 0.5,
         platformPosOverride: [19.231430, 50.288483],
+        secondaryPosts: ["SG_KAZ_PZS_SKZ1", "SG_KAZ_PZS_SKZ2"],
         graphConfig: {
             pre: ["DG_ST"],
             post: ["DOR"],
@@ -555,6 +556,7 @@ export const postConfig: Dictionary<StationConfig> = {
         srName:"Łazy",
         trainPosRange: 0.5,
         platformPosOverride: [19.391998, 50.430172],
+        secondaryPosts: ["LZ_L11"],
         graphConfig: {
             pre: ["LZ_LC"],
             post: ["LZ_LA"],
@@ -566,6 +568,7 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Łazy Ła",
         trainPosRange: 0.5,
         platformPosOverride: [19.420255, 50.453892],
+        secondaryPosts: ["LZ_LGW"],
         graphConfig: {
             pre: ["LZ_LB"],
             post: ["ZA"],
@@ -645,7 +648,8 @@ export const postConfig: Dictionary<StationConfig> = {
         id: "DG_ZA",
         srName:"Dąbrowa Górnicza Ząbkowice",
         trainPosRange: 0.5,
-        platformPosOverride: [19.264612, 50.366385]
+        platformPosOverride: [19.264612, 50.366385],
+        secondaryPosts: ["DG_DZA", "DG_GTB"]
     },
     DG_DZA: {
         id: "DG_DZA",
@@ -1132,7 +1136,8 @@ export const postConfig: Dictionary<StationConfig> = {
         id: "PL",
         srName: "Płyćwia",
         trainPosRange: 0.5,
-        platformPosOverride: [20.002163, 51.916689]
+        platformPosOverride: [20.002163, 51.916689],
+        secondaryPosts: ["PL_GT"]
     },
     RG: {
         id: "RG",
@@ -1173,7 +1178,8 @@ export const postConfig: Dictionary<StationConfig> = {
         id: "LW",
         srName: "Łódź Widzew",
         trainPosRange: 0.5,
-        platformPosOverride: [19.543928, 51.763177]
+        platformPosOverride: [19.543928, 51.763177],
+        secondaryPosts: ["LW_PZS_R3"]
     },
     LK: {
         id: "LK",
@@ -1184,7 +1190,7 @@ export const postConfig: Dictionary<StationConfig> = {
     },
     LK_PZS: {
         id: "LK_PZS",
-        srName: "Łódź Kaliska PZS R219 R227",
+        srName: "Łódź Kaliska PZS R219-R227",
         trainPosRange: 0.5
     },
     BA: {
@@ -1239,7 +1245,8 @@ export const postConfig: Dictionary<StationConfig> = {
         id: "LZ",
         srName: "Łódź Żabieniec",
         trainPosRange: 0.5,
-        platformPosOverride: [19.405852, 51.797350]
+        platformPosOverride: [19.405852, 51.797350],
+        secondaryPosts: ["LZ_GT"]
     },
     LG: {
         id: "LG",

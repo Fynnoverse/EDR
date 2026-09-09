@@ -43,7 +43,7 @@ const directionNames: Record<ArrowDirection, string> = {
     down: "unten"
 };
 
-const getTrackSide = (pointId: string, adjacentPostId?: string, line?: number): TrackSide | undefined => {
+export const getTrackSide = (pointId: string, adjacentPostId?: string, line?: number): TrackSide | undefined => {
     if (!adjacentPostId) return undefined;
 
     const directions = dispatchDirections[parseInt(pointId)];

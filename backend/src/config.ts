@@ -108,6 +108,8 @@ export const newInternalIdToSrId: {[k: string]: number} = {
 }
 
 export const POSTS: { [key: string]: number[] } = {
+    // Every configured subpost also supports its own ungrouped API view.
+    ...Object.fromEntries(Object.entries(newInternalIdToSrId).map(([id, stationId]) => [id, [stationId]])),
     "BA": [newInternalIdToSrId["BA"]],
     "BE": [newInternalIdToSrId["BE"]],
     "B": [newInternalIdToSrId["B"]],

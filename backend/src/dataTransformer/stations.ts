@@ -44,8 +44,9 @@ export const getStationTimetable = async (stationId: number, trainList: IEdrServ
             toPost: nextEntry?.nameForPerson,
             toPostId: nextEntry?.pointId,
             line: stationEntry.line,
-            fromLine: previousEntry ? stationEntry.line : undefined,
-            toLine: nextEntry?.line,
+            // SimRail attaches a line change to the point where that line starts.
+            fromLine: previousEntry?.line,
+            toLine: nextEntry ? stationEntry.line : undefined,
             plannedStop: stationEntry.plannedStop,
             pointId: stationEntry.pointId,
             stationIndex: stationEntry.indexOfPoint,

@@ -54,6 +54,14 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         left: [StationId.dabrowa_gornicza, StationId.dabrowa_gornicza_huta_katowice_r7, StationId.dabrowa_gornicza_huta_katowice, StationId.dabrowa_gornicza_golonog, StationId.dabrowa_gornicza_zabkowice_gtb, StationId.dabrowa_gornicza_pogoria],
         right: [StationId.dabrowa_gornicza_zabkowice_dza, StationId.dabrowa_gorn__zabkowice_dza_r_47, StationId.lazy_lc]
     },
+    [StationId.dabrowa_gornicza_zabkowice_dza]: {
+        left: [StationId.dabrowa_gornicza_zabkowice, StationId.dabrowa_gornicza_zabkowice_gtb],
+        right: [StationId.lazy_lc, StationId.dabrowa_gornicza_sikorka]
+    },
+    [StationId.dabrowa_gornicza_zabkowice_gtb]: {
+        left: [StationId.dabrowa_gornicza_huta_katowice, StationId.dabrowa_gornicza_huta_katowice_r7],
+        right: [StationId.dabrowa_gornicza_zabkowice, StationId.dabrowa_gornicza_zabkowice_dza]
+    },
     [StationId.lazy]: {
         left: [StationId.lazy_lc],
         right: [StationId.lazy_la, StationId.lazy_r52, StationId.lazy_grupa_weglarkowa_lgw, StationId.lazy_l11]
@@ -65,6 +73,14 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     [StationId.lazy_lc]: {
         left: [StationId.lazy],
         right: [StationId.dabrowa_gornicza_zabkowice, StationId.dabrowa_gornicza_zabkowice_dza, StationId.dabrowa_gorn__zabkowice_dza_r_47, StationId.przemiarki, StationId.wiesiolka]
+    },
+    [StationId.lazy_l11]: {
+        left: [StationId.lazy, StationId.lazy_lc],
+        right: [StationId.lazy_la, StationId.lazy_grupa_weglarkowa_lgw]
+    },
+    [StationId.lazy_grupa_weglarkowa_lgw]: {
+        left: [StationId.lazy, StationId.lazy_l11, StationId.lazy_lc],
+        right: [StationId.lazy_la, StationId.zawiercie]
     },
     [StationId.zawiercie]: {
         left: [StationId.lazy_la, StationId.zawiercie_gt],
@@ -160,13 +176,21 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         left: [StationId.dabrowa_gornicza_strzemieszyce, StationId.dabr_gor_strzem__r75],
         right: [StationId.sosnowiec_maczki, StationId.sosnowiec_dandowka, StationId.sosnowiec_kazimierz_pzs_skz1, StationId.sosnowiec_kazimierz_pzs_skz2],
     },
+    [StationId.sosnowiec_kazimierz_pzs_skz1]: {
+        left: [StationId.sosnowiec_kazimierz],
+        right: [StationId.sosnowiec_maczki, StationId.sosnowiec_kazimierz_pzs_skz2]
+    },
+    [StationId.sosnowiec_kazimierz_pzs_skz2]: {
+        left: [StationId.sosnowiec_kazimierz, StationId.sosnowiec_kazimierz_pzs_skz1],
+        right: [StationId.sosnowiec_dandowka, StationId.sosnowiec_porabka]
+    },
     [StationId.bukowno]: {
         left: [StationId.slawkow, StationId.bukowno_przymiarki, StationId.borowa_gorka],
         right: [StationId.olkusz],
     },
     [StationId.tunel]: {
         left: [StationId.kozlow],
-        right: [StationId.miechow, StationId.charsznica, StationId.tunel_r13],
+        right: [StationId.miechow, StationId.dziadowki, StationId.charsznica, StationId.tunel_r13],
     },
     [StationId.kozlow]: {
         left: [StationId.tunel, StationId.tunel_r13],
@@ -219,11 +243,26 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         up: [StationId.slotwiny, StationId.zakowice_poludniowe],
         down: [StationId.koluszki_pzs_r145, StationId.zakowice, StationId.galkowek]
     },
+    [StationId.koluszki_pzs_r145]: {
+        left: [StationId.koluszki, StationId.koluszki_r59, StationId.rogow],
+        right: [StationId.koluszki_pzs_r154, StationId.rokiciny, StationId.chrusty_nowe],
+        down: [StationId.zakowice, StationId.galkowek]
+    },
+    [StationId.koluszki_pzs_r154]: {
+        left: [StationId.koluszki, StationId.koluszki_r121, StationId.rogow],
+        right: [StationId.rokiciny, StationId.chrusty_nowe],
+        up: [StationId.slotwiny, StationId.zakowice_poludniowe],
+        down: [StationId.koluszki_pzs_r145, StationId.zakowice, StationId.galkowek]
+    },
     [StationId.lodz_widzew]: {
         left: [StationId.lodz_widzew_r9, StationId.lodz_widzew_pzs_r3, StationId.lodz_fabryczna],
         up: [StationId.lodz_marysin, StationId.lodz_stoki, StationId.zgierz],
         down: [StationId.lodz_chojny, StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_zarzew, StationId.lodz_olechow_loc, StationId.lodz_olechow_pzs_r3],
         right: [StationId.lodz_andrzejow, StationId.lodz_andrzejow_szosa, StationId.galkowek]
+    },
+    [StationId.lodz_widzew_pzs_r3]: {
+        left: [StationId.lodz_niciarniana, StationId.lodz_fabryczna],
+        right: [StationId.lodz_widzew]
     },
     [StationId.baby]: {
         left: [StationId.rokiciny, StationId.laznow, StationId.wolborka],
@@ -254,7 +293,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     [StationId.lodz_chojny]: {
         left: [StationId.lodz_kaliska_pzs_r219_r227, StationId.lodz_pabianicka, StationId.lodz_kaliska],
         right: [StationId.lodz_widzew, StationId.lodz_zarzew],
-        down: [StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_olechow_pzs_r3]
+        down: [StationId.lodz_dabrowa, StationId.lodz_dabrowa_pbs, StationId.lodz_olechow_pzs_r3, StationId.lodz_olechow_loc]
     },
     [StationId.lodz_lublinek]: {
         left: [StationId.pabianice, StationId.pabianice_polnocne],
@@ -263,6 +302,10 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     [StationId.lodz_zabieniec]: {
         left: [StationId.lodz_kaliska],
         right: [StationId.lodz_zabieniec_gt, StationId.zgierz]
+    },
+    [StationId.lodz_zabieniec_gt]: {
+        left: [StationId.lodz_zabieniec, StationId.lodz_kaliska],
+        right: [StationId.lodz_radogoszcz_zachod, StationId.zgierz]
     },
     [StationId.lowicz_glowny]: {
         left: [StationId.bednary, StationId.lowicz_glowny_pzs_r1, StationId.lowicz_glowny_pzs_r24_r31],
@@ -334,11 +377,15 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
     },
     [StationId.plycwia]: {
         left: [StationId.skierniewice_p_pzs, StationId.makow],
-        right: [StationId.plycwia_gt],
+        right: [StationId.plycwia_gt, StationId.rogow, StationId.lipce_reymontowskie],
+    },
+    [StationId.plycwia_gt]: {
+        left: [StationId.plycwia, StationId.makow],
+        right: [StationId.rogow, StationId.lipce_reymontowskie]
     },
     [StationId.rogow]: {
         left: [StationId.wagry, StationId.koluszki, StationId.koluszki_r59],
-        right: [StationId.plycwia_gt, StationId.przylek_duzy, StationId.lipce_reymontowskie]
+        right: [StationId.plycwia, StationId.plycwia_gt, StationId.przylek_duzy, StationId.lipce_reymontowskie]
     },
     [StationId.skierniewice]: {
         left: [StationId.skierniewice_p_pzs, StationId.plycwia, StationId.dabrowice_skierniewickie, StationId.makow],
@@ -367,7 +414,7 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         right: [StationId.skierniewice]
     },
     [StationId.warszawa_wlochy]: {
-        left: [StationId.jozefinow, StationId.warszawa_ursus_polnocny, StationId.warszawa_ursus],
+        left: [StationId.jozefinow, StationId.warszawa_ursus_polnocny, StationId.warszawa_ursus, StationId.pruszkow],
         right: [StationId.warszawa_zachodnia],
         up: [StationId.warszawa_golabki]
     },
@@ -383,8 +430,8 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
 }
 
 // A destination can use different branches. Missing route data must not select
-// an arbitrary side. Timetable lines identify the segment arriving at a point;
-// departure therefore uses the NEXT timetable point's line.
+// an arbitrary side. SimRail's line describes the segment LEAVING a point.
+// Arrival uses the preceding point's line, departure uses the current point's.
 export const dispatchLineDirections: NumericDictionary<NumericDictionary<Partial<Record<number, "left" | "right" | "up" | "down">>>> = {
     [StationId.lowicz_przedmiescie]: {
         [StationId.lowicz_glowny]: {532: "up", 531: "right", 15: "down"}
@@ -1317,6 +1364,46 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Zgierz Północ",
         trainPosRange: 0.5,
         platformPosOverride: [19.384474, 51.869032]
+    },
+    DG_GTB: {
+        id: "DG_GTB",
+        srName: "Dąbrowa Górnicza Ząbkowice GTB",
+        trainPosRange: 0.5
+    },
+    PL_GT: {
+        id: "PL_GT",
+        srName: "Płyćwia GT",
+        trainPosRange: 0.5
+    },
+    LW_PZS_R3: {
+        id: "LW_PZS_R3",
+        srName: "Łódź Widzew PZS R3",
+        trainPosRange: 0.5
+    },
+    LZ_GT: {
+        id: "LZ_GT",
+        srName: "Łódź Żabieniec GT",
+        trainPosRange: 0.5
+    },
+    SG_KAZ_PZS_SKZ1: {
+        id: "SG_KAZ_PZS_SKZ1",
+        srName: "Sosnowiec Kazimierz PZS SKZ1",
+        trainPosRange: 0.5
+    },
+    SG_KAZ_PZS_SKZ2: {
+        id: "SG_KAZ_PZS_SKZ2",
+        srName: "Sosnowiec Kazimierz PZS SKZ2",
+        trainPosRange: 0.5
+    },
+    LZ_L11: {
+        id: "LZ_L11",
+        srName: "Łazy Ł11",
+        trainPosRange: 0.5
+    },
+    LZ_LGW: {
+        id: "LZ_LGW",
+        srName: "Łazy Grupa Węglarkowa ŁGW",
+        trainPosRange: 0.5
     }
 }
 

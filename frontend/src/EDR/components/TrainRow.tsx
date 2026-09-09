@@ -127,7 +127,7 @@ const TableRow: React.FC<Props> = (
             serverNow={dateNow}
         />
         <TrainToCell ttRow={ttRow} headerSeventhColRef={headerSeventhColRef} secondaryPostData={secondaryPostData}
-                     streamMode={streamMode} trainDetails={trainDetails}/>
+                     streamMode={streamMode}/>
     </Table.Row>
 }
 

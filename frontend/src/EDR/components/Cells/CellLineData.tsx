@@ -2,18 +2,14 @@ import React from "react";
 import {useTranslation} from "react-i18next";
 import {edrImagesMap} from "../../../config";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
-import { DetailedTrain } from "../../functions/trainDetails";
 import {DirectionIndicator} from "./DirectionIndicator";
 
 type Props = {
     ttRow: TimeTableRow;
-    trainDetails: DetailedTrain | undefined;
 }
-export const CellLineData: React.FC<Props> = ({ttRow, trainDetails}) => {
+export const CellLineData: React.FC<Props> = ({ttRow}) => {
     const {t} = useTranslation();
-    const timetable = trainDetails?.timetable;
-    const pointIndex = timetable?.findIndex(entry => entry.pointId === ttRow.pointId) ?? -1;
-    const outgoingLine = ttRow.toLine ?? (pointIndex >= 0 ? timetable?.[pointIndex + 1]?.line : undefined);
+    const outgoingLine = ttRow.toLine ?? ttRow.line;
 
     return <>
         <DirectionIndicator pointId={ttRow.pointId} adjacentPostId={ttRow.toPostId} relation="to" line={outgoingLine} />

@@ -13,6 +13,7 @@ export const TrainFromCell: React.FC<Props> = ({headerFourthColRef, ttRow, secon
     const visibleRows = [ttRow, ...secondaryPostData].filter((row, index, rows) =>
         row.fromPost && rows.findIndex(candidate =>
             (candidate.fromPostId ?? candidate.fromPost) === (row.fromPostId ?? row.fromPost)
+            && candidate.fromLine === row.fromLine
         ) === index
     );
 
@@ -21,7 +22,7 @@ export const TrainFromCell: React.FC<Props> = ({headerFourthColRef, ttRow, secon
             return (<React.Fragment key={`${row.pointId}-${row.fromPostId ?? row.fromPost}`}>
                 {index > 0 && <hr />}
                 <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
-                    <DirectionIndicator pointId={row.pointId} adjacentPostId={row.fromPostId} relation="from" line={row.fromLine ?? row.line} />
+                    <DirectionIndicator pointId={row.pointId} adjacentPostId={row.fromPostId} relation="from" line={row.fromLine} />
                     <span>
                         {row.fromPost}
                     </span>

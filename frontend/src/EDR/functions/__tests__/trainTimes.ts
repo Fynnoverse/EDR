@@ -24,6 +24,12 @@ describe("predicted departure", () => {
         expect(getPredictedDepartureTime(arrival, departure, 0, false)).toEqual(arrival);
         expect(getPredictedDepartureTime(arrival, departure, undefined, false)).toEqual(arrival);
     });
+
+    it("applies delay to originating trains where arrival is a placeholder date (epoch 1970)", () => {
+        const originArrival = new Date(0);
+        expect(getPredictedDepartureTime(originArrival, departure, 10).toISOString()).toBe("2026-09-08T00:05:00.000Z");
+        expect(getPredictedDepartureTime(originArrival, departure, 0)).toEqual(departure);
+    });
 });
 
 describe("displayed departure", () => {
@@ -38,6 +44,18 @@ describe("displayed departure", () => {
     it("retains scheduled departure for an early stopping train", () => {
         expect(getDisplayedDepartureTime(arrival, departure, -4, -4, true, undefined, true))
             .toEqual(departure);
+    });
+
+    it("calculates correct departure when departure delay exceeds arrival delay", () => {
+        // Arrived on time (0 delay), but departure delayed by +15 min
+        expect(getDisplayedDepartureTime(arrival, departure, 15, 0, true, undefined, true).toISOString())
+            .toBe("2026-09-08T00:10:00.000Z");
+    });
+
+    it("calculates correct departure for delayed originating trains", () => {
+        const originArrival = new Date(0);
+        expect(getDisplayedDepartureTime(originArrival, departure, 10, undefined, true, undefined, true).toISOString())
+            .toBe("2026-09-08T00:05:00.000Z");
     });
 });
 

@@ -1321,4 +1321,202 @@ describe("TrainRow departure alarm calculation", () => {
 
         expect(playSound).toHaveBeenCalledTimes(1);
     });
+
+    it("immediately deactivates triggered alarm and re-arms when train receives delay shifting departure to future", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const date1146 = new Date("2026-09-07T11:46:00Z");
+
+        // Train scheduled 11:47:00
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={date1146.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={true}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // At 11:46, alarm triggered and "Abfahrt" badge displayed
+        expect(playSound).toHaveBeenCalledTimes(1);
+        expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+
+        // Train receives a +10 min delay -> calculated departure moves to 11:57 (trigger 11:56)
+        const delayedDetails = {
+            ...delayedTrain,
+            receivedAt: Date.now(),
+            lastDelay: 10,
+        };
+
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={delayedDetails}
+                        serverTime={date1146.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={true}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // Alarm is immediately deactivated (badge gone, bell button visible and re-armed with check icon)
+        expect(screen.queryByText("Abfahrt")).not.toBeInTheDocument();
+        const notifyButton = screen.getByRole("button", {name: "Benachrichtigen"});
+        expect(notifyButton).toBeInTheDocument();
+        // Row is no longer alarming
+        expect(document.querySelector('tr[data-alarming="true"]')).toBeNull();
+
+        // Advance to 11:56 (1 min before delayed departure 11:57)
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={delayedDetails}
+                        serverTime={new Date("2026-09-07T11:56:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={true}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // Alarm triggers again for the updated delayed time
+        expect(playSound).toHaveBeenCalledTimes(2);
+        expect(mockEnqueueSnackbar).toHaveBeenCalledWith(
+            "Zug 11507 (Linie 1) soll um 11:57 abfahren nach Warszawa Wschodnia",
+            expect.objectContaining({variant: "warning"})
+        );
+        expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+    });
+
+    it("correctly delays departure alarm for delayed trains starting at origin station (placeholder arrival)", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const originRow = {
+            ...row,
+            scheduledArrivalObject: new Date(0),
+            scheduledDepartureObject: new Date("2026-09-07T11:47:00Z"),
+        };
+        const delayedOriginTrain = {
+            ...delayedTrain,
+            receivedAt: Date.now(),
+            lastDelay: 10, // Departure moves to 11:57 (trigger 11:56)
+        };
+
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={originRow}
+                        trainDetails={delayedOriginTrain}
+                        serverTime={new Date("2026-09-07T11:46:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={true}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // At 11:46, alarm must NOT trigger because delayed departure is 11:57
+        expect(playSound).not.toHaveBeenCalled();
+        expect(screen.queryByText("Abfahrt")).not.toBeInTheDocument();
+
+        // At 11:56 (1 min before delayed 11:57), alarm triggers
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={originRow}
+                        trainDetails={delayedOriginTrain}
+                        serverTime={new Date("2026-09-07T11:56:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={true}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(playSound).toHaveBeenCalledTimes(1);
+        expect(mockEnqueueSnackbar).toHaveBeenCalledWith(
+            "Zug 11507 (Linie 1) soll um 11:57 abfahren nach Warszawa Wschodnia",
+            expect.objectContaining({variant: "warning"})
+        );
+    });
 });

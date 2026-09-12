@@ -82,6 +82,8 @@ const TableRow: React.FC<Props> = (
 
     const notifKey = React.useMemo(() => getTrainNotificationKey(ttRow, serverCode, postCfg), [ttRow, serverCode, postCfg]);
 
+    const wasArmedRef = React.useRef<boolean>(Boolean(autoAlarmVisible) || isTrainNotificationStored(notifKey));
+
     const [notificationEnabled, setNotificationEnabledState] = React.useState<boolean>(() => {
         if (trainHasPassedStation) {
             removeStoredTrainNotification(notifKey);
@@ -91,30 +93,25 @@ const TableRow: React.FC<Props> = (
     });
     const [alarmTriggered, setAlarmTriggered] = React.useState(false);
 
-    React.useEffect(() => {
-        if (!trainHasPassedStation) {
-            if (autoAlarmVisible) {
-                setNotificationEnabledState(true);
-            } else {
-                setNotificationEnabledState(isTrainNotificationStored(notifKey));
-            }
-        }
-    }, [autoAlarmVisible, trainHasPassedStation, notifKey]);
+    const trainMustDepart = !trainHasPassedStation && (subMinutes(calculatedDeparture, 1) <= dateNow);
 
     const setNotificationEnabled = React.useCallback((value: React.SetStateAction<boolean>) => {
         if (trainHasPassedStation) {
             removeStoredTrainNotification(notifKey);
             setNotificationEnabledState(false);
+            wasArmedRef.current = false;
             return;
         }
         setNotificationEnabledState(prev => {
             const next = typeof value === "function" ? value(prev) : value;
             setStoredTrainNotification(notifKey, next);
+            if (!trainMustDepart) {
+                wasArmedRef.current = next;
+            }
             return next;
         });
-    }, [trainHasPassedStation, notifKey]);
+    }, [trainHasPassedStation, notifKey, trainMustDepart]);
 
-    const trainMustDepart = !trainHasPassedStation && (subMinutes(calculatedDeparture, 1) <= dateNow);
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 
@@ -125,8 +122,31 @@ const TableRow: React.FC<Props> = (
                 setNotificationEnabledState(false);
                 setAlarmTriggered(false);
             }
+            wasArmedRef.current = false;
+            return;
         }
-    }, [trainHasPassedStation, notificationEnabled, alarmTriggered, notifKey]);
+
+        if (autoAlarmVisible) {
+            wasArmedRef.current = true;
+            if (!notificationEnabled && !alarmTriggered) {
+                setStoredTrainNotification(notifKey, true);
+                setNotificationEnabledState(true);
+            }
+        }
+
+        if (!trainMustDepart) {
+            if (alarmTriggered) {
+                setAlarmTriggered(false);
+            }
+            if (autoAlarmVisible || wasArmedRef.current || isTrainNotificationStored(notifKey)) {
+                wasArmedRef.current = true;
+                setStoredTrainNotification(notifKey, true);
+                if (!notificationEnabled) {
+                    setNotificationEnabledState(true);
+                }
+            }
+        }
+    }, [trainMustDepart, trainHasPassedStation, autoAlarmVisible, notifKey, alarmTriggered, notificationEnabled]);
 
     const isAlarming = (alarmTriggered || (notificationEnabled && trainMustDepart)) && !trainHasPassedStation;
 

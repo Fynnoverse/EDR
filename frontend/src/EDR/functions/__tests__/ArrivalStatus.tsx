@@ -1,10 +1,11 @@
 import {render, screen} from "@testing-library/react";
 import {TrainArrivalCell} from "../../components/Cells/TrainArrivalCell";
-import {getStationArrivalStatus, isTrainStandingAtStation} from "../stationPresence";
+import {getStationArrivalStatus, isTrainInStationArea, isTrainStandingAtStation} from "../stationPresence";
 import {TimeTableRow} from "../../../customTypes/TimeTableRow";
 import {DetailedTrain} from "../trainDetails";
 import {postConfig} from "../../../config/stations";
 import {getStationDeviation} from "../stationDeviation";
+import {hasTrainPassedStation} from "../trainFilters";
 
 jest.mock("react-i18next", () => ({useTranslation: () => ({t: (key: string, options?: {defaultValue?: string}) => options?.defaultValue ?? key})}));
 jest.mock("../../components/TrainRow", () => ({tableCellCommonClassnames: () => ""}));
@@ -60,4 +61,30 @@ it("recognizes the live 144063 unplanned stop at Koluszki signal 1803_KO_E101", 
 it("does not turn unconfirmed plan copies into arrival events as server time passes", () => {
     const placeholder = {...row, isConfirmed: false, actualArrivalObject: row.scheduledArrivalObject};
     expect(getStationArrivalStatus(placeholder, train, new Date("2026-09-12T12:02:00Z"))).toBeUndefined();
+});
+
+it("keeps train in station area when shunting or moving in larger station areas (trainPosRange > 0.5km)", () => {
+    const largeStation = {...postConfig.KOL, trainPosRange: 1.8};
+    const stationRow = {...row, stationIndex: 4};
+    // Train has progressed timetable index (5 > 4) and is moving at 15 km/h, but is 1.1 km away (within 1.8 km)
+    const shuntingTrain = {
+        ...train,
+        distanceFromStation: 1.1,
+        TrainData: {
+            ...train.TrainData,
+            Velocity: 15,
+            VDDelayedTimetableIndex: 5,
+        },
+    } as DetailedTrain;
+
+    expect(isTrainInStationArea(stationRow, shuntingTrain, largeStation)).toBe(true);
+    // Standing is false because Velocity > 1
+    expect(isTrainStandingAtStation(stationRow, shuntingTrain, largeStation, now)).toBe(false);
+
+    // Train outside station range (2.5 km > 1.8 km) is not in station area
+    const departedTrain = {
+        ...shuntingTrain,
+        distanceFromStation: 2.5,
+    };
+    expect(isTrainInStationArea(stationRow, departedTrain, largeStation)).toBe(false);
 });

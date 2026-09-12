@@ -8,6 +8,37 @@ import {stationEventKey, validEventTime, validReportedEventTime} from "./trainEv
 // Combine a platform-length tolerance with the current timetable point and speed.
 export const STATION_STOP_RADIUS_KM = 0.5;
 
+export function isTrainInStationArea(
+    row: TimeTableRow,
+    train: DetailedTrain | undefined,
+    station: StationConfig | undefined,
+): boolean {
+    if (!train) return false;
+    const secondaryIndices = (row.secondaryPostsRows || []).map(r => r.stationIndex);
+    const stationIndices = [row.stationIndex, ...secondaryIndices].filter((idx): idx is number => idx !== undefined);
+    const currentIndex = train.TrainData?.VDDelayedTimetableIndex;
+    const stationRange = station?.trainPosRange ?? STATION_STOP_RADIUS_KM;
+    const distance = getDisplayDistance(
+        train.distanceFromStation,
+        train.TrainData?.Longitute,
+        train.TrainData?.Latititute,
+        station?.platformPosOverride
+    );
+    const stopPoints = [row, ...(row.secondaryPostsRows ?? [])];
+    const atStationSignal = stopPoints.some(stop => !!stop.pointId && train.TrainData?.SignalInFront?.startsWith(`${stop.pointId}_`))
+        || (!!station?.id && train.TrainData?.SignalInFront?.startsWith(`${station.id}_`) === true);
+
+    if (atStationSignal) {
+        return true;
+    }
+
+    if (stationIndices.length > 0 && currentIndex !== undefined && distance !== undefined && distance.km <= stationRange) {
+        return stationIndices.some(idx => currentIndex >= idx);
+    }
+
+    return false;
+}
+
 export function isTrainStandingAtStation(row: TimeTableRow, train: DetailedTrain | undefined, station: StationConfig, now = new Date()) {
     if (!train) return false;
     const stop = [row, ...(row.secondaryPostsRows ?? [])]
@@ -26,14 +57,16 @@ export function isTrainStandingAtStation(row: TimeTableRow, train: DetailedTrain
     const atCurrentPoint = stop.stationIndex === train.TrainData.VDDelayedTimetableIndex;
     const recordedPresence = validEventTime(arrival, now) && (atCurrentPoint || reportedStop);
     // Live signal identifiers may carry the exact timetable point ID (e.g. 1803_KO_E101).
-    const atStationSignal = !!stop.pointId && train.TrainData.SignalInFront?.startsWith(`${stop.pointId}_`) === true;
+    const atStationSignal = (!!stop.pointId && train.TrainData.SignalInFront?.startsWith(`${stop.pointId}_`) === true)
+        || (!!station?.id && train.TrainData.SignalInFront?.startsWith(`${station.id}_`) === true);
     const scheduledDwell = stop.scheduledDepartureObject?.valueOf() - stop.scheduledArrivalObject?.valueOf();
     const distance = getDisplayDistance(train.distanceFromStation, train.TrainData.Longitute,
-        train.TrainData.Latititute, station.platformPosOverride);
+        train.TrainData.Latititute, station?.platformPosOverride);
+    const stationRange = station?.trainPosRange ?? STATION_STOP_RADIUS_KM;
     return (stop.plannedStop > 0 || stop.stopType > 0 || (event?.plannedStop ?? 0) > 0
         || (scheduledDwell > 0 && scheduledDwell < 86400000) || reportedStop || recordedPresence || atStationSignal)
         && Number.isFinite(train.TrainData.Velocity) && Math.abs(train.TrainData.Velocity) < 1
-        && (recordedPresence || atStationSignal || (distance !== undefined && distance.km <= STATION_STOP_RADIUS_KM));
+        && (recordedPresence || atStationSignal || (distance !== undefined && distance.km <= stationRange));
 }
 
 /** An arrival event is independent of speed and distance to the station reference. */

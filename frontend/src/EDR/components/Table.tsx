@@ -19,7 +19,7 @@ import {departureDistance, hasTrainPassedStation, shouldHideByScheduledTime, sho
 import {ArrivalSortMode, SortDirection, sortTimetable, TrainSortKey} from "../functions/trainSorting";
 import {getStationDeviation} from "../functions/stationDeviation";
 import {getDisplayedDepartureTime} from "../functions/trainTimes";
-import {isTrainStandingAtStation} from "../functions/stationPresence";
+import {isTrainInStationArea, isTrainStandingAtStation} from "../functions/stationPresence";
 import {differenceInMinutes} from "date-fns";
 import {nowUTC} from "../../utils/date";
 import {useLocalStorage} from "usehooks-ts";
@@ -93,7 +93,8 @@ export const EDRTable: React.FC<Props> = ({
                 const train = trainsWithDetails[row.trainNoLocal];
                 const secondaryStationIndices = (row.secondaryPostsRows || []).map(r => r.stationIndex);
                 const standing = isTrainStandingAtStation(row, train, currentPostCfg, dateNow);
-                const hasPassed = train !== undefined && !standing && hasTrainPassedStation(
+                const inArea = isTrainInStationArea(row, train, currentPostCfg);
+                const hasPassed = train !== undefined && !standing && !inArea && hasTrainPassedStation(
                     train.TrainData.VDDelayedTimetableIndex,
                     row.stationIndex,
                     secondaryStationIndices
@@ -135,7 +136,9 @@ export const EDRTable: React.FC<Props> = ({
             .filter((tt) => {
                 const train = trainsWithDetails[tt.trainNoLocal];
                 const secondaryStationIndices = (tt.secondaryPostsRows || []).map(row => row.stationIndex);
-                const hasPassed = train !== undefined && !isTrainStandingAtStation(tt, train, postCfg, dateNow) && hasTrainPassedStation(
+                const standing = isTrainStandingAtStation(tt, train, postCfg, dateNow);
+                const inArea = isTrainInStationArea(tt, train, postCfg);
+                const hasPassed = train !== undefined && !standing && !inArea && hasTrainPassedStation(
                     train.TrainData.VDDelayedTimetableIndex,
                     tt.stationIndex,
                     secondaryStationIndices,
@@ -150,8 +153,8 @@ export const EDRTable: React.FC<Props> = ({
                 if (filterConfig.onlyApproaching && shouldHideDepartedTrain(hasPassed, distanceAfterDeparture, filterConfig.departedDistance)) return false;
                 if (filterConfig.maxRange !== undefined && train?.distanceFromStation != null && train.distanceFromStation > filterConfig.maxRange) return false;
 
-                // A train still waiting here must not vanish as its arrival moves out of the time window.
-                if (isTrainStandingAtStation(tt, train, postCfg, dateNow)) return true;
+                // A train still waiting here or in station area must not vanish as its arrival moves out of the time window.
+                if (standing || inArea) return true;
 
                 return !shouldHideByScheduledTime(
                     filterConfig.maxTime,
@@ -169,7 +172,9 @@ export const EDRTable: React.FC<Props> = ({
         ? sortTimetable(filteredTimetable, sortKey, sortDirection, trainsWithDetails, arrivalDeviation, departureTime)
         : moveInactiveRowsLast(sortTimetable(filteredTimetable, "arrival", "ascending", trainsWithDetails,
             arrivalSortMode === "scheduled" ? () => 0 : arrivalDeviation),
-        (tt) => !isTrainStandingAtStation(tt, trainsWithDetails[tt.trainNoLocal], postCfg, dateNow) && isInactiveTrainAtStation(
+        (tt) => !isTrainStandingAtStation(tt, trainsWithDetails[tt.trainNoLocal], postCfg, dateNow)
+            && !isTrainInStationArea(tt, trainsWithDetails[tt.trainNoLocal], postCfg)
+            && isInactiveTrainAtStation(
             trainsWithDetails[tt.trainNoLocal]?.TrainData.VDDelayedTimetableIndex,
             tt.stationIndex,
             (tt.secondaryPostsRows || []).map(row => row.stationIndex),

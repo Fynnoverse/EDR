@@ -16,7 +16,7 @@ import { postConfig, StationConfig } from "../../../config/stations";
 import { edrImagesMap, edrWebpImagesMap } from "../../../config";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {getDisplayDistance} from "../../functions/displayDistance";
-import {getStationArrivalStatus, isTrainStandingAtStation} from "../../functions/stationPresence";
+import {getStationArrivalStatus, isTrainInStationArea, isTrainStandingAtStation} from "../../functions/stationPresence";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -47,6 +47,7 @@ export const TrainInfoCell: React.FC<Props> = ({
     const icons = isWebpSupported ? edrWebpImagesMap : edrImagesMap;
     const distanceFromStation = trainDetails?.distanceFromStation;
     const standingAtStation = isTrainStandingAtStation(ttRow, trainDetails, postCfg, serverNow);
+    const inStationArea = isTrainInStationArea(ttRow, trainDetails, postCfg);
     const arrivalStatus = getStationArrivalStatus(ttRow, trainDetails, serverNow ?? new Date());
     const displayDistance = getDisplayDistance(distanceFromStation,
         trainDetails?.TrainData?.Longitute, trainDetails?.TrainData?.Latititute,
@@ -56,7 +57,7 @@ export const TrainInfoCell: React.FC<Props> = ({
         || nextStationName === postCfg.srName
         || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName);
     const isTrainApproaching = !trainHasPassedStation && nextIsOwnStation;
-    const isAtOwnStation = !trainHasPassedStation && (!!arrivalStatus || standingAtStation);
+    const isAtOwnStation = !trainHasPassedStation && (!!arrivalStatus || standingAtStation || inStationArea);
     const ownStationBadgeClass = 'inline-block px-1 rounded bg-green-200 text-green-900 dark:bg-green-600 dark:text-white';
 
     const CopyToClipboard = (stringToCopy: string) => {
@@ -143,7 +144,8 @@ export const TrainInfoCell: React.FC<Props> = ({
                             {arrivalStatus ? <strong className="mr-2" title={arrivalStatus.estimated ? "Ankunft aus aufeinanderfolgenden Live-Beobachtungen geschätzt" : "Ankunftszeit aus den Fahrplandaten"}>
                                 {arrivalStatus.estimated ? "≈ Angekommen" : "Angekommen"}
                             </strong>
-                            : <strong className="mr-2">Hält im Bahnhof</strong>}
+                            : standingAtStation ? <strong className="mr-2">Hält im Bahnhof</strong>
+                            : <strong className="mr-2">Im Bahnhofsbereich</strong>}
                             <span className={ownStationBadgeClass}>{postCfg.srName}</span>
                         </> : <>
                             <span>{t("EDR_TRAINROW_position_next")}:&nbsp;</span>

@@ -712,6 +712,7 @@ describe("TrainRow departure alarm calculation", () => {
         const departedTrainDetails = {
             ...delayedTrain,
             lastDelay: 0,
+            distanceFromStation: 15,
             TrainData: {
                 ...delayedTrain.TrainData,
                 VDDelayedTimetableIndex: 999, // departed
@@ -1017,6 +1018,7 @@ describe("TrainRow departure alarm calculation", () => {
         // Train receives +10 min delay -> live departure moves to 14:45 (trigger: 14:44)
         const delayedTrainPlus10 = {
             ...delayedTrain,
+            receivedAt: Date.now(),
             lastDelay: 10,
         };
 

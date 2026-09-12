@@ -1,7 +1,7 @@
 import {TimeTableRow} from "../../customTypes/TimeTableRow";
 import {StationConfig} from "../../config/stations";
 import {DetailedTrain} from "./trainDetails";
-import {isTrainStandingAtStation} from "./stationPresence";
+import {isTrainInStationArea, isTrainStandingAtStation} from "./stationPresence";
 import {hasTrainPassedStation} from "./trainFilters";
 import {LIVE_OBSERVATION_GRACE_MS, stationEventKey, validEventTime, validReportedEventTime} from "./trainEvents";
 export {validEventTime} from "./trainEvents";
@@ -16,9 +16,11 @@ export function getStationDeviation(row: TimeTableRow, train: DetailedTrain | un
     const arrivalTime = validEventTime(arrival, now) ? arrival : rememberedArrival?.time;
     const arrivalMeasured = validEventTime(arrival, now) || (rememberedArrival?.estimated === false && validEventTime(rememberedArrival.time, now));
     const isStandingAtStop = isTrainStandingAtStation(row, train, station, now);
+    const inArea = isTrainInStationArea(row, train, station);
     const secondaryStationIndices = (row.secondaryPostsRows || []).map(r => r.stationIndex);
     const hasPassed = train?.TrainData?.VDDelayedTimetableIndex !== undefined
         && !isStandingAtStop
+        && !inArea
         && hasTrainPassedStation(train.TrainData.VDDelayedTimetableIndex, row.stationIndex, secondaryStationIndices);
 
     const fresh = train?.receivedAt != null && Date.now() - train.receivedAt <= LIVE_OBSERVATION_GRACE_MS;

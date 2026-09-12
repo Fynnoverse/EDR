@@ -14,12 +14,12 @@ import { ISteamUser } from "../../config/ISteamUser";
 import { TrainTimeTableRow } from "../../Sirius";
 import { Dictionary } from "lodash";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
-import { isInactiveTrainAtStation, moveInactiveRowsLast } from "../functions/trainFilters";
-import {departureDistance, hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrain} from "../functions/trainFilters";
+import { moveInactiveRowsLast } from "../functions/trainFilters";
+import {departureDistance, shouldHideByScheduledTime, shouldHideDepartedTrain} from "../functions/trainFilters";
 import {ArrivalSortMode, SortDirection, sortTimetable, TrainSortKey} from "../functions/trainSorting";
 import {getStationDeviation} from "../functions/stationDeviation";
 import {getDisplayedDepartureTime} from "../functions/trainTimes";
-import {getStationGroupIndices, getStationGroupPosts, isTrainInStationArea, isTrainStandingAtStation} from "../functions/stationPresence";
+import {hasTrainLeftStationArea, getStationGroupPosts, isTrainInStationArea, isTrainStandingAtStation} from "../functions/stationPresence";
 import {differenceInMinutes} from "date-fns";
 import {nowUTC} from "../../utils/date";
 import {useLocalStorage} from "usehooks-ts";
@@ -91,14 +91,7 @@ export const EDRTable: React.FC<Props> = ({
             const validActiveKeys = new Set<string>();
             for (const row of timetable) {
                 const train = trainsWithDetails[row.trainNoLocal];
-                const secondaryStationIndices = getStationGroupIndices(row, train, currentPostCfg).filter(idx => idx !== row.stationIndex);
-                const standing = isTrainStandingAtStation(row, train, currentPostCfg, dateNow);
-                const inArea = isTrainInStationArea(row, train, currentPostCfg);
-                const hasPassed = train !== undefined && !standing && !inArea && hasTrainPassedStation(
-                    train.TrainData.VDDelayedTimetableIndex,
-                    row.stationIndex,
-                    secondaryStationIndices
-                );
+                const hasPassed = hasTrainLeftStationArea(row, train, currentPostCfg, dateNow);
                 if (!hasPassed) {
                     validActiveKeys.add(getTrainNotificationKey(row, serverCode, currentPostCfg));
                 }
@@ -135,14 +128,9 @@ export const EDRTable: React.FC<Props> = ({
             .filter((tt) => filterConfig.onlyOnTrack ? !!trainsWithDetails[tt.trainNoLocal] : true)
             .filter((tt) => {
                 const train = trainsWithDetails[tt.trainNoLocal];
-                const secondaryStationIndices = getStationGroupIndices(tt, train, postCfg).filter(idx => idx !== tt.stationIndex);
                 const standing = isTrainStandingAtStation(tt, train, postCfg, dateNow);
                 const inArea = isTrainInStationArea(tt, train, postCfg);
-                const hasPassed = train !== undefined && !standing && !inArea && hasTrainPassedStation(
-                    train.TrainData.VDDelayedTimetableIndex,
-                    tt.stationIndex,
-                    secondaryStationIndices,
-                );
+                const hasPassed = hasTrainLeftStationArea(tt, train, postCfg, dateNow);
 
                 const allPostPositions = getStationGroupPosts(postCfg)
                     .map(p => p.platformPosOverride)
@@ -176,13 +164,8 @@ export const EDRTable: React.FC<Props> = ({
         ? sortTimetable(filteredTimetable, sortKey, sortDirection, trainsWithDetails, arrivalDeviation, departureTime)
         : moveInactiveRowsLast(sortTimetable(filteredTimetable, "arrival", "ascending", trainsWithDetails,
             arrivalSortMode === "scheduled" ? () => 0 : arrivalDeviation),
-        (tt) => !isTrainStandingAtStation(tt, trainsWithDetails[tt.trainNoLocal], postCfg, dateNow)
-            && !isTrainInStationArea(tt, trainsWithDetails[tt.trainNoLocal], postCfg)
-            && isInactiveTrainAtStation(
-            trainsWithDetails[tt.trainNoLocal]?.TrainData.VDDelayedTimetableIndex,
-            tt.stationIndex,
-            getStationGroupIndices(tt, trainsWithDetails[tt.trainNoLocal], postCfg).filter(idx => idx !== tt.stationIndex),
-        ),
+        (tt) => !trainsWithDetails[tt.trainNoLocal]
+            || hasTrainLeftStationArea(tt, trainsWithDetails[tt.trainNoLocal], postCfg, dateNow),
     );
 
     return <DirectionTextContext.Provider value={showDirectionText}><div className="edr-layout">

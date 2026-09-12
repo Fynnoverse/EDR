@@ -3,6 +3,18 @@ import {postConfig, StationConfig} from "../../config/stations";
 import {DetailedTrain} from "./trainDetails";
 import {getDisplayDistance} from "./displayDistance";
 import {stationEventKey, validEventTime, validReportedEventTime} from "./trainEvents";
+import {hasTrainPassedStation} from "./trainFilters";
+
+export const stationPresenceKey = (row: TimeTableRow, station: StationConfig) =>
+    `${station.id}:${stationEventKey(row.pointId, row.stationIndex, row.scheduledArrivalObject)}`;
+
+/** Departure requires observed presence followed by leaving the entire post group. */
+export function hasTrainLeftStationArea(row: TimeTableRow, train: DetailedTrain | undefined, station: StationConfig, now: Date): boolean {
+    return !!train?.observedStationAreas?.[stationPresenceKey(row, station)]
+        && hasTrainPassedStation(train.TrainData.VDDelayedTimetableIndex, row.stationIndex, getStationGroupIndices(row, train, station))
+        && !isTrainInStationArea(row, train, station)
+        && !isTrainStandingAtStation(row, train, station, now);
+}
 
 // A station coordinate is a reference point, not the train's stopping position.
 // Combine a platform-length tolerance with the current timetable point and speed.

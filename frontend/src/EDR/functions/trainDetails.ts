@@ -4,7 +4,7 @@ import { TrainTimeTableRow } from "../../Sirius";
 import { ExtendedTrain } from "../../customTypes/ExtendedTrain";
 import { differenceInMinutes } from "date-fns";
 import {TimeTableRow} from "../../customTypes/TimeTableRow";
-import {isTrainStandingAtStation} from "./stationPresence";
+import {isTrainInStationArea, isTrainStandingAtStation, stationPresenceKey} from "./stationPresence";
 import {LIVE_OBSERVATION_GRACE_MS, stationEventKey, validEventTime, validReportedEventTime} from "./trainEvents";
 
 type ExtraStationConfig = {
@@ -67,9 +67,14 @@ export const getTrainDetails = (previousTrains: React.MutableRefObject<{[k: stri
         timetable: trainTimetables[t.TrainNoLocal],
         lastDelay,
         observedArrivals: {...previousTrainData?.observedArrivals},
+        observedStationAreas: t.TrainData.VDDelayedTimetableIndex < (previousTrainData?.TrainData.VDDelayedTimetableIndex ?? 0)
+            ? {} : {...previousTrainData?.observedStationAreas},
         observationServerTime: dateNow,
     };
     if (station) for (const row of stationRows.filter(row => row.trainNoLocal === t.TrainNoLocal)) {
+        if (isTrainInStationArea(row, details, station) || isTrainStandingAtStation(row, details, station, dateNow)) {
+            details.observedStationAreas![stationPresenceKey(row, station)] = true;
+        }
         const key = stationEventKey(row.pointId, row.stationIndex, row.scheduledArrivalObject);
         const event = details.timetable?.find(point => point.indexOfPoint === row.stationIndex && String(point.pointId) === String(row.pointId));
         const actual = event ? (validReportedEventTime(event.actualArrivalObject, event.scheduledArrivalObject, dateNow, event.isConfirmed) ? event.actualArrivalObject : undefined)
@@ -94,6 +99,7 @@ type TrainDetails = {
     lastDelay?: number,
     observationServerTime?: Date,
     observedArrivals?: {[key: string]: {time: Date; estimated: boolean}},
+    observedStationAreas?: {[key: string]: boolean},
 }
 
 export type DetailedTrain = ExtendedTrain & TrainDetails;

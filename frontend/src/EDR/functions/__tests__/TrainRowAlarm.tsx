@@ -5,6 +5,7 @@ import TableRow from "../../components/TrainRow";
 import {TimeTableRow} from "../../../customTypes/TimeTableRow";
 import {DetailedTrain} from "../trainDetails";
 import {postConfig} from "../../../config/stations";
+import {stationPresenceKey} from "../stationPresence";
 
 const mockEnqueueSnackbar = jest.fn();
 jest.mock("notistack", () => ({useSnackbar: () => ({enqueueSnackbar: mockEnqueueSnackbar})}));
@@ -486,6 +487,7 @@ describe("TrainRow departure alarm calculation", () => {
         const playSound = jest.fn();
         const departedTrainDetails = {
             ...delayedTrain,
+            observedStationAreas: {[stationPresenceKey(row, postConfig.KOL)]: true},
             TrainData: {
                 ...delayedTrain.TrainData,
                 VDDelayedTimetableIndex: 999, // passed station
@@ -711,6 +713,7 @@ describe("TrainRow departure alarm calculation", () => {
         // Train passes/departs station before the 11:46 alarm time (e.g. at 11:42)
         const departedTrainDetails = {
             ...delayedTrain,
+            observedStationAreas: {[stationPresenceKey(row, postConfig.KOL)]: true},
             lastDelay: 0,
             distanceFromStation: 15,
             TrainData: {

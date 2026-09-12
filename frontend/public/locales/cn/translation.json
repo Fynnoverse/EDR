@@ -47,6 +47,7 @@
   "EDR_TRAINROW_train_minutes": "分",
   "EDR_TRAINROW_train_eta": "ETA",
   "EDR_TRAINROW_train_departing": "正在出站",
+  "EDR_TRAINROW_train_departed": "已驶离",
   "EDR_TRAINROW_train_early_sign": "-",
   "EDR_TRAINROW_train_late_sign": "+",
   "EDR_TRAINROW_scheduled": "计划",

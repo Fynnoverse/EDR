@@ -49,6 +49,7 @@
   "EDR_TRAINROW_train_minutes": " min",
   "EDR_TRAINROW_train_eta": "ETA",
   "EDR_TRAINROW_train_departing": "odjeżdża",
+  "EDR_TRAINROW_train_departed": "odjechał",
   "EDR_TRAINROW_train_early_sign": "-",
   "EDR_TRAINROW_train_late_sign": "+",
   "EDR_TRAINROW_scheduled": "Plan",

@@ -11,6 +11,7 @@ export const stationPresenceKey = (row: TimeTableRow, station: StationConfig) =>
 /** Departure requires observed presence followed by leaving the entire post group. */
 export function hasTrainLeftStationArea(row: TimeTableRow, train: DetailedTrain | undefined, station: StationConfig, now: Date): boolean {
     return !!train?.observedStationAreas?.[stationPresenceKey(row, station)]
+        && Number.isInteger(train.TrainData.VDDelayedTimetableIndex)
         && hasTrainPassedStation(train.TrainData.VDDelayedTimetableIndex, row.stationIndex, getStationGroupIndices(row, train, station))
         && !isTrainInStationArea(row, train, station)
         && !isTrainStandingAtStation(row, train, station, now);

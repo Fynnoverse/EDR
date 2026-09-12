@@ -142,7 +142,9 @@ export const TrainDepartureCell: React.FC<Props> = ({
                         deviationMinutes, arrivalDeviationMinutes, estimated, standingDepartureTime, ttRow.plannedStop > 0)} />
                 <div className="flex items-center justify-center shrink-0 min-w-[32px]">
                     {
-                        !trainHasPassedStation && (trainMustDepart ?
+                        trainHasPassedStation ?
+                            <Badge color="gray">{t('EDR_TRAINROW_train_departed')}</Badge>
+                            : (trainMustDepart ?
                                 <Badge className="animate-pulse duration-1000" color="warning">{t('EDR_TRAINROW_train_departing')}</Badge>
                                 :
                             <Tooltip placement="top" overlay={<span>{t("EDR_TRAINROW_notify")}</span>}>

@@ -68,6 +68,9 @@ export const TrainDepartureCell: React.FC<Props> = ({
             );
             const departureTimeStr = formatServerTime(displayedDeparture);
 
+            const line = ttRow.toLine ?? ttRow.line;
+            const lineStr = line !== undefined && line !== null ? String(line) : '—';
+
             if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
                 try {
                     navigator.vibrate([300, 150, 300, 150, 450]);
@@ -78,21 +81,24 @@ export const TrainDepartureCell: React.FC<Props> = ({
 
             const title = t('EDR_NOTIFICATION_departure_title', {
                 train: ttRow.trainNoLocal,
-                defaultValue: `Abfahrtswarnung: Zug ${ttRow.trainNoLocal}`
+                line: lineStr,
+                defaultValue: `Abfahrtswarnung: Zug ${ttRow.trainNoLocal} (Linie ${lineStr})`
             });
             const body = ttRow.endStation
                 ? t('EDR_NOTIFICATION_departure_body_with_dest', {
                     train: ttRow.trainNoLocal,
+                    line: lineStr,
                     time: departureTimeStr,
                     destination: ttRow.endStation,
                     platform: ttRow.platform || '—',
-                    defaultValue: `Zug ${ttRow.trainNoLocal} soll um ${departureTimeStr} abfahren nach ${ttRow.endStation}`
+                    defaultValue: `Zug ${ttRow.trainNoLocal} (Linie ${lineStr}) soll um ${departureTimeStr} abfahren nach ${ttRow.endStation}`
                 })
                 : t('EDR_NOTIFICATION_departure_body', {
                     train: ttRow.trainNoLocal,
+                    line: lineStr,
                     time: departureTimeStr,
                     platform: ttRow.platform || '—',
-                    defaultValue: `Zug ${ttRow.trainNoLocal} soll um ${departureTimeStr} abfahren`
+                    defaultValue: `Zug ${ttRow.trainNoLocal} (Linie ${lineStr}) soll um ${departureTimeStr} abfahren`
                 });
 
             try {

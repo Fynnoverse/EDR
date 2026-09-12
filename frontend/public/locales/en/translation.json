@@ -57,7 +57,7 @@
   "EDR_UI_test_notification": "Test notification",
   "EDR_NOTIFICATION_departure_title": "Departure alert: Train {{train}}",
   "EDR_NOTIFICATION_departure_body": "Train {{train}} departs at {{time}}",
-  "EDR_NOTIFICATION_departure_body_with_dest": "Train {{train}} departs at {{time}} to {{destination}}",
+  "EDR_NOTIFICATION_departure_body_with_dest": "Train {{train}} departs at {{time}} to {{destination}}  (Line {{line}})",
   "EDR_NOTIFICATION_test_title": "Test Notification",
   "EDR_NOTIFICATION_test_body": "Notification, sound, and vibration are working properly.",
   "EDR_TRAINROW_show_on_map": "Show on map",

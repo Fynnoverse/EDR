@@ -111,11 +111,13 @@ const TableRow: React.FC<Props> = (
             arrivalTimeDelay={arrivalTimeDelay}
             serverNow={dateNow}
             deviationMinutes={deviation.arrivalMinutes}
+            departureDeviationMinutes={deviation.departureMinutes}
             estimated={deviation.arrivalEstimated}
         />
         <TrainFromCell headerFourthColRef={headerFourthColRef} ttRow={ttRow} secondaryPostData={secondaryPostData}
                        streamMode={streamMode} />
         <TrainPlatformCell ttRow={ttRow} headerFifthColRef={headerFifthColRef} secondaryPostData={secondaryPostData}
+                           trainDetails={trainDetails} postCfg={postCfg} serverNow={dateNow}
                            streamMode={streamMode} />
         <TrainDepartureCell
             headerSixthhColRef={headerSixthhColRef}

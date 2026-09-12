@@ -95,4 +95,30 @@ describe("API-based station deviation", () => {
         const result = getStationDeviation(row, approaching, postConfig.LG, new Date("2026-09-07T12:05:00Z"));
         expect(result).toMatchObject({arrivalMinutes: 7, arrivalEstimated: true});
     });
+    it("reduces departure delay for approaching train when buffer time absorbs delay", () => {
+        const rowWithBuffer = {
+            ...row,
+            plannedStop: 10,
+            scheduledArrivalObject: new Date("2026-09-07T12:00:00Z"),
+            scheduledDepartureObject: new Date("2026-09-07T12:10:00Z"),
+        } as TimeTableRow;
+        const delayedTrain = {...train(), lastDelay: 5, distanceFromStation: 10};
+        delayedTrain.TrainData.VDDelayedTimetableIndex = 1;
+        const result = getStationDeviation(rowWithBuffer, delayedTrain, postConfig.LG, new Date("2026-09-07T11:50:00Z"));
+        expect(result.arrivalMinutes).toBe(5);
+        expect(result.departureMinutes).toBe(0);
+    });
+    it("partially reduces departure delay when delay exceeds stop buffer", () => {
+        const rowWithBuffer = {
+            ...row,
+            plannedStop: 5,
+            scheduledArrivalObject: new Date("2026-09-07T12:00:00Z"),
+            scheduledDepartureObject: new Date("2026-09-07T12:05:00Z"),
+        } as TimeTableRow;
+        const delayedTrain = {...train(), lastDelay: 10, distanceFromStation: 10};
+        delayedTrain.TrainData.VDDelayedTimetableIndex = 1;
+        const result = getStationDeviation(rowWithBuffer, delayedTrain, postConfig.LG, new Date("2026-09-07T11:50:00Z"));
+        expect(result.arrivalMinutes).toBe(10);
+        expect(result.departureMinutes).toBe(6);
+    });
 });

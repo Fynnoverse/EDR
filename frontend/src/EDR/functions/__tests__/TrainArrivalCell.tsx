@@ -98,4 +98,56 @@ describe("TrainArrivalCell Badges", () => {
         expect(screen.queryByText("verspätet")).toBeNull();
         expect(screen.queryByText("verfrüht")).toBeNull();
     });
+
+    it("hides delay badge when train was delayed on arrival but can depart on time due to buffer time", () => {
+        const rowWithStop = {
+            ...ttRow,
+            plannedStop: 10,
+            scheduledDepartureObject: new Date("2026-09-07T13:20:00Z"),
+        } as TimeTableRow;
+
+        render(
+            <table><tbody><tr>
+                <TrainArrivalCell
+                    ttRow={rowWithStop}
+                    trainDetails={undefined}
+                    trainHasPassedStation={false}
+                    thirdColRef={null}
+                    streamMode={false}
+                    arrivalTimeDelay={5}
+                    serverNow={serverNow}
+                    deviationMinutes={5}
+                    departureDeviationMinutes={0}
+                    isAtStation={true}
+                />
+            </tr></tbody></table>
+        );
+        expect(screen.queryByText("verspätet")).toBeNull();
+    });
+
+    it("shows delay badge when arrival delay exceeds buffer time so departure remains delayed", () => {
+        const rowWithStop = {
+            ...ttRow,
+            plannedStop: 5,
+            scheduledDepartureObject: new Date("2026-09-07T13:15:00Z"),
+        } as TimeTableRow;
+
+        render(
+            <table><tbody><tr>
+                <TrainArrivalCell
+                    ttRow={rowWithStop}
+                    trainDetails={undefined}
+                    trainHasPassedStation={false}
+                    thirdColRef={null}
+                    streamMode={false}
+                    arrivalTimeDelay={12}
+                    serverNow={serverNow}
+                    deviationMinutes={12}
+                    departureDeviationMinutes={8}
+                    isAtStation={true}
+                />
+            </tr></tbody></table>
+        );
+        expect(screen.getByText("verspätet")).toBeInTheDocument();
+    });
 });

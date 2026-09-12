@@ -31,6 +31,25 @@ export function getStationDeviation(row: TimeTableRow, train: DetailedTrain | un
     let departureMinutes = departureMeasured ? Math.trunc((departure!.valueOf() - row.scheduledDepartureObject.valueOf()) / 60000) : train?.lastDelay;
     let standingDepartureTime: Date | undefined;
 
+    if (!departureMeasured) {
+        const hasValidArrival = row.scheduledArrivalObject instanceof Date && row.scheduledArrivalObject.getUTCFullYear() > 1970 && row.scheduledArrivalObject.getUTCFullYear() < 3000;
+        const hasValidDeparture = row.scheduledDepartureObject instanceof Date && row.scheduledDepartureObject.getUTCFullYear() > 1970 && row.scheduledDepartureObject.getUTCFullYear() < 3000;
+        const hasStop = row.plannedStop > 0 || (hasValidArrival && hasValidDeparture && row.scheduledDepartureObject.valueOf() > row.scheduledArrivalObject.valueOf());
+        if (hasStop && hasValidArrival && hasValidDeparture && arrivalMinutes !== undefined) {
+            if (arrivalMinutes > 0) {
+                const predictedArrival = new Date(row.scheduledArrivalObject.valueOf() + arrivalMinutes * 60000);
+                const minDeparture = new Date(predictedArrival.valueOf() + 60000);
+                if (minDeparture.valueOf() <= row.scheduledDepartureObject.valueOf()) {
+                    departureMinutes = 0;
+                } else {
+                    departureMinutes = Math.ceil((minDeparture.valueOf() - row.scheduledDepartureObject.valueOf()) / 60000);
+                }
+            } else if (arrivalMinutes <= 0 && (train?.lastDelay === undefined || train.lastDelay >= 0)) {
+                departureMinutes = 0;
+            }
+        }
+    }
+
     if (!validEventTime(arrivalTime, now) && !isStandingAtStop && !hasPassed && train?.receivedAt != null
         && row.scheduledArrivalObject.getUTCFullYear() > 1970
         && row.scheduledArrivalObject.getUTCFullYear() < 3000) {

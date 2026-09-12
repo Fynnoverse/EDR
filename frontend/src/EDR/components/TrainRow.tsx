@@ -17,7 +17,7 @@ import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { isInactiveTrainAtStation } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 import {getStationDeviation} from "../functions/stationDeviation";
-import {getStationGroupIndices, isTrainInStationArea, isTrainStandingAtStation} from "../functions/stationPresence";
+import {getStationArrivalStatus, getStationGroupIndices, isTrainInStationArea, isTrainStandingAtStation} from "../functions/stationPresence";
 import {getDisplayedDepartureTime} from "../functions/trainTimes";
 import {
     getTrainNotificationKey,
@@ -62,12 +62,14 @@ const TableRow: React.FC<Props> = (
     const deviation = getStationDeviation(ttRow, trainDetails, postCfg, dateNow);
     const standingAtStation = isTrainStandingAtStation(ttRow, trainDetails, postCfg, dateNow);
     const inStationArea = isTrainInStationArea(ttRow, trainDetails, postCfg);
+    const arrivalStatus = getStationArrivalStatus(ttRow, trainDetails, dateNow);
 
     const secondaryStationIndices = getStationGroupIndices(ttRow, trainDetails, postCfg).filter(idx => idx !== ttRow.stationIndex);
     const trainHasPassedStation = trainDetails && !standingAtStation && !inStationArea
         ? isInactiveTrainAtStation(trainDetails.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices)
         : false;
     const isInactive = !standingAtStation && !inStationArea && isInactiveTrainAtStation(trainDetails?.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices);
+    const isAtOwnStation = !trainHasPassedStation && (!!arrivalStatus || standingAtStation || inStationArea);
     const calculatedDeparture = getDisplayedDepartureTime(
         ttRow.scheduledArrivalObject,
         ttRow.scheduledDepartureObject,
@@ -189,7 +191,9 @@ const TableRow: React.FC<Props> = (
             arrivalTimeDelay={arrivalTimeDelay}
             serverNow={dateNow}
             deviationMinutes={deviation.arrivalMinutes}
+            departureDeviationMinutes={deviation.departureMinutes}
             estimated={deviation.arrivalEstimated}
+            isAtStation={isAtOwnStation}
         />
         <TrainFromCell headerFourthColRef={headerFourthColRef} ttRow={ttRow} secondaryPostData={secondaryPostData}
                        streamMode={streamMode} />

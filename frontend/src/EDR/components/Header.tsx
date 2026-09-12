@@ -1,6 +1,7 @@
 import React from "react";
 import {Button, DarkThemeToggle, TextInput} from "flowbite-react";
 import {useTranslation} from "react-i18next";
+import {useSnackbar} from "notistack";
 import {DateTimeDisplay} from "./DateTimeDisplay";
 import {Bounds} from "./Table";
 
@@ -73,6 +74,7 @@ export const Header: React.FC<Props> = ({
     playSoundNotification
 }) => {
     const {t} = useTranslation();
+    const {enqueueSnackbar} = useSnackbar();
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
 
     const displayMode = getDisplayMode(filterConfig);
@@ -88,6 +90,18 @@ export const Header: React.FC<Props> = ({
             } catch {
                 // ignore
             }
+        }
+
+        try {
+            enqueueSnackbar(t('EDR_NOTIFICATION_test_body', {
+                defaultValue: 'Benachrichtigung, Ton und Vibration funktionieren einwandfrei.'
+            }), {
+                variant: 'info',
+                autoHideDuration: 4000,
+                preventDuplicate: true,
+            });
+        } catch {
+            // ignore
         }
 
         if (typeof window !== 'undefined' && 'Notification' in window) {

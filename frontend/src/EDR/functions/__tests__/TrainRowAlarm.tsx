@@ -6,13 +6,17 @@ import {TimeTableRow} from "../../../customTypes/TimeTableRow";
 import {DetailedTrain} from "../trainDetails";
 import {postConfig} from "../../../config/stations";
 
-jest.mock("notistack", () => ({useSnackbar: () => ({enqueueSnackbar: jest.fn()})}));
+const mockEnqueueSnackbar = jest.fn();
+jest.mock("notistack", () => ({useSnackbar: () => ({enqueueSnackbar: mockEnqueueSnackbar})}));
 jest.mock("react-router-dom", () => ({Link: ({children}: {children: ReactNode}) => <>{children}</>}), {virtual: true});
 jest.mock("react-i18next", () => ({
     useTranslation: () => ({
-        t: (key: string, options?: {defaultValue?: string}) => {
+        t: (key: string, options?: {defaultValue?: string; train?: string; time?: string; destination?: string; platform?: string}) => {
             if (key === "EDR_TRAINROW_train_departing") return "Abfahrt";
             if (key === "EDR_TRAINROW_notify") return "Benachrichtigen";
+            if (key === "EDR_NOTIFICATION_departure_title") return `Abfahrtswarnung: Zug ${options?.train}`;
+            if (key === "EDR_NOTIFICATION_departure_body_with_dest") return `Zug ${options?.train} soll um ${options?.time} abfahren nach ${options?.destination}`;
+            if (key === "EDR_NOTIFICATION_departure_body") return `Zug ${options?.train} soll um ${options?.time} abfahren`;
             return options?.defaultValue ?? key;
         },
         i18n: {resolvedLanguage: "de"},
@@ -22,6 +26,7 @@ jest.mock("react-i18next", () => ({
 describe("TrainRow departure alarm calculation", () => {
     const row = {
         trainNoLocal: "11507",
+        endStation: "Warszawa Wschodnia",
         pointId: "1",
         stationIndex: 2,
         plannedStop: 5,
@@ -281,11 +286,17 @@ describe("TrainRow departure alarm calculation", () => {
         // Vibration called with pattern
         expect(vibrateMock).toHaveBeenCalledWith([300, 150, 300, 150, 450]);
 
+        // In-app snackbar toast called with destination and departure time
+        expect(mockEnqueueSnackbar).toHaveBeenCalledWith(
+            "Zug 11507 soll um 11:47 abfahren nach Warszawa Wschodnia",
+            expect.objectContaining({variant: "warning"})
+        );
+
         // Browser notification instantiated
         expect(notificationConstructor).toHaveBeenCalledWith(
-            expect.stringContaining("11507"),
+            "Abfahrtswarnung: Zug 11507",
             expect.objectContaining({
-                body: expect.stringContaining("1 Minute"),
+                body: "Zug 11507 soll um 11:47 abfahren nach Warszawa Wschodnia",
                 icon: "/favicon.ico",
                 tag: "departure-11507",
             })
@@ -766,5 +777,93 @@ describe("TrainRow departure alarm calculation", () => {
         );
 
         expect(playSound).not.toHaveBeenCalled();
+    });
+
+    it("formats departure toast and system notification without destination when endStation is not provided", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const notificationConstructor = jest.fn();
+        (notificationConstructor as any).permission = "granted";
+        (notificationConstructor as any).requestPermission = jest.fn();
+
+        Object.defineProperty(window, "Notification", {
+            value: notificationConstructor,
+            writable: true,
+            configurable: true,
+        });
+
+        const rowWithoutDestination = {
+            ...row,
+            trainNoLocal: "44100",
+            endStation: "",
+        };
+
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={rowWithoutDestination}
+                        trainDetails={undefined}
+                        serverTime={new Date("2026-09-07T11:40:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const notifyBtn = screen.getByRole("button", {name: "Benachrichtigen"});
+        fireEvent.click(notifyBtn);
+
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={rowWithoutDestination}
+                        trainDetails={undefined}
+                        serverTime={new Date("2026-09-07T11:46:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledWith(
+            "Zug 44100 soll um 11:47 abfahren",
+            expect.objectContaining({variant: "warning"})
+        );
+        expect(notificationConstructor).toHaveBeenCalledWith(
+            "Abfahrtswarnung: Zug 44100",
+            expect.objectContaining({
+                body: "Zug 44100 soll um 11:47 abfahren",
+                tag: "departure-44100",
+            })
+        );
     });
 });

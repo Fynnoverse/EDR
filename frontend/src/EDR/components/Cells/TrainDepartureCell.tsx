@@ -4,9 +4,11 @@ import {edrImagesMap} from "../../../config";
 import {tableCellCommonClassnames} from "../TrainRow";
 import {useTranslation} from "react-i18next";
 import Tooltip from "rc-tooltip";
+import { useSnackbar } from "notistack";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {TrainTimeDisplay} from "./TrainTimeDisplay";
 import {getDisplayedDepartureTime} from "../../functions/trainTimes";
+import {formatServerTime} from "../../../utils/serverTime";
 
 type Props = {
     headerSixthhColRef: any;
@@ -42,6 +44,7 @@ export const TrainDepartureCell: React.FC<Props> = ({
     onAlarmTriggered
 }) => {
     const {t} = useTranslation();
+    const {enqueueSnackbar} = useSnackbar();
     const [localNotificationEnabled, setLocalNotificationEnabled] = React.useState(false);
     const notificationEnabled = controlledNotificationEnabled !== undefined ? controlledNotificationEnabled : localNotificationEnabled;
     const setNotificationEnabled = controlledSetNotificationEnabled ?? setLocalNotificationEnabled;
@@ -54,6 +57,17 @@ export const TrainDepartureCell: React.FC<Props> = ({
 
     React.useEffect(() => {
         if (trainMustDepart && notificationEnabled) {
+            const displayedDeparture = getDisplayedDepartureTime(
+                ttRow.scheduledArrivalObject,
+                ttRow.scheduledDepartureObject,
+                deviationMinutes,
+                arrivalDeviationMinutes,
+                estimated,
+                standingDepartureTime,
+                ttRow.plannedStop > 0
+            );
+            const departureTimeStr = formatServerTime(displayedDeparture);
+
             if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
                 try {
                     navigator.vibrate([300, 150, 300, 150, 450]);
@@ -62,16 +76,37 @@ export const TrainDepartureCell: React.FC<Props> = ({
                 }
             }
 
+            const title = t('EDR_NOTIFICATION_departure_title', {
+                train: ttRow.trainNoLocal,
+                defaultValue: `Abfahrtswarnung: Zug ${ttRow.trainNoLocal}`
+            });
+            const body = ttRow.endStation
+                ? t('EDR_NOTIFICATION_departure_body_with_dest', {
+                    train: ttRow.trainNoLocal,
+                    time: departureTimeStr,
+                    destination: ttRow.endStation,
+                    platform: ttRow.platform || '—',
+                    defaultValue: `Zug ${ttRow.trainNoLocal} soll um ${departureTimeStr} abfahren nach ${ttRow.endStation}`
+                })
+                : t('EDR_NOTIFICATION_departure_body', {
+                    train: ttRow.trainNoLocal,
+                    time: departureTimeStr,
+                    platform: ttRow.platform || '—',
+                    defaultValue: `Zug ${ttRow.trainNoLocal} soll um ${departureTimeStr} abfahren`
+                });
+
+            try {
+                enqueueSnackbar(body, {
+                    variant: 'warning',
+                    autoHideDuration: 6000,
+                    preventDuplicate: true,
+                });
+            } catch {
+                // ignore if toast/snackbar fails
+            }
+
             if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
                 try {
-                    const title = t('EDR_NOTIFICATION_departure_title', {
-                        train: ttRow.trainNoLocal,
-                        defaultValue: `Abfahrtswarnung: Zug ${ttRow.trainNoLocal}`
-                    });
-                    const body = t('EDR_NOTIFICATION_departure_body', {
-                        platform: ttRow.platform || '—',
-                        defaultValue: `Gleis ${ttRow.platform || '—'} · Abfahrt in 1 Minute`
-                    });
                     const notif = new Notification(title, {
                         body,
                         icon: '/favicon.ico',

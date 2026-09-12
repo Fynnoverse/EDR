@@ -3,6 +3,13 @@ import {fireEvent, render, screen} from "@testing-library/react";
 
 jest.mock("usehooks-ts", () => jest.requireActual("usehooks-ts/dist/index.cjs"));
 
+const mockEnqueueSnackbar = jest.fn();
+jest.mock("notistack", () => ({
+    useSnackbar: () => ({
+        enqueueSnackbar: mockEnqueueSnackbar
+    })
+}));
+
 import {Header} from "../../components/Header";
 import {postConfig} from "../../../config/stations";
 import {presetFilterConfig} from "../../index";
@@ -84,6 +91,10 @@ describe("Notification Test Button in Header", () => {
 
         expect(playSound).toHaveBeenCalled();
         expect(vibrateMock).toHaveBeenCalledWith([300, 150, 300, 150, 450]);
+        expect(mockEnqueueSnackbar).toHaveBeenCalledWith(
+            "Benachrichtigung, Ton und Vibration funktionieren einwandfrei.",
+            expect.objectContaining({variant: "info"})
+        );
         expect(notificationConstructor).toHaveBeenCalledWith(
             "Testbenachrichtigung",
             expect.objectContaining({

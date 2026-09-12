@@ -72,16 +72,30 @@ const TableRow: React.FC<Props> = (
 
     const arrivalTimeDelay = deviation.arrivalMinutes ?? 0;
 
+    const [notificationEnabled, setNotificationEnabled] = React.useState(false);
+    const [alarmTriggered, setAlarmTriggered] = React.useState(false);
+
     const distanceFromStation = trainDetails?.distanceFromStation;
     const trainMustDepart = !trainHasPassedStation && distanceFromStation != null && distanceFromStation < 1.5 && (subMinutes(calculatedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 
+    React.useEffect(() => {
+        if (trainHasPassedStation && (notificationEnabled || alarmTriggered)) {
+            setNotificationEnabled(false);
+            setAlarmTriggered(false);
+        }
+    }, [trainHasPassedStation, notificationEnabled, alarmTriggered]);
+
+    const isAlarming = (alarmTriggered || (notificationEnabled && trainMustDepart)) && !trainHasPassedStation;
+
     return <Table.Row
         className={`
             dark:text-gray-100 light:text-gray-800 hover:bg-gray-200 dark:hover:bg-gray-600 
             ${isInactive ? 'opacity-50' : 'opacity-100'}
+            ${isAlarming ? '!bg-amber-100 dark:!bg-amber-950/70 border-l-4 border-amber-500 dark:border-amber-400 animate-pulse' : ''}
         `} data-timeoffset={Math.abs(getServerTimeNumber(dateNow) - getServerTimeNumber(ttRow.scheduledArrivalObject))}
+        data-alarming={isAlarming ? "true" : undefined}
     >
         <TrainInfoCell
             ttRow={ttRow}
@@ -135,6 +149,9 @@ const TableRow: React.FC<Props> = (
             standingDepartureTime={deviation.standingDepartureTime}
             estimated={deviation.departureEstimated}
             serverNow={dateNow}
+            notificationEnabled={notificationEnabled}
+            setNotificationEnabled={setNotificationEnabled}
+            onAlarmTriggered={() => setAlarmTriggered(true)}
         />
         <TrainToCell ttRow={ttRow} headerSeventhColRef={headerSeventhColRef} secondaryPostData={secondaryPostData}
                      streamMode={streamMode}/>

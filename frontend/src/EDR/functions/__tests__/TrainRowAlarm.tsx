@@ -156,4 +156,142 @@ describe("TrainRow departure alarm calculation", () => {
         // playSoundNotification must have been triggered because remaining time dropped to under 1 minute
         expect(playSound).toHaveBeenCalledTimes(1);
     });
+
+    it("triggers mobile vibration, browser notification, and visual row highlighting when alarm fires", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const vibrateMock = jest.fn();
+        Object.defineProperty(navigator, "vibrate", {
+            value: vibrateMock,
+            writable: true,
+            configurable: true,
+        });
+
+        const notificationConstructor = jest.fn();
+        const requestPermissionMock = jest.fn().mockResolvedValue("granted");
+        (notificationConstructor as any).permission = "default";
+        (notificationConstructor as any).requestPermission = requestPermissionMock;
+
+        Object.defineProperty(window, "Notification", {
+            value: notificationConstructor,
+            writable: true,
+            configurable: true,
+        });
+
+        const standingTrain = {
+            ...delayedTrain,
+            lastDelay: 0,
+        };
+
+        const dateNow = new Date("2026-09-07T11:46:00Z"); // exactly 1 min before 11:47 departure
+        const {container} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={standingTrain}
+                        serverTime={dateNow.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // Before alarm activation, train row is not alarming
+        const rowElement = container.querySelector("tr");
+        expect(rowElement).not.toHaveAttribute("data-alarming");
+
+        // Now test enabling alarm when not alarming:
+        // Render at 11:40 (departure is 11:47)
+        const earlyDate = new Date("2026-09-07T11:40:00Z");
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={standingTrain}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const notifyBtn = screen.getAllByRole("button", {name: "Benachrichtigen"})[0];
+        fireEvent.click(notifyBtn);
+        expect(requestPermissionMock).toHaveBeenCalled();
+
+        (notificationConstructor as any).permission = "granted";
+
+        // Now advance time to 11:46:00 (departure in 1 min)
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={standingTrain}
+                        serverTime={dateNow.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // Vibration called with pattern
+        expect(vibrateMock).toHaveBeenCalledWith([300, 150, 300, 150, 450]);
+
+        // Browser notification instantiated
+        expect(notificationConstructor).toHaveBeenCalledWith(
+            expect.stringContaining("11507"),
+            expect.objectContaining({
+                body: expect.stringContaining("1 Minute"),
+                icon: "/favicon.ico",
+                tag: "departure-11507",
+            })
+        );
+
+        // Sound played
+        expect(playSound).toHaveBeenCalled();
+    });
 });

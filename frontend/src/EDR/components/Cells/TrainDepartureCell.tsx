@@ -21,16 +21,82 @@ type Props = {
     estimated?: boolean;
     arrivalDeviationMinutes?: number;
     standingDepartureTime?: Date;
+    notificationEnabled?: boolean;
+    setNotificationEnabled?: React.Dispatch<React.SetStateAction<boolean>>;
+    onAlarmTriggered?: () => void;
 }
-export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNotification, ttRow, headerSixthhColRef, trainHasPassedStation, streamMode, isTrainOffline, deviationMinutes, serverNow, estimated, arrivalDeviationMinutes, standingDepartureTime}) => {
+export const TrainDepartureCell: React.FC<Props> = ({
+    trainMustDepart,
+    playSoundNotification,
+    ttRow,
+    headerSixthhColRef,
+    trainHasPassedStation,
+    streamMode,
+    isTrainOffline,
+    deviationMinutes,
+    serverNow,
+    estimated,
+    arrivalDeviationMinutes,
+    standingDepartureTime,
+    notificationEnabled: controlledNotificationEnabled,
+    setNotificationEnabled: controlledSetNotificationEnabled,
+    onAlarmTriggered
+}) => {
     const {t} = useTranslation();
-    const [notificationEnabled, setNotificationEnabled] = React.useState(false);
+    const [localNotificationEnabled, setLocalNotificationEnabled] = React.useState(false);
+    const notificationEnabled = controlledNotificationEnabled !== undefined ? controlledNotificationEnabled : localNotificationEnabled;
+    const setNotificationEnabled = controlledSetNotificationEnabled ?? setLocalNotificationEnabled;
 
     React.useEffect(() => {
-        if (trainMustDepart && notificationEnabled)
+        if (trainMustDepart && notificationEnabled) {
+            if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+                try {
+                    navigator.vibrate([300, 150, 300, 150, 450]);
+                } catch {
+                    // ignore if vibration is unsupported or blocked
+                }
+            }
+
+            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                try {
+                    const title = t('EDR_NOTIFICATION_departure_title', {
+                        train: ttRow.trainNoLocal,
+                        defaultValue: `Abfahrtswarnung: Zug ${ttRow.trainNoLocal}`
+                    });
+                    const body = t('EDR_NOTIFICATION_departure_body', {
+                        platform: ttRow.platform || '—',
+                        defaultValue: `Gleis ${ttRow.platform || '—'} · Abfahrt in 1 Minute`
+                    });
+                    const notif = new Notification(title, {
+                        body,
+                        icon: '/favicon.ico',
+                        tag: `departure-${ttRow.trainNoLocal}`
+                    });
+                    notif.onclick = () => {
+                        window.focus();
+                        notif.close();
+                    };
+                } catch {
+                    // ignore if notification creation fails
+                }
+            }
+
+            onAlarmTriggered?.();
             playSoundNotification(() => setNotificationEnabled(false));
+        }
         // eslint-disable-next-line
     }, [notificationEnabled, trainMustDepart]);
+
+    const handleToggleNotification = () => {
+        if (!notificationEnabled) {
+            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().catch(() => {});
+            }
+            setNotificationEnabled(true);
+        } else {
+            setNotificationEnabled(false);
+        }
+    };
 
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="190" style={{minWidth: 190}} ref={headerSixthhColRef}>
@@ -51,7 +117,7 @@ export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNo
                                         pill
                                         size="xs"
                                         aria-label={t("EDR_TRAINROW_notify") ?? 'notify'}
-                                        onClick={() => setNotificationEnabled(!notificationEnabled)}
+                                        onClick={handleToggleNotification}
                                     >
                                         <img
                                             className="block w-5 h-5 min-w-5 min-h-5 max-w-none object-contain"

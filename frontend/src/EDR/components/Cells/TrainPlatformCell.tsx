@@ -14,13 +14,13 @@ const PlatformData: React.FC<{ttRow: TimeTableRow} & LiveStopProps> = ({ttRow, t
     const {t} = useTranslation();
     const deviation = postCfg && serverNow ? getStationDeviation(ttRow, trainDetails, postCfg, serverNow) : undefined;
     const planned = Math.max(0, ttRow.plannedStop || 0);
-    const late = (deviation?.arrivalMinutes ?? 0) > 0 || (deviation?.departureMinutes ?? 0) > 0;
+    const late = (deviation?.arrivalMinutes ?? 0) > 0;
     const earlyMinutes = Math.max(0, -(deviation?.arrivalMinutes ?? 0));
     const liveStop = planned > 0 ? (late ? 1 : planned + earlyMinutes) : 0;
     const change = liveStop - planned;
     const formatMinutes = (minutes: number) => Number(minutes.toFixed(2)).toString();
     const estimated = deviation?.arrivalEstimated || deviation?.departureEstimated;
-    const deviationUnknown = deviation === undefined;
+    const deviationUnknown = deviation === undefined || deviation.arrivalMinutes === undefined;
 
     return ttRow.platform?.replace(" ", '') || Math.ceil(ttRow.plannedStop) !== 0 ? (
         <div className="flex flex-wrap items-center gap-y-2">

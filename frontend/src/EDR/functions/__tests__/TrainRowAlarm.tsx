@@ -1,5 +1,5 @@
 import {ReactNode} from "react";
-import {render, screen} from "@testing-library/react";
+import {fireEvent, render, screen} from "@testing-library/react";
 import {Table} from "flowbite-react";
 import TableRow from "../../components/TrainRow";
 import {TimeTableRow} from "../../../customTypes/TimeTableRow";
@@ -81,5 +81,79 @@ describe("TrainRow departure alarm calculation", () => {
         renderRowAt("2026-09-07T11:56:00Z");
         // At 11:56:00 (1 minute before calculated departure 11:57), the departing badge is active.
         expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+    });
+
+    it("triggers notification when delay is reduced while alarm is enabled", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const dateNow = new Date("2026-09-07T11:46:00Z");
+
+        // Initial render: train delayed by 10 minutes (departure 11:57, so at 11:46 it's 11 min away)
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={delayedTrain}
+                        serverTime={dateNow.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // User clicks bell button to enable alarm
+        const notifyBtn = screen.getByRole("button", {name: "Benachrichtigen"});
+        fireEvent.click(notifyBtn);
+        expect(playSound).not.toHaveBeenCalled();
+
+        // Delay decreases from +10 min to 0 min (calculated departure is now 11:47:00, exactly <= 1 min away at 11:46:00)
+        const updatedTrain = {
+            ...delayedTrain,
+            lastDelay: 0,
+        };
+
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={updatedTrain}
+                        serverTime={dateNow.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // playSoundNotification must have been triggered because remaining time dropped to under 1 minute
+        expect(playSound).toHaveBeenCalledTimes(1);
     });
 });

@@ -61,6 +61,7 @@ export const EDRTable: React.FC<Props> = ({
     const [timetableModalTrainId, setTimetableModalTrainId] = React.useState<string | undefined>();
     const [streamMode, setStreamMode] = React.useState(false);
     const [showDirectionText, setShowDirectionText] = useLocalStorage("edr-show-direction-text", false);
+    const [autoAlarmVisible, setAutoAlarmVisible] = useLocalStorage("edr-auto-alarm-visible", false);
     const [sortKey, setSortKey] = React.useState<TrainSortKey | undefined>();
     const [arrivalSortMode, setArrivalSortMode] = useLocalStorage<ArrivalSortMode>("edr-arrival-sort-mode", "predicted");
     const [sortDirection, setSortDirection] = React.useState<SortDirection>("ascending");
@@ -191,6 +192,8 @@ export const EDRTable: React.FC<Props> = ({
             setStreamMode={setStreamMode}
             showDirectionText={showDirectionText}
             setShowDirectionText={setShowDirectionText}
+            autoAlarmVisible={autoAlarmVisible}
+            setAutoAlarmVisible={setAutoAlarmVisible}
             filterConfig={filterConfig}
             setFilterConfig={setFilterConfig}
             sortKey={sortKey}
@@ -227,6 +230,7 @@ export const EDRTable: React.FC<Props> = ({
                         serverCode={serverCode}
                         players={players}
                         postCfg={postCfg}
+                        autoAlarmVisible={autoAlarmVisible}
                     />) : <tr><td colSpan={7} className="text-center p-4"><Spinner /></td></tr>
                 }
             </Table.Body>

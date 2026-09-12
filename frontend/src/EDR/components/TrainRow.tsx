@@ -48,13 +48,14 @@ type Props = {
     serverCode: string;
     players: ISteamUser[] | undefined;
     postCfg: StationConfig;
+    autoAlarmVisible?: boolean;
 }
 
 const TableRow: React.FC<Props> = (
     {setModalTrainId, ttRow, trainDetails, serverTime,
         firstColRef, secondColRef, thirdColRef, headerFourthColRef, headerFifthColRef, headerSixthhColRef, headerSeventhColRef,
         playSoundNotification, isWebpSupported, streamMode, setTimetableTrainId,
-        serverCode, players, postCfg
+        serverCode, players, postCfg, autoAlarmVisible
     }: Props
 ) => {
     const dateNow = nowUTC(serverTime);
@@ -85,9 +86,19 @@ const TableRow: React.FC<Props> = (
             removeStoredTrainNotification(notifKey);
             return false;
         }
-        return isTrainNotificationStored(notifKey);
+        return Boolean(autoAlarmVisible) || isTrainNotificationStored(notifKey);
     });
     const [alarmTriggered, setAlarmTriggered] = React.useState(false);
+
+    React.useEffect(() => {
+        if (!trainHasPassedStation) {
+            if (autoAlarmVisible) {
+                setNotificationEnabledState(true);
+            } else {
+                setNotificationEnabledState(isTrainNotificationStored(notifKey));
+            }
+        }
+    }, [autoAlarmVisible, trainHasPassedStation, notifKey]);
 
     const setNotificationEnabled = React.useCallback((value: React.SetStateAction<boolean>) => {
         if (trainHasPassedStation) {
@@ -191,4 +202,5 @@ export default React.memo(TableRow, (prevProps, nextProps) => {
     && JSON.stringify(prevProps.ttRow) === JSON.stringify(nextProps.ttRow)
     && prevProps.serverTime === nextProps.serverTime
     && prevProps.streamMode === nextProps.streamMode
+    && prevProps.autoAlarmVisible === nextProps.autoAlarmVisible
 })

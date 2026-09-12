@@ -27,6 +27,8 @@ type Props = {
     setStreamMode: (v: boolean) => void;
     showDirectionText: boolean;
     setShowDirectionText: (value: boolean) => void;
+    autoAlarmVisible?: boolean;
+    setAutoAlarmVisible?: (value: boolean) => void;
     filterConfig: FilterConfig;
     setFilterConfig: (fc: FilterConfig) => void;
     sortKey: TrainSortKey | undefined;
@@ -70,7 +72,9 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 export const Header: React.FC<Props> = ({
     serverTzOffset, serverCode, postCfg, timetableLength, serverTime,
     filter, setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
-    sortKey, onResetSort, showDirectionText, setShowDirectionText, arrivalSortMode, setArrivalSortMode,
+    sortKey, onResetSort, showDirectionText, setShowDirectionText,
+    autoAlarmVisible, setAutoAlarmVisible,
+    arrivalSortMode, setArrivalSortMode,
     playSoundNotification
 }) => {
     const {t} = useTranslation();
@@ -78,6 +82,26 @@ export const Header: React.FC<Props> = ({
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
 
     const displayMode = getDisplayMode(filterConfig);
+
+    const handleAutoAlarmChange = (enabled: boolean) => {
+        setAutoAlarmVisible?.(enabled);
+        if (
+            enabled &&
+            typeof window !== 'undefined' &&
+            'Notification' in window &&
+            Notification.permission !== 'granted' &&
+            Notification.permission !== 'denied'
+        ) {
+            try {
+                const req = Notification.requestPermission();
+                if (req && typeof (req as any).then === 'function') {
+                    (req as any).catch(() => {});
+                }
+            } catch {
+                // ignore
+            }
+        }
+    };
 
     const handleTestNotification = () => {
         if (playSoundNotification) {
@@ -179,6 +203,14 @@ export const Header: React.FC<Props> = ({
                     <label className="mr-3 inline-flex items-center gap-1 text-xs cursor-pointer">
                         <input type="checkbox" checked={showDirectionText} onChange={event => setShowDirectionText(event.target.checked)} />
                         {t("EDR_UI_direction_text", {defaultValue: "Text an Pfeilen"})}
+                    </label>
+                    <label className="mr-3 inline-flex items-center gap-1 text-xs cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={autoAlarmVisible ?? false}
+                            onChange={event => handleAutoAlarmChange(event.target.checked)}
+                        />
+                        {t("EDR_UI_auto_alarm_visible", {defaultValue: "Alarm für alle sichtbaren Züge"})}
                     </label>
                     <Button size="xs" className="mr-2" onClick={() => setStreamMode(!streamMode)}>{t("EDR_UI_stream_mode")}</Button>
                     <Button size="xs" color="gray" className="mr-2" onClick={handleTestNotification}>{t("EDR_UI_test_notification")}</Button>

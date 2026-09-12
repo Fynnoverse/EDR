@@ -104,6 +104,7 @@
   "EDR_UI_timetable_station": "Station",
   "EDR_UI_timetable_layover": "Standzeit",
   "EDR_UI_stream_mode": "Stream-Modus",
+  "EDR_UI_auto_alarm_visible": "Alarm für alle sichtbaren Züge",
   "EDR_UI_map_select": "Karten-Anbieter",
 
   "DRIVER_DETAILS_train_number": "Zugnummer",

@@ -103,6 +103,7 @@
   "EDR_UI_timetable_station": "Station",
   "EDR_UI_timetable_layover": "Postój",
   "EDR_UI_stream_mode": "Stream mode",
+  "EDR_UI_auto_alarm_visible": "Alarm dla wszystkich widocznych pociągów",
   "EDR_UI_map_select": "Map provider",
 
   "DRIVER_DETAILS_train_number": "Numer pociągu",

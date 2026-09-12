@@ -1183,4 +1183,140 @@ describe("TrainRow departure alarm calculation", () => {
         windowFocusSpy.mockRestore();
         jest.useRealTimers();
     });
+
+    it("automatically enables alarm for departing train when autoAlarmVisible is true", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const dateNow = new Date("2026-09-07T11:46:00Z");
+
+        render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={dateNow.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={true}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // At 11:46 (1 min before scheduled departure 11:47), alarm should automatically trigger without prior click
+        expect(playSound).toHaveBeenCalledTimes(1);
+        expect(mockEnqueueSnackbar).toHaveBeenCalledWith(
+            "Zug 11507 (Linie 1) soll um 11:47 abfahren nach Warszawa Wschodnia",
+            expect.objectContaining({variant: "warning"})
+        );
+        expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+    });
+
+    it("dynamically enables alarm when autoAlarmVisible changes from false to true", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const initialDate = new Date("2026-09-07T11:40:00Z");
+
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={initialDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={false}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // Advance time to 11:46 while autoAlarmVisible is false (should not trigger)
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={new Date("2026-09-07T11:46:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={false}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(playSound).not.toHaveBeenCalled();
+
+        // Switch autoAlarmVisible to true (should trigger immediately at 11:46)
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={new Date("2026-09-07T11:46:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                        autoAlarmVisible={true}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(playSound).toHaveBeenCalledTimes(1);
+    });
 });

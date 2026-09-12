@@ -17,7 +17,7 @@ import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { isInactiveTrainAtStation } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 import {getStationDeviation} from "../functions/stationDeviation";
-import {isTrainInStationArea, isTrainStandingAtStation} from "../functions/stationPresence";
+import {getStationGroupIndices, isTrainInStationArea, isTrainStandingAtStation} from "../functions/stationPresence";
 import {getDisplayedDepartureTime} from "../functions/trainTimes";
 import {
     getTrainNotificationKey,
@@ -63,7 +63,7 @@ const TableRow: React.FC<Props> = (
     const standingAtStation = isTrainStandingAtStation(ttRow, trainDetails, postCfg, dateNow);
     const inStationArea = isTrainInStationArea(ttRow, trainDetails, postCfg);
 
-    const secondaryStationIndices = (ttRow.secondaryPostsRows || []).map(row => row.stationIndex);
+    const secondaryStationIndices = getStationGroupIndices(ttRow, trainDetails, postCfg).filter(idx => idx !== ttRow.stationIndex);
     const trainHasPassedStation = trainDetails && !standingAtStation && !inStationArea
         ? isInactiveTrainAtStation(trainDetails.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices)
         : false;

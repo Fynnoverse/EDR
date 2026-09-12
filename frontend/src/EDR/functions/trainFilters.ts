@@ -3,25 +3,45 @@ export const MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 5;
 export const DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 5;
 
 /** Straight-line distance is a lower bound on routed distance. It can prove
- * a departed train is beyond the threshold even when routing is unavailable. */
+ * a departed train is beyond the threshold even when routing is unavailable.
+ * When multiple post positions are passed (e.g. main station and outer sub-stations),
+ * distance is measured to the closest post in the station group. */
 export const departureDistance = (
     routedDistance: number | null | undefined,
     longitude: number,
     latitude: number,
-    stationPosition?: [number, number],
+    stationPositions?: [number, number] | Array<[number, number] | undefined>,
 ): number | undefined => {
     const routed = routedDistance != null && Number.isFinite(routedDistance) && routedDistance >= 0
         ? routedDistance : undefined;
-    if (!stationPosition || !Number.isFinite(longitude) || !Number.isFinite(latitude)
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)
         || Math.abs(longitude) > 180 || Math.abs(latitude) > 90
         || (longitude === 0 && latitude === 0)) return routed;
+
+    const positions: Array<[number, number]> = Array.isArray(stationPositions)
+        ? (stationPositions.length > 0 && Array.isArray(stationPositions[0])
+            ? (stationPositions as Array<[number, number] | undefined>).filter((p): p is [number, number] => Array.isArray(p) && p.length === 2)
+            : (stationPositions.length === 2 && typeof stationPositions[0] === "number" ? [stationPositions as [number, number]] : []))
+        : (stationPositions ? [stationPositions] : []);
+
+    if (positions.length === 0) return routed;
+
     const radians = Math.PI / 180;
-    const [stationLongitude, stationLatitude] = stationPosition;
-    const a = Math.sin((latitude - stationLatitude) * radians / 2) ** 2
-        + Math.cos(latitude * radians) * Math.cos(stationLatitude * radians)
-        * Math.sin((longitude - stationLongitude) * radians / 2) ** 2;
-    const direct = 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
-    return Math.max(routed ?? 0, direct);
+    const directDistances = positions.map(([stationLongitude, stationLatitude]) => {
+        if (!Number.isFinite(stationLongitude) || !Number.isFinite(stationLatitude)
+            || Math.abs(stationLongitude) > 180 || Math.abs(stationLatitude) > 90
+            || (stationLongitude === 0 && stationLatitude === 0)) return undefined;
+        const a = Math.sin((latitude - stationLatitude) * radians / 2) ** 2
+            + Math.cos(latitude * radians) * Math.cos(stationLatitude * radians)
+            * Math.sin((longitude - stationLongitude) * radians / 2) ** 2;
+        return 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
+    }).filter((d): d is number => d !== undefined);
+
+    if (directDistances.length === 0) return routed;
+    const minDirect = Math.min(...directDistances);
+    return positions.length > 1
+        ? (routed !== undefined ? Math.min(routed, minDirect) : minDirect)
+        : Math.max(routed ?? 0, minDirect);
 };
 
 /**

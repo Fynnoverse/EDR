@@ -88,3 +88,76 @@ it("keeps train in station area when shunting or moving in larger station areas 
     };
     expect(isTrainInStationArea(stationRow, departedTrain, largeStation)).toBe(false);
 });
+
+it("respects outer sub-station boundaries (e.g. DG_DZA in DG_ZA) for departure and presence", () => {
+    const mainStation = postConfig.DG_ZA; // secondaryPosts: ["DG_DZA", "DG_GTB"]
+    const dzaPost = postConfig.DG_DZA; // platformPosOverride: [19.272576, 50.375841]
+
+    const timetableRow = {
+        ...row,
+        stationIndex: 4,
+        secondaryPostsRows: [
+            {...row, stationIndex: 6, pointId: "DG_DZA"} as TimeTableRow,
+        ],
+    };
+
+    // Train is moving between main station (idx 4) and outer sub-station DZA (idx 6) with index 5
+    const trainBetweenSubStations = {
+        ...train,
+        distanceFromStation: 2.0, // 2 km from main station
+        TrainData: {
+            ...train.TrainData,
+            Velocity: 25,
+            VDDelayedTimetableIndex: 5,
+        },
+    } as DetailedTrain;
+
+    expect(isTrainInStationArea(timetableRow, trainBetweenSubStations, mainStation)).toBe(true);
+
+    // Train is at the outer sub-station DG_DZA (idx 6), standing at platform (0.02 km from DZA position)
+    const trainAtDzaPlatform = {
+        ...train,
+        distanceFromStation: 2.3, // 2.3 km from main station
+        TrainData: {
+            ...train.TrainData,
+            Velocity: 0,
+            VDDelayedTimetableIndex: 6,
+            Longitute: dzaPost.platformPosOverride![0],
+            Latititute: dzaPost.platformPosOverride![1] + 0.0001,
+        },
+    } as DetailedTrain;
+
+    expect(isTrainInStationArea(timetableRow, trainAtDzaPlatform, mainStation)).toBe(true);
+    expect(isTrainStandingAtStation(timetableRow, trainAtDzaPlatform, mainStation, now)).toBe(true);
+
+    // Train has passed index 6 (now idx 7), but is still physically inside DZA radius (0.1 km from DZA)
+    const trainJustPastDza = {
+        ...train,
+        distanceFromStation: 2.4,
+        TrainData: {
+            ...train.TrainData,
+            Velocity: 20,
+            VDDelayedTimetableIndex: 7,
+            Longitute: dzaPost.platformPosOverride![0],
+            Latititute: dzaPost.platformPosOverride![1] + 0.0008,
+        },
+    } as DetailedTrain;
+
+    expect(isTrainInStationArea(timetableRow, trainJustPastDza, mainStation)).toBe(true);
+
+    // Train has passed index 6 AND left outer sub-station radius (3.5 km away from all posts)
+    const trainDeparted = {
+        ...train,
+        distanceFromStation: 5.5,
+        TrainData: {
+            ...train.TrainData,
+            Velocity: 60,
+            VDDelayedTimetableIndex: 7,
+            Longitute: 19.35,
+            Latititute: 50.45,
+        },
+    } as DetailedTrain;
+
+    expect(isTrainInStationArea(timetableRow, trainDeparted, mainStation)).toBe(false);
+    expect(isTrainStandingAtStation(timetableRow, trainDeparted, mainStation, now)).toBe(false);
+});

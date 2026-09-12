@@ -29,6 +29,17 @@ describe("departed trains with unavailable routing", () => {
         expect(departureDistance(null, NaN, NaN, station)).toBeUndefined();
         expect(departureDistance(null, station[0], station[1])).toBeUndefined();
     });
+
+    it("measures distance to the closest sub-station in multi-post station groups", () => {
+        const mainPost: [number, number] = [19.264612, 50.366385]; // DG_ZABKOWICE
+        const outerPost: [number, number] = [19.290825, 50.378906]; // DG_DZA (~2.3 km away)
+        // Train is 0.05 km from the outer sub-station DG_DZA
+        const trainNearOuter: [number, number] = [outerPost[0], outerPost[1] + 0.0004];
+
+        const dist = departureDistance(null, trainNearOuter[0], trainNearOuter[1], [mainPost, outerPost]);
+        expect(dist).toBeLessThan(0.1);
+        expect(shouldHideDepartedTrain(true, dist, 0.5)).toBe(false);
+    });
 });
 
 describe("hasTrainPassedStation", () => {

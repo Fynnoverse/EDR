@@ -16,7 +16,7 @@ import { postConfig, StationConfig } from "../../../config/stations";
 import { edrImagesMap, edrWebpImagesMap } from "../../../config";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {getDisplayDistance} from "../../functions/displayDistance";
-import {getStationArrivalStatus, isTrainInStationArea, isTrainStandingAtStation} from "../../functions/stationPresence";
+import {getStationArrivalStatus, getStationGroupPosts, isTrainInStationArea, isTrainStandingAtStation} from "../../functions/stationPresence";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -52,10 +52,11 @@ export const TrainInfoCell: React.FC<Props> = ({
     const displayDistance = getDisplayDistance(distanceFromStation,
         trainDetails?.TrainData?.Longitute, trainDetails?.TrainData?.Latititute,
         postCfg.platformPosOverride);
+    const allPosts = getStationGroupPosts(postCfg);
     const nextIsOwnStation = (nextStation?.pointId != null && [ttRow, ...(ttRow.secondaryPostsRows ?? [])]
         .some(point => point.pointId != null && String(point.pointId) === String(nextStation.pointId)))
-        || nextStationName === postCfg.srName
-        || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName);
+        || allPosts.some(post => post.srName === nextStationName
+            || (nextStation?.pointId != null && (String(post.id) === String(nextStation.pointId) || post.id === nextStation.nameForPerson)));
     const isTrainApproaching = !trainHasPassedStation && nextIsOwnStation;
     const isAtOwnStation = !trainHasPassedStation && (!!arrivalStatus || standingAtStation || inStationArea);
     const ownStationBadgeClass = 'inline-block px-1 rounded bg-green-200 text-green-900 dark:bg-green-600 dark:text-white';

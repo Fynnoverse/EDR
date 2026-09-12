@@ -2,6 +2,7 @@ import {TimeTableRow} from "../../customTypes/TimeTableRow";
 import {StationConfig} from "../../config/stations";
 import {DetailedTrain} from "./trainDetails";
 import {isTrainStandingAtStation} from "./stationPresence";
+import {hasTrainPassedStation} from "./trainFilters";
 import {LIVE_OBSERVATION_GRACE_MS, stationEventKey, validEventTime, validReportedEventTime} from "./trainEvents";
 export {validEventTime} from "./trainEvents";
 
@@ -15,13 +16,32 @@ export function getStationDeviation(row: TimeTableRow, train: DetailedTrain | un
     const arrivalTime = validEventTime(arrival, now) ? arrival : rememberedArrival?.time;
     const arrivalMeasured = validEventTime(arrival, now) || (rememberedArrival?.estimated === false && validEventTime(rememberedArrival.time, now));
     const isStandingAtStop = isTrainStandingAtStation(row, train, station, now);
+    const secondaryStationIndices = (row.secondaryPostsRows || []).map(r => r.stationIndex);
+    const hasPassed = train?.TrainData?.VDDelayedTimetableIndex !== undefined
+        && !isStandingAtStop
+        && hasTrainPassedStation(train.TrainData.VDDelayedTimetableIndex, row.stationIndex, secondaryStationIndices);
+
     const fresh = train?.receivedAt != null && Date.now() - train.receivedAt <= LIVE_OBSERVATION_GRACE_MS;
     // EDR departure fields can contain forecasts; fresh stationary telemetry takes precedence.
     const departureMeasured = validEventTime(departure, now)
         && !(fresh && isStandingAtStop);
-    const arrivalMinutes = validEventTime(arrivalTime, now) ? Math.trunc((arrivalTime!.valueOf() - row.scheduledArrivalObject.valueOf()) / 60000) : train?.lastDelay;
+    let arrivalMinutes = validEventTime(arrivalTime, now) ? Math.trunc((arrivalTime!.valueOf() - row.scheduledArrivalObject.valueOf()) / 60000) : train?.lastDelay;
     let departureMinutes = departureMeasured ? Math.trunc((departure!.valueOf() - row.scheduledDepartureObject.valueOf()) / 60000) : train?.lastDelay;
     let standingDepartureTime: Date | undefined;
+
+    if (!validEventTime(arrivalTime, now) && !isStandingAtStop && !hasPassed && train?.receivedAt != null
+        && row.scheduledArrivalObject.getUTCFullYear() > 1970
+        && row.scheduledArrivalObject.getUTCFullYear() < 3000) {
+        const cappedNow = now.valueOf() - Math.max(0, Date.now() - train.receivedAt - LIVE_OBSERVATION_GRACE_MS);
+        if (cappedNow > row.scheduledArrivalObject.valueOf()) {
+            const elapsedArrivalDelay = Math.floor((cappedNow - row.scheduledArrivalObject.valueOf()) / 60000);
+            arrivalMinutes = arrivalMinutes !== undefined ? Math.max(arrivalMinutes, elapsedArrivalDelay) : elapsedArrivalDelay;
+            if (row.plannedStop === 0 && !departureMeasured) {
+                departureMinutes = arrivalMinutes;
+            }
+        }
+    }
+
     if (!departureMeasured && isStandingAtStop && train?.receivedAt != null) {
         // Stop extrapolating after 15 seconds without a successful observation.
         const cappedNow = now.valueOf() - Math.max(0, Date.now() - train.receivedAt - LIVE_OBSERVATION_GRACE_MS);

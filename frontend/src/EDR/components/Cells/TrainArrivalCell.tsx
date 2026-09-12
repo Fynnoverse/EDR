@@ -16,15 +16,16 @@ type Props = {
     serverNow: Date;
     deviationMinutes?: number;
     estimated?: boolean;
-    departureDeviationMinutes?: number;
 }
 
 export const TrainArrivalCell: React.FC<Props> = ({
     ttRow, trainHasPassedStation,
-    thirdColRef, streamMode, arrivalTimeDelay, serverNow, deviationMinutes, estimated, departureDeviationMinutes
+    thirdColRef, streamMode, arrivalTimeDelay, serverNow, deviationMinutes, estimated
 }) => {
     const {t} = useTranslation();
-    const isDelayed = arrivalTimeDelay > 0 || (departureDeviationMinutes ?? 0) > 0;
+    const effectiveDeviation = deviationMinutes ?? arrivalTimeDelay;
+    const isDelayed = effectiveDeviation > 0;
+    const isEarly = effectiveDeviation < 0;
     return (
         <td className={tableCellCommonClassnames(streamMode)} width="150" ref={thirdColRef}>
             <div className="flex items-center justify-center h-full">
@@ -38,7 +39,7 @@ export const TrainArrivalCell: React.FC<Props> = ({
                         : undefined
                 }
                 {
-                    !trainHasPassedStation && !isDelayed && arrivalTimeDelay < 0
+                    !trainHasPassedStation && isEarly
                         ? <Badge className="animate-pulse" color="info">{t('EDR_TRAINROW_train_early')}</Badge>
                         : undefined
                 }

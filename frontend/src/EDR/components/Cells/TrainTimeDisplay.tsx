@@ -14,6 +14,9 @@ type Props = {
 /** Shows the live-adjusted time prominently and retains the scheduled time as context. */
 export const TrainTimeDisplay: React.FC<Props> = ({scheduledTime, deviationMinutes, serverNow, estimated, predictedTime: timeOverride}) => {
     const {t} = useTranslation();
+    if (scheduledTime.getUTCFullYear() <= 1970 || scheduledTime.getUTCFullYear() >= 3000) {
+        return <div className="flex flex-col leading-tight"><div className="font-bold whitespace-nowrap" data-testid="predicted-train-time">—</div></div>;
+    }
     const predictedTime = timeOverride ?? getPredictedTrainTime(scheduledTime, deviationMinutes);
     const effectiveDeviation = deviationMinutes ?? 0;
     const scheduledLabel = t("EDR_TRAINROW_scheduled", {defaultValue: "Plan"});

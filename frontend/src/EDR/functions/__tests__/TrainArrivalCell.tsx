@@ -58,4 +58,44 @@ describe("TrainArrivalCell Badges", () => {
         expect(badge).toBeInTheDocument();
         expect(badge.closest('[class*="bg-cyan"]')).toBeTruthy();
     });
+
+    it("updates predicted arrival time when delayed", () => {
+        render(
+            <table><tbody><tr>
+                <TrainArrivalCell
+                    ttRow={ttRow}
+                    trainDetails={undefined}
+                    trainHasPassedStation={false}
+                    thirdColRef={null}
+                    streamMode={false}
+                    arrivalTimeDelay={8}
+                    serverNow={serverNow}
+                    deviationMinutes={8}
+                />
+            </tr></tbody></table>
+        );
+        expect(screen.getByTestId("predicted-train-time")).toHaveTextContent("13:18");
+        expect(screen.getByTestId("scheduled-train-time")).toHaveTextContent("13:10+8");
+        expect(screen.getByText("verspätet")).toBeInTheDocument();
+    });
+
+    it("does not show delay badge when train has already arrived on time", () => {
+        render(
+            <table><tbody><tr>
+                <TrainArrivalCell
+                    ttRow={ttRow}
+                    trainDetails={undefined}
+                    trainHasPassedStation={false}
+                    thirdColRef={null}
+                    streamMode={false}
+                    arrivalTimeDelay={0}
+                    serverNow={serverNow}
+                    deviationMinutes={0}
+                />
+            </tr></tbody></table>
+        );
+        expect(screen.getByTestId("predicted-train-time")).toHaveTextContent("13:10");
+        expect(screen.queryByText("verspätet")).toBeNull();
+        expect(screen.queryByText("verfrüht")).toBeNull();
+    });
 });

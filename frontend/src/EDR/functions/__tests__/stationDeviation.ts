@@ -89,4 +89,10 @@ describe("API-based station deviation", () => {
             actualArrivalObject: new Date("2026-09-07T12:00:00Z")} as any];
         expect(getStationDeviation(row, waiting, postConfig.KOL, now).departureMinutes).toBe(5);
     });
+    it("extrapolates arrival delay for an approaching train when server time is past scheduled arrival", () => {
+        const approaching = {...train(), lastDelay: 0, distanceFromStation: 10};
+        approaching.TrainData.VDDelayedTimetableIndex = 1; // has not reached station 2 yet
+        const result = getStationDeviation(row, approaching, postConfig.LG, new Date("2026-09-07T12:05:00Z"));
+        expect(result).toMatchObject({arrivalMinutes: 7, arrivalEstimated: true});
+    });
 });

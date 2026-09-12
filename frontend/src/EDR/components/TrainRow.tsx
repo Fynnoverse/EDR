@@ -157,7 +157,6 @@ const TableRow: React.FC<Props> = (
             arrivalTimeDelay={arrivalTimeDelay}
             serverNow={dateNow}
             deviationMinutes={deviation.arrivalMinutes}
-            departureDeviationMinutes={deviation.departureMinutes}
             estimated={deviation.arrivalEstimated}
         />
         <TrainFromCell headerFourthColRef={headerFourthColRef} ttRow={ttRow} secondaryPostData={secondaryPostData}

@@ -16,13 +16,13 @@ describe("predicted departure", () => {
         expect(getPredictedDepartureTime(arrival, arrival, 12, false).toISOString()).toBe("2026-09-08T00:02:00.000Z");
     });
 
-    it("subtracts earliness for a train without stop", () => {
-        expect(getPredictedDepartureTime(arrival, departure, -5, false).toISOString()).toBe("2026-09-07T23:45:00.000Z");
+    it("retains planned departure for an early train without stop", () => {
+        expect(getPredictedDepartureTime(arrival, departure, -5, false)).toEqual(departure);
     });
 
     it("keeps scheduled time for a train without stop when deviation is 0 or undefined", () => {
-        expect(getPredictedDepartureTime(arrival, departure, 0, false)).toEqual(arrival);
-        expect(getPredictedDepartureTime(arrival, departure, undefined, false)).toEqual(arrival);
+        expect(getPredictedDepartureTime(arrival, departure, 0, false)).toEqual(departure);
+        expect(getPredictedDepartureTime(arrival, departure, undefined, false)).toEqual(departure);
     });
 
     it("applies delay to originating trains where arrival is a placeholder date (epoch 1970)", () => {
@@ -36,9 +36,13 @@ describe("displayed departure", () => {
     const arrival = new Date("2026-09-07T23:50:00Z");
     const departure = new Date("2026-09-07T23:55:00Z");
 
-    it("subtracts earliness for a non-stopping train", () => {
-        expect(getDisplayedDepartureTime(arrival, departure, -4, -4, true, undefined, false).toISOString())
-            .toBe("2026-09-07T23:46:00.000Z");
+    it.each([true, false, undefined])("keeps early non-stopping departures at schedule with estimated=%s", estimated => {
+        expect(getDisplayedDepartureTime(arrival, departure, -4, -4, estimated, undefined, false))
+            .toEqual(departure);
+    });
+
+    it("does not let a standing-time estimate move departure before schedule", () => {
+        expect(getDisplayedDepartureTime(arrival, departure, -4, -4, true, arrival)).toEqual(departure);
     });
 
     it("retains scheduled departure for an early stopping train", () => {

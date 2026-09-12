@@ -25,6 +25,25 @@ jest.mock("react-i18next", () => ({
 }));
 
 describe("TrainRow departure alarm calculation", () => {
+    it.each([0, 5])("does not advance the alarm for an early train with planned stop %s", plannedStop => {
+        localStorage.clear();
+        const playSound = jest.fn();
+        const earlyTrain = {...delayedTrain, lastDelay: -10, receivedAt: undefined};
+        const view = (time: string) => <Table><Table.Body><TableRow
+            setModalTrainId={jest.fn()} setTimetableTrainId={jest.fn()} ttRow={{...row, plannedStop}}
+            trainDetails={earlyTrain} serverTime={new Date(`2026-09-07T${time}Z`).getTime()}
+            firstColRef={null} secondColRef={null} thirdColRef={null} headerFourthColRef={null}
+            headerFifthColRef={null} headerSixthhColRef={null} headerSeventhColRef={null}
+            playSoundNotification={playSound} isWebpSupported={false} streamMode={false}
+            serverCode="en1" players={[]} postCfg={postConfig.KOL} autoAlarmVisible={true}
+        /></Table.Body></Table>;
+        const {rerender} = render(view("11:35:00"));
+        rerender(view("11:45:59"));
+        expect(playSound).not.toHaveBeenCalled();
+        rerender(view("11:46:00"));
+        expect(playSound).toHaveBeenCalledTimes(1);
+    });
+
     it.each(["2026-09-07T11:40:00Z", "2026-09-07T11:56:00Z"])("clears armed and triggered alarms when all alarms are unchecked at %s", time => {
         localStorage.clear();
         const playSound = jest.fn();

@@ -25,7 +25,7 @@ export const getPredictedDepartureTime = (
             ? new Date(Math.max(scheduledDeparture.valueOf(),
                 addMinutes(scheduledArrival, delay + (hasStop ? 1 : 0)).valueOf()))
             : scheduledDeparture)
-        : addMinutes(scheduledArrival, delay);
+        : new Date(Math.max(scheduledDeparture.valueOf(), addMinutes(scheduledArrival, delay).valueOf()));
 };
 
 /** Shared by the departure cell and sorting; the displayed delay stays separate. */
@@ -39,10 +39,10 @@ export const getDisplayedDepartureTime = (
     hasStop = true
 ) => {
     if (standingDepartureTime) {
-        return standingDepartureTime;
+        return new Date(Math.max(scheduledDeparture.valueOf(), standingDepartureTime.valueOf()));
     }
     if (estimated === false && (hasStop ? (departureMinutes ?? 0) > 0 : departureMinutes !== undefined)) {
-        return getPredictedTrainTime(scheduledDeparture, departureMinutes);
+        return getPredictedTrainTime(scheduledDeparture, Math.max(0, departureMinutes ?? 0));
     }
     const hasValidArrival = isValidDate(scheduledArrival);
     if (!hasValidArrival) {
@@ -53,7 +53,7 @@ export const getDisplayedDepartureTime = (
         const effectiveDelay = departureMinutes !== undefined && arrivalMinutes !== undefined
             ? Math.max(departureMinutes, arrivalMinutes)
             : (departureMinutes ?? arrivalMinutes ?? 0);
-        return addMinutes(scheduledArrival, effectiveDelay);
+        return new Date(Math.max(scheduledDeparture.valueOf(), addMinutes(scheduledArrival, effectiveDelay).valueOf()));
     }
 
     const minByArrival = (arrivalMinutes ?? 0) > 0

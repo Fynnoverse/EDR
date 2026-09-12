@@ -36,7 +36,7 @@ describe("TrainPlatformCell Haltzeit", () => {
         lastDelay: 0,
     } as unknown as DetailedTrain;
 
-    it("shows 1 min halt for delayed train (planned 5 min)", () => {
+    it("shows 1 min halt and red +delay when delay exceeds planned stop (delay 6 min, planned 5 min)", () => {
         const delayedTrain = {
             ...baseTrain,
             lastDelay: 6,
@@ -56,7 +56,30 @@ describe("TrainPlatformCell Haltzeit", () => {
         );
 
         expect(screen.getByTestId("live-stop-duration")).toHaveTextContent("1 min");
-        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min-4");
+        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min+6");
+    });
+
+    it("reduces halt time to remaining buffer when delay is less than planned stop (delay 2 min, planned 5 min -> 3 min)", () => {
+        const slightlyDelayedTrain = {
+            ...baseTrain,
+            lastDelay: 2,
+        };
+        render(
+            <table><tbody><tr>
+                <TrainPlatformCell
+                    headerFifthColRef={null}
+                    ttRow={ttRow}
+                    secondaryPostData={[]}
+                    streamMode={false}
+                    trainDetails={slightlyDelayedTrain}
+                    postCfg={postConfig.KOL}
+                    serverNow={serverNow}
+                />
+            </tr></tbody></table>
+        );
+
+        expect(screen.getByTestId("live-stop-duration")).toHaveTextContent("3 min");
+        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min+2");
     });
 
     it("adds early arrival time to planned halt (planned 5 min + 3 min early = 8 min)", () => {
@@ -79,7 +102,7 @@ describe("TrainPlatformCell Haltzeit", () => {
         );
 
         expect(screen.getByTestId("live-stop-duration")).toHaveTextContent("8 min");
-        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min+3");
+        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min-3");
     });
 
     it("shows planned halt when on time", () => {

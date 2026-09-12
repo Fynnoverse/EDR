@@ -14,13 +14,18 @@ const PlatformData: React.FC<{ttRow: TimeTableRow} & LiveStopProps> = ({ttRow, t
     const {t} = useTranslation();
     const deviation = postCfg && serverNow ? getStationDeviation(ttRow, trainDetails, postCfg, serverNow) : undefined;
     const planned = Math.max(0, ttRow.plannedStop || 0);
-    const late = (deviation?.arrivalMinutes ?? 0) > 0;
-    const earlyMinutes = Math.max(0, -(deviation?.arrivalMinutes ?? 0));
-    const liveStop = planned > 0 ? (late ? 1 : planned + earlyMinutes) : 0;
-    const change = liveStop - planned;
+    const arrivalMinutes = deviation?.arrivalMinutes;
+    const deviationUnknown = deviation === undefined || arrivalMinutes === undefined;
+    const effectiveDeviation = arrivalMinutes ?? 0;
+    const late = effectiveDeviation > 0;
+    const earlyMinutes = Math.max(0, -effectiveDeviation);
+    const liveStop = planned > 0
+        ? (late
+            ? Math.max(1, planned - effectiveDeviation)
+            : planned + earlyMinutes)
+        : 0;
     const formatMinutes = (minutes: number) => Number(minutes.toFixed(2)).toString();
     const estimated = deviation?.arrivalEstimated || deviation?.departureEstimated;
-    const deviationUnknown = deviation === undefined || deviation.arrivalMinutes === undefined;
 
     return ttRow.platform?.replace(" ", '') || Math.ceil(ttRow.plannedStop) !== 0 ? (
         <div className="flex flex-wrap items-center gap-y-2">
@@ -35,8 +40,14 @@ const PlatformData: React.FC<{ttRow: TimeTableRow} & LiveStopProps> = ({ttRow, t
                     </span>
                     <span className="text-xs font-normal text-gray-500 dark:text-gray-400 whitespace-nowrap" data-testid="planned-stop-duration" title={t("EDR_TRAINROW_scheduled", {defaultValue: "Plan"})}>
                         {t("EDR_TRAINROW_scheduled", {defaultValue: "Plan"})} {formatMinutes(planned)}&nbsp;{t("EDR_TRAINROW_layover_minutes")}
-                        <span className={deviationUnknown ? "text-gray-500 dark:text-gray-400 ml-1 font-bold" : late || change < 0 ? "text-red-600 ml-1 font-bold" : change > 0 ? "text-green-600 ml-1 font-bold" : "text-gray-500 dark:text-gray-400 ml-1 font-bold"}>
-                            {deviationUnknown ? "—" : `${change > 0 ? "+" : change < 0 ? "-" : "±"}${formatMinutes(Math.abs(change))}`}
+                        <span className={deviationUnknown
+                            ? "text-gray-500 dark:text-gray-400 ml-1 font-bold"
+                            : effectiveDeviation > 0
+                                ? "text-red-600 ml-1 font-bold"
+                                : effectiveDeviation < 0
+                                    ? "text-green-600 ml-1 font-bold"
+                                    : "text-gray-500 dark:text-gray-400 ml-1 font-bold"}>
+                            {deviationUnknown ? "—" : <>{effectiveDeviation > 0 ? "+" : effectiveDeviation < 0 ? "-" : "±"}{formatMinutes(Math.abs(effectiveDeviation))}</>}
                         </span>
                     </span>
                 </span>

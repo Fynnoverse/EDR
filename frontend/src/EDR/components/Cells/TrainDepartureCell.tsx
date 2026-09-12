@@ -15,7 +15,7 @@ type Props = {
     trainMustDepart: boolean;
     playSoundNotification: (callBack: () => void) => void
     streamMode: boolean;
-    isTrainOffline: boolean;
+    isTrainOffline?: boolean;
     deviationMinutes?: number;
     serverNow: Date;
     estimated?: boolean;
@@ -32,7 +32,6 @@ export const TrainDepartureCell: React.FC<Props> = ({
     headerSixthhColRef,
     trainHasPassedStation,
     streamMode,
-    isTrainOffline,
     deviationMinutes,
     serverNow,
     estimated,
@@ -46,6 +45,12 @@ export const TrainDepartureCell: React.FC<Props> = ({
     const [localNotificationEnabled, setLocalNotificationEnabled] = React.useState(false);
     const notificationEnabled = controlledNotificationEnabled !== undefined ? controlledNotificationEnabled : localNotificationEnabled;
     const setNotificationEnabled = controlledSetNotificationEnabled ?? setLocalNotificationEnabled;
+
+    React.useEffect(() => {
+        if (trainHasPassedStation && notificationEnabled) {
+            setNotificationEnabled(false);
+        }
+    }, [trainHasPassedStation, notificationEnabled, setNotificationEnabled]);
 
     React.useEffect(() => {
         if (trainMustDepart && notificationEnabled) {
@@ -116,9 +121,9 @@ export const TrainDepartureCell: React.FC<Props> = ({
                 <TrainTimeDisplay scheduledTime={ttRow.scheduledDepartureObject} deviationMinutes={deviationMinutes} serverNow={serverNow} estimated={estimated}
                     predictedTime={getDisplayedDepartureTime(ttRow.scheduledArrivalObject, ttRow.scheduledDepartureObject,
                         deviationMinutes, arrivalDeviationMinutes, estimated, standingDepartureTime, ttRow.plannedStop > 0)} />
-                <div className="hidden lg:flex items-center justify-center shrink-0 min-w-[32px]">
+                <div className="flex items-center justify-center shrink-0 min-w-[32px]">
                     {
-                        !trainHasPassedStation && !isTrainOffline && (trainMustDepart ?
+                        !trainHasPassedStation && (trainMustDepart ?
                                 <Badge className="animate-pulse duration-1000" color="warning">{t('EDR_TRAINROW_train_departing')}</Badge>
                                 :
                             <Tooltip placement="top" overlay={<span>{t("EDR_TRAINROW_notify")}</span>}>

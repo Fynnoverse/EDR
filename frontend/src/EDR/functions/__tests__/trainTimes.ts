@@ -1,4 +1,4 @@
-import {getPredictedDepartureTime, getPredictedTrainTime} from "../trainTimes";
+import {getDisplayedDepartureTime, getPredictedDepartureTime, getPredictedTrainTime} from "../trainTimes";
 
 describe("predicted departure", () => {
     const arrival = new Date("2026-09-07T23:50:00Z");
@@ -14,6 +14,30 @@ describe("predicted departure", () => {
 
     it("does not add dwell to a passing train", () => {
         expect(getPredictedDepartureTime(arrival, arrival, 12, false).toISOString()).toBe("2026-09-08T00:02:00.000Z");
+    });
+
+    it("subtracts earliness for a train without stop", () => {
+        expect(getPredictedDepartureTime(arrival, departure, -5, false).toISOString()).toBe("2026-09-07T23:45:00.000Z");
+    });
+
+    it("keeps scheduled time for a train without stop when deviation is 0 or undefined", () => {
+        expect(getPredictedDepartureTime(arrival, departure, 0, false)).toEqual(arrival);
+        expect(getPredictedDepartureTime(arrival, departure, undefined, false)).toEqual(arrival);
+    });
+});
+
+describe("displayed departure", () => {
+    const arrival = new Date("2026-09-07T23:50:00Z");
+    const departure = new Date("2026-09-07T23:55:00Z");
+
+    it("subtracts earliness for a non-stopping train", () => {
+        expect(getDisplayedDepartureTime(arrival, departure, -4, -4, true, undefined, false).toISOString())
+            .toBe("2026-09-07T23:46:00.000Z");
+    });
+
+    it("retains scheduled departure for an early stopping train", () => {
+        expect(getDisplayedDepartureTime(arrival, departure, -4, -4, true, undefined, true))
+            .toEqual(departure);
     });
 });
 

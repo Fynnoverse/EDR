@@ -389,4 +389,382 @@ describe("TrainRow departure alarm calculation", () => {
         // Call count should remain 2
         expect(requestPermissionMock).toHaveBeenCalledTimes(2);
     });
+
+    it("persists enabled train notification in localStorage and restores it upon remount", () => {
+        localStorage.clear();
+        const playSound = jest.fn();
+        const standingTrain = {
+            ...delayedTrain,
+            lastDelay: 0,
+        };
+        const earlyDate = new Date("2026-09-07T11:40:00Z");
+
+        const {unmount} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={standingTrain}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const notifyBtn = screen.getAllByRole("button", {name: "Benachrichtigen"})[0];
+        fireEvent.click(notifyBtn);
+
+        const stored = JSON.parse(localStorage.getItem("edr-train-notifications") || "{}");
+        expect(stored["en1_KOL_11507"]).toBe(true);
+
+        unmount();
+
+        // Remount (simulating page reload)
+        render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={standingTrain}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // Active notification restored (button shows check icon)
+        const checkIcon = screen.getByRole("button", {name: "Benachrichtigen"}).querySelector("img");
+        expect(checkIcon?.getAttribute("src")).toContain("check");
+    });
+
+    it("silently removes stored notification from localStorage when train has already passed or departs", () => {
+        localStorage.setItem("edr-train-notifications", JSON.stringify({"en1_KOL_11507": true}));
+
+        const playSound = jest.fn();
+        const departedTrainDetails = {
+            ...delayedTrain,
+            TrainData: {
+                ...delayedTrain.TrainData,
+                VDDelayedTimetableIndex: 999, // passed station
+            },
+            distanceFromStation: 10,
+        };
+        const earlyDate = new Date("2026-09-07T11:40:00Z");
+
+        render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={departedTrainDetails}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const stored = JSON.parse(localStorage.getItem("edr-train-notifications") || "{}");
+        expect(stored["en1_KOL_11507"]).toBeUndefined();
+        expect(playSound).not.toHaveBeenCalled();
+    });
+
+    it("triggers departure alarm even when distanceFromStation is null", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const dateNow = new Date("2026-09-07T11:46:00Z");
+        const trainWithNullDistance = {
+            ...delayedTrain,
+            lastDelay: 0,
+            distanceFromStation: null,
+        } as unknown as DetailedTrain;
+
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={trainWithNullDistance}
+                        serverTime={new Date("2026-09-07T11:40:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const notifyBtn = screen.getByRole("button", {name: "Benachrichtigen"});
+        fireEvent.click(notifyBtn);
+
+        // Advance time to 1 minute before scheduled departure 11:47 (11:46)
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={trainWithNullDistance}
+                        serverTime={dateNow.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(playSound).toHaveBeenCalledTimes(1);
+    });
+
+    it("allows enabling notification and triggers alarm for offline/timetable trains", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const earlyDate = new Date("2026-09-07T11:40:00Z");
+        const warnDate = new Date("2026-09-07T11:46:00Z");
+
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const notifyBtn = screen.getByRole("button", {name: "Benachrichtigen"});
+        fireEvent.click(notifyBtn);
+
+        // Advance time to 11:46 (1 min before scheduled departure)
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={warnDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(playSound).toHaveBeenCalledTimes(1);
+    });
+
+    it("silently removes active notification without triggering alarm when train is detected as departed before the alarm time", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const earlyDate = new Date("2026-09-07T11:40:00Z");
+        const activeTrainDetails = {
+            ...delayedTrain,
+            lastDelay: 0,
+            TrainData: {
+                ...delayedTrain.TrainData,
+                VDDelayedTimetableIndex: 0, // approaching/at station
+            },
+        } as unknown as DetailedTrain;
+
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={activeTrainDetails}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // User enables alarm for this train
+        const notifyBtn = screen.getByRole("button", {name: "Benachrichtigen"});
+        fireEvent.click(notifyBtn);
+
+        let stored = JSON.parse(localStorage.getItem("edr-train-notifications") || "{}");
+        expect(stored["en1_KOL_11507"]).toBe(true);
+
+        // Train passes/departs station before the 11:46 alarm time (e.g. at 11:42)
+        const departedTrainDetails = {
+            ...delayedTrain,
+            lastDelay: 0,
+            TrainData: {
+                ...delayedTrain.TrainData,
+                VDDelayedTimetableIndex: 999, // departed
+            },
+        } as unknown as DetailedTrain;
+
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={departedTrainDetails}
+                        serverTime={new Date("2026-09-07T11:42:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        // Must be silently removed from storage, sound should NOT have played
+        stored = JSON.parse(localStorage.getItem("edr-train-notifications") || "{}");
+        expect(stored["en1_KOL_11507"]).toBeUndefined();
+        expect(playSound).not.toHaveBeenCalled();
+
+        // Later at 11:46 (scheduled alarm time), sound must STILL NOT play
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={departedTrainDetails}
+                        serverTime={new Date("2026-09-07T11:46:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(playSound).not.toHaveBeenCalled();
+    });
 });

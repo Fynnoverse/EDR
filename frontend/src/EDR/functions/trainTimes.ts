@@ -11,14 +11,16 @@ export const getPredictedTrainTimestamp = (scheduledTime: Date, deviationMinutes
 /** Late stopping trains use one minute of dwell, without departing before schedule. */
 export const getPredictedDepartureTime = (
     scheduledArrival: Date, scheduledDeparture: Date, deviationMinutes?: number, hasStop = true,
-) => (deviationMinutes ?? 0) > 0
-    ? new Date(Math.max(scheduledDeparture.valueOf(),
-        addMinutes(scheduledArrival, deviationMinutes! + (hasStop ? 1 : 0)).valueOf()))
-    : scheduledDeparture;
+) => hasStop
+    ? ((deviationMinutes ?? 0) > 0
+        ? new Date(Math.max(scheduledDeparture.valueOf(),
+            addMinutes(scheduledArrival, deviationMinutes! + (hasStop ? 1 : 0)).valueOf()))
+        : scheduledDeparture)
+    : addMinutes(scheduledArrival, deviationMinutes ?? 0);
 
 /** Shared by the departure cell and sorting; the displayed delay stays separate. */
 export const getDisplayedDepartureTime = (scheduledArrival: Date, scheduledDeparture: Date,
     departureMinutes?: number, arrivalMinutes?: number, estimated?: boolean, standingDepartureTime?: Date, hasStop = true) =>
-    standingDepartureTime ?? (estimated === false && (departureMinutes ?? 0) > 0
+    standingDepartureTime ?? (estimated === false && (hasStop ? (departureMinutes ?? 0) > 0 : departureMinutes !== undefined)
         ? getPredictedTrainTime(scheduledDeparture, departureMinutes)
         : getPredictedDepartureTime(scheduledArrival, scheduledDeparture, arrivalMinutes ?? departureMinutes, hasStop));

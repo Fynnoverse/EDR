@@ -19,6 +19,12 @@ import { getServerTimeNumber } from "../../utils/serverTime";
 import {getStationDeviation} from "../functions/stationDeviation";
 import {isTrainStandingAtStation} from "../functions/stationPresence";
 import {getDisplayedDepartureTime} from "../functions/trainTimes";
+import {
+    getTrainNotificationKey,
+    isTrainNotificationStored,
+    removeStoredTrainNotification,
+    setStoredTrainNotification
+} from "../functions/trainNotificationStorage";
 
 
 export const tableCellCommonClassnames = (streamMode: boolean = false) =>
@@ -72,20 +78,43 @@ const TableRow: React.FC<Props> = (
 
     const arrivalTimeDelay = deviation.arrivalMinutes ?? 0;
 
-    const [notificationEnabled, setNotificationEnabled] = React.useState(false);
+    const notifKey = React.useMemo(() => getTrainNotificationKey(ttRow, serverCode, postCfg), [ttRow, serverCode, postCfg]);
+
+    const [notificationEnabled, setNotificationEnabledState] = React.useState<boolean>(() => {
+        if (trainHasPassedStation) {
+            removeStoredTrainNotification(notifKey);
+            return false;
+        }
+        return isTrainNotificationStored(notifKey);
+    });
     const [alarmTriggered, setAlarmTriggered] = React.useState(false);
 
-    const distanceFromStation = trainDetails?.distanceFromStation;
-    const trainMustDepart = !trainHasPassedStation && distanceFromStation != null && distanceFromStation < 1.5 && (subMinutes(calculatedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
+    const setNotificationEnabled = React.useCallback((value: React.SetStateAction<boolean>) => {
+        if (trainHasPassedStation) {
+            removeStoredTrainNotification(notifKey);
+            setNotificationEnabledState(false);
+            return;
+        }
+        setNotificationEnabledState(prev => {
+            const next = typeof value === "function" ? value(prev) : value;
+            setStoredTrainNotification(notifKey, next);
+            return next;
+        });
+    }, [trainHasPassedStation, notifKey]);
+
+    const trainMustDepart = !trainHasPassedStation && (subMinutes(calculatedDeparture, 1) <= dateNow);
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 
     React.useEffect(() => {
-        if (trainHasPassedStation && (notificationEnabled || alarmTriggered)) {
-            setNotificationEnabled(false);
-            setAlarmTriggered(false);
+        if (trainHasPassedStation) {
+            removeStoredTrainNotification(notifKey);
+            if (notificationEnabled || alarmTriggered) {
+                setNotificationEnabledState(false);
+                setAlarmTriggered(false);
+            }
         }
-    }, [trainHasPassedStation, notificationEnabled, alarmTriggered]);
+    }, [trainHasPassedStation, notificationEnabled, alarmTriggered, notifKey]);
 
     const isAlarming = (alarmTriggered || (notificationEnabled && trainMustDepart)) && !trainHasPassedStation;
 

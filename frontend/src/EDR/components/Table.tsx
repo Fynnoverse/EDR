@@ -24,6 +24,7 @@ import {differenceInMinutes} from "date-fns";
 import {nowUTC} from "../../utils/date";
 import {useLocalStorage} from "usehooks-ts";
 import {DirectionTextContext} from "./Cells/DirectionIndicator";
+import {getTrainNotificationKey, pruneDepartedTrainNotifications} from "../functions/trainNotificationStorage";
 
 export type Bounds = {
     firstColBounds: RectReadOnly;
@@ -82,6 +83,28 @@ export const EDRTable: React.FC<Props> = ({
         seventhColBounds
     }
 
+    React.useEffect(() => {
+        if (trainsWithDetails && post && serverTime && timetable.length > 0) {
+            const currentPostCfg = postConfig[post];
+            const dateNow = nowUTC(serverTime);
+            const validActiveKeys = new Set<string>();
+            for (const row of timetable) {
+                const train = trainsWithDetails[row.trainNoLocal];
+                const secondaryStationIndices = (row.secondaryPostsRows || []).map(r => r.stationIndex);
+                const standing = isTrainStandingAtStation(row, train, currentPostCfg, dateNow);
+                const hasPassed = train !== undefined && !standing && hasTrainPassedStation(
+                    train.TrainData.VDDelayedTimetableIndex,
+                    row.stationIndex,
+                    secondaryStationIndices
+                );
+                if (!hasPassed) {
+                    validActiveKeys.add(getTrainNotificationKey(row, serverCode, currentPostCfg));
+                }
+            }
+            pruneDepartedTrainNotifications(validActiveKeys, serverCode, currentPostCfg);
+        }
+    }, [timetable, trainsWithDetails, post, serverCode, serverTime]);
+
     if (!trainsWithDetails || !post || !serverTime) return null;
     const postCfg = postConfig[post];
     const showStopColumn = timetable.length > 0 && timetable.some((row) => row.platform || Math.ceil(row.plannedStop) !== 0);
@@ -100,6 +123,7 @@ export const EDRTable: React.FC<Props> = ({
     };
 
     const dateNow = nowUTC(serverTime);
+
     const filteredTimetable = timetable
             .filter((tt) => filter ?
                 filter.replace(/\s+/g, '')

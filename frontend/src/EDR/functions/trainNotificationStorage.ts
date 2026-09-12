@@ -56,6 +56,14 @@ export const removeStoredTrainNotification = (key: string): void => {
     setStoredTrainNotification(key, false);
 };
 
+export const clearStoredTrainNotifications = (): void => {
+    try {
+        window.localStorage.removeItem(EDR_NOTIFICATIONS_STORAGE_KEY);
+    } catch {
+        // Alarms can still be disabled in memory when storage is unavailable.
+    }
+};
+
 export const pruneDepartedTrainNotifications = (
     validActiveKeys: Set<string>,
     serverCode?: string,

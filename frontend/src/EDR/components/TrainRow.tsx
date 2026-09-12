@@ -90,6 +90,8 @@ const TableRow: React.FC<Props> = (
         return Boolean(autoAlarmVisible) || isTrainNotificationStored(notifKey);
     });
     const [alarmTriggered, setAlarmTriggered] = React.useState(false);
+    const previousAutoAlarm = React.useRef(autoAlarmVisible);
+    const disablingAllAlarms = !!previousAutoAlarm.current && !autoAlarmVisible;
 
     const trainMustDepart = !trainHasPassedStation && (subMinutes(calculatedDeparture, 1) <= dateNow);
 
@@ -114,6 +116,14 @@ const TableRow: React.FC<Props> = (
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 
     React.useEffect(() => {
+        previousAutoAlarm.current = autoAlarmVisible;
+        if (disablingAllAlarms) {
+            removeStoredTrainNotification(notifKey);
+            wasArmedRef.current = false;
+            setNotificationEnabledState(false);
+            setAlarmTriggered(false);
+            return;
+        }
         if (trainHasPassedStation) {
             removeStoredTrainNotification(notifKey);
             if (notificationEnabled || alarmTriggered) {
@@ -144,9 +154,9 @@ const TableRow: React.FC<Props> = (
                 }
             }
         }
-    }, [trainMustDepart, trainHasPassedStation, autoAlarmVisible, notifKey, alarmTriggered, notificationEnabled]);
+    }, [trainMustDepart, trainHasPassedStation, autoAlarmVisible, notifKey, alarmTriggered, notificationEnabled, disablingAllAlarms]);
 
-    const isAlarming = (alarmTriggered || (notificationEnabled && trainMustDepart)) && !trainHasPassedStation;
+    const isAlarming = !disablingAllAlarms && (alarmTriggered || (notificationEnabled && trainMustDepart)) && !trainHasPassedStation;
 
     return <Table.Row
         className={`
@@ -209,7 +219,7 @@ const TableRow: React.FC<Props> = (
             standingDepartureTime={deviation.standingDepartureTime}
             estimated={deviation.departureEstimated}
             serverNow={dateNow}
-            notificationEnabled={notificationEnabled}
+            notificationEnabled={notificationEnabled && !disablingAllAlarms}
             setNotificationEnabled={setNotificationEnabled}
             onAlarmTriggered={() => setAlarmTriggered(true)}
         />

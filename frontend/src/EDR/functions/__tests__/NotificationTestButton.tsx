@@ -28,6 +28,20 @@ jest.mock("react-i18next", () => ({
 }));
 
 describe("Notification Test Button in Header", () => {
+    it("removes every saved alarm, including hidden trains, when unchecking all alarms", () => {
+        localStorage.setItem("edr-train-notifications", JSON.stringify({en1_KOL_100: true, en1_KOL_hidden: true, de1_DG_200: true}));
+        const setAutoAlarmVisible = jest.fn();
+        render(<Header serverTzOffset={2} serverTime={Date.now()} serverCode="en1" postCfg={postConfig.KOL}
+            bounds={defaultBounds} timetableLength={5} filter="" setFilter={jest.fn()} streamMode={false} sortKey={undefined}
+            setStreamMode={jest.fn()} showDirectionText={false} setShowDirectionText={jest.fn()}
+            filterConfig={presetFilterConfig.default} setFilterConfig={jest.fn()} sortDirection="ascending"
+            onSort={jest.fn()} onResetSort={jest.fn()} arrivalSortMode="predicted" setArrivalSortMode={jest.fn()}
+            autoAlarmVisible={true} setAutoAlarmVisible={setAutoAlarmVisible}/>);
+        fireEvent.click(screen.getByRole("checkbox", {name: /Alarm/i}));
+        expect(setAutoAlarmVisible).toHaveBeenCalledWith(false);
+        expect(localStorage.getItem("edr-train-notifications")).toBeNull();
+    });
+
     const defaultBounds = {
         firstColBounds: {} as any,
         secondColBounds: {} as any,

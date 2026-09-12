@@ -25,6 +25,29 @@ jest.mock("react-i18next", () => ({
 }));
 
 describe("TrainRow departure alarm calculation", () => {
+    it.each(["2026-09-07T11:40:00Z", "2026-09-07T11:56:00Z"])("clears armed and triggered alarms when all alarms are unchecked at %s", time => {
+        localStorage.clear();
+        const playSound = jest.fn();
+        const view = (enabled: boolean, date: string) => <Table><Table.Body><TableRow
+            setModalTrainId={jest.fn()} setTimetableTrainId={jest.fn()} ttRow={row}
+            trainDetails={delayedTrain} serverTime={new Date(date).getTime()}
+            firstColRef={null} secondColRef={null} thirdColRef={null} headerFourthColRef={null}
+            headerFifthColRef={null} headerSixthhColRef={null} headerSeventhColRef={null}
+            playSoundNotification={playSound} isWebpSupported={false} streamMode={false}
+            serverCode="en1" players={[]} postCfg={postConfig.KOL} autoAlarmVisible={enabled}
+        /></Table.Body></Table>;
+        const {rerender, container} = render(view(true, time));
+        playSound.mockClear();
+        rerender(view(false, time));
+        expect(container.querySelector('[data-alarming="true"]')).toBeNull();
+        expect(JSON.parse(localStorage.getItem("edr-train-notifications") || "{}")).toEqual({});
+        // A later timetable recalculation must not restore the remembered alarm.
+        rerender(view(false, "2026-09-07T11:40:01Z"));
+        rerender(view(false, "2026-09-07T11:57:00Z"));
+        expect(playSound).not.toHaveBeenCalled();
+        expect(container.querySelector('[data-alarming="true"]')).toBeNull();
+    });
+
     const row = {
         trainNoLocal: "11507",
         line: 1,

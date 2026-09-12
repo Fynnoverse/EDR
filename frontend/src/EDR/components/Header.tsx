@@ -12,6 +12,7 @@ import {ColumnFilterModal} from "./CustomFilterModal";
 import {FilterConfig, presetFilterConfig} from "../index";
 import {ArrivalSortMode, SortDirection, TrainSortKey} from "../functions/trainSorting";
 import {requestPushNotificationPermission, sendPushNotification} from "../functions/pushNotification";
+import {clearStoredTrainNotifications} from "../functions/trainNotificationStorage";
 
 type Props = {
     serverTzOffset: number;
@@ -85,6 +86,7 @@ export const Header: React.FC<Props> = ({
     const displayMode = getDisplayMode(filterConfig);
 
     const handleAutoAlarmChange = (enabled: boolean) => {
+        if (!enabled) clearStoredTrainNotifications();
         setAutoAlarmVisible?.(enabled);
         if (enabled) {
             void requestPushNotificationPermission();

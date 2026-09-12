@@ -1,4 +1,5 @@
 {
+  "EDR_TRAINROW_train_departure_due": "Partenza prevista",
   "APP_fatal_error": "Si è verificato un'errore, l'interfaccia utente non si aggiorna!",
   "APP_no_trains": "Nessun treno disponibile! Probabilmente il server si sta riavviando.",
   "APP_no_timetable": "Errore: impossibile recuperare l'orario. il server è probabilmente in fase di riavvio.",

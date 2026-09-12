@@ -1,4 +1,5 @@
 {
+  "EDR_TRAINROW_train_departure_due": "Čas odchodu",
   "APP_fatal_error": "Uživateľské rozhranie sa neobnoví, došlo k fatálnej chybe.",
   "APP_no_trains": "Žiadne vlaky niesú k dispozícii. Server sa pravdepodobne reštartuje",
   "APP_no_timetable": "Nepodarilo sa načítať cestovný poriadok. Server sa pravdepodobne reštartuje ",

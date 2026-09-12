@@ -1,4 +1,5 @@
 {
+  "EDR_TRAINROW_train_departure_due": "departure due",
   "APP_fatal_error": "A fatal error occurred, UI will not refresh!",
   "APP_no_trains": "No trains available! Server is probably restarting.",
   "APP_no_timetable": "Fatal error: Unable to fetch timetable. server is probably restarting.",

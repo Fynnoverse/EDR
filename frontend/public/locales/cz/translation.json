@@ -1,4 +1,5 @@
 {
+  "EDR_TRAINROW_train_departure_due": "Čas odjezdu",
   "APP_fatal_error": "Uživatelské rozhraní se neobnoví, došlo k fatální chybě.",
   "APP_no_trains": "Žádné vlaky k dispozici. Server se nejspíše restartuje",
   "APP_no_timetable": "Fatální chyba: Nelze načíst jízdní řád. Server Simrail se pravděpodobně restartuje",

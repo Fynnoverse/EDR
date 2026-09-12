@@ -16,6 +16,7 @@ type Props = {
     ttRow: TimeTableRow;
     trainHasPassedStation: boolean;
     trainMustDepart: boolean;
+    isAtStation?: boolean;
     playSoundNotification: (callBack: () => void) => void
     streamMode: boolean;
     isTrainOffline?: boolean;
@@ -30,6 +31,7 @@ type Props = {
 }
 export const TrainDepartureCell: React.FC<Props> = ({
     trainMustDepart,
+    isAtStation = false,
     playSoundNotification,
     ttRow,
     headerSixthhColRef,
@@ -144,8 +146,8 @@ export const TrainDepartureCell: React.FC<Props> = ({
                     {
                         trainHasPassedStation ?
                             <Badge color="gray">{t('EDR_TRAINROW_train_departed')}</Badge>
-                            : (trainMustDepart ?
-                                <Badge className="animate-pulse duration-1000" color="warning">{t('EDR_TRAINROW_train_departing')}</Badge>
+                            : (trainMustDepart && isAtStation ?
+                                <Badge className="animate-pulse duration-1000" color="warning">{t('EDR_TRAINROW_train_departure_due', {defaultValue: 'Departure due'})}</Badge>
                                 :
                             <Tooltip placement="top" overlay={<span>{t("EDR_TRAINROW_notify")}</span>}>
                                     <Button

@@ -1,4 +1,5 @@
 {
+  "EDR_TRAINROW_train_departure_due": "Départ imminent",
   "APP_fatal_error": "L'interface utilisateur ne s'actualise pas, une erreur fatale s'est produite",
   "APP_no_trains": "Il n'y a pas de train ! Le serveur est probablement en train de redémarrer",
   "APP_no_timetable": "Erreur fatale : impossible de récupérer l'horaire. Le serveur Simrail est probablement en train de redémarrer",

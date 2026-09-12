@@ -6,8 +6,8 @@ import {hasTrainLeftStationArea, stationPresenceKey} from "../stationPresence";
 import {postConfig} from "../../../config/stations";
 import mockGermanTranslations from "../../../../public/locales/de/translation.json";
 
-jest.mock("react-i18next", () => ({useTranslation: () => ({t: (key: string) =>
-    (mockGermanTranslations as Record<string, string>)[key] ?? key})}));
+jest.mock("react-i18next", () => ({useTranslation: () => ({t: (key: string, options?: {defaultValue?: string}) =>
+    (mockGermanTranslations as Record<string, string>)[key] ?? options?.defaultValue ?? key})}));
 jest.mock("notistack", () => ({useSnackbar: () => ({enqueueSnackbar: jest.fn()})}));
 jest.mock("../../components/TrainRow", () => ({tableCellCommonClassnames: () => ""}));
 
@@ -24,6 +24,24 @@ const live = (index: number | undefined, observed = false) => ({
     TrainData: {VDDelayedTimetableIndex: index, Velocity: 40, Longitute: 19.35, Latititute: 50.45},
 } as unknown as DetailedTrain);
 
+it("never reuses a cached departed label for the time-based warning", () => {
+    const translations = mockGermanTranslations as Record<string, string>;
+    const due = translations.EDR_TRAINROW_train_departure_due;
+    const old = translations.EDR_TRAINROW_train_departing;
+    try {
+        delete translations.EDR_TRAINROW_train_departure_due;
+        translations.EDR_TRAINROW_train_departing = "abgefahren";
+        render(<table><tbody><tr><TrainDepartureCell ttRow={row} headerSixthhColRef={null}
+            trainHasPassedStation={false} trainMustDepart={true} isAtStation={true} playSoundNotification={jest.fn()}
+            streamMode={false} serverNow={now}/></tr></tbody></table>);
+        expect(screen.queryByText("abgefahren")).not.toBeInTheDocument();
+        expect(screen.getByText("Departure due")).toBeVisible();
+    } finally {
+        translations.EDR_TRAINROW_train_departure_due = due;
+        translations.EDR_TRAINROW_train_departing = old;
+    }
+});
+
 it.each([
     ["offline", undefined],
     ["missing index", live(undefined, true)],
@@ -38,7 +56,7 @@ it.each([
         trainMustDepart={true} playSoundNotification={jest.fn()} streamMode={false} serverNow={now}
         isTrainOffline={!train}/></tr></tbody></table>);
     expect(screen.queryByText("abgefahren")).not.toBeInTheDocument();
-    expect(screen.getByText("Abfahrt fällig")).toBeVisible();
+    expect(screen.queryByText("Abfahrt fällig")).not.toBeInTheDocument();
 });
 
 it("shows abgefahren only after observed presence and leaving the whole group", () => {
@@ -48,4 +66,12 @@ it("shows abgefahren only after observed presence and leaving the whole group", 
         /></tr></tbody></table>);
     expect(screen.getByText("abgefahren")).toBeVisible();
     expect(screen.queryByText("Abfahrt fällig")).not.toBeInTheDocument();
+});
+
+it("shows the due warning only while the train is in the station area", () => {
+    render(<table><tbody><tr><TrainDepartureCell ttRow={row} headerSixthhColRef={null}
+        trainHasPassedStation={false} trainMustDepart={true} isAtStation={true}
+        playSoundNotification={jest.fn()} streamMode={false} serverNow={now}/></tr></tbody></table>);
+    expect(screen.getByText("Abfahrt fällig")).toBeVisible();
+    expect(screen.queryByText("abgefahren")).not.toBeInTheDocument();
 });

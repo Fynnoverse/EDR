@@ -211,6 +211,7 @@ const TableRow: React.FC<Props> = (
             ttRow={ttRow}
             trainHasPassedStation={trainHasPassedStation}
             trainMustDepart={trainMustDepart}
+            isAtStation={isAtOwnStation}
             playSoundNotification={playSoundNotification}
             streamMode={streamMode}
             isTrainOffline={!trainDetails}

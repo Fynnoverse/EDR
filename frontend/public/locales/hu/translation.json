@@ -1,4 +1,5 @@
 {
+  "EDR_TRAINROW_train_departure_due": "Indulás esedékes",
   "APP_fatal_error": "Az adatok nem frissülnek tovább, végzetes hiba történt",
   "APP_no_trains": "Nincsenek vonatok! A szerver valószínűleg éppen újraindul",
   "APP_no_timetable": "Végzetes hiba: A menetrend nem elérhető. A szerver valószínűleg éppen újraindul",

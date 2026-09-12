@@ -1,4 +1,5 @@
 {
+  "EDR_TRAINROW_train_departure_due": "Czas odjazdu",
   "APP_fatal_error": "Błąd krytyczny, interfejs się nie odświeży!",
   "APP_no_trains": "Brak pociągów! Prawdopodobnie restart serwera.",
   "APP_no_timetable": "Błąd krytyczny: Nie można pobrać rozkładu jazdy. prawodopodobnie restart serwera.",

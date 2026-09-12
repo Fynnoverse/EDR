@@ -13,7 +13,7 @@ jest.mock("react-router-dom", () => ({Link: ({children}: {children: ReactNode}) 
 jest.mock("react-i18next", () => ({
     useTranslation: () => ({
         t: (key: string, options?: {defaultValue?: string; train?: string; line?: string; time?: string; destination?: string; platform?: string}) => {
-            if (key === "EDR_TRAINROW_train_departing") return "Abfahrt";
+            if (key === "EDR_TRAINROW_train_departure_due") return "Abfahrt";
             if (key === "EDR_TRAINROW_notify") return "Benachrichtigen";
             if (key === "EDR_NOTIFICATION_departure_title") return `Abfahrtswarnung: Zug ${options?.train} (Linie ${options?.line})`;
             if (key === "EDR_NOTIFICATION_departure_body_with_dest") return `Zug ${options?.train} (Linie ${options?.line}) soll um ${options?.time} abfahren nach ${options?.destination}`;
@@ -107,10 +107,9 @@ describe("TrainRow departure alarm calculation", () => {
         expect(screen.queryByText("Abfahrt")).toBeNull();
     });
 
-    it("warns at calculated departure minus 1 minute (11:56) for delayed train", () => {
+    it("does not show a due badge for a delayed train that has not entered the station", () => {
         renderRowAt("2026-09-07T11:56:00Z");
-        // At 11:56:00 (1 minute before calculated departure 11:57), the departing badge is active.
-        expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+        expect(screen.queryByText("Abfahrt")).not.toBeInTheDocument();
     });
 
     it("triggers notification when delay is reduced while alarm is enabled", () => {
@@ -247,7 +246,7 @@ describe("TrainRow departure alarm calculation", () => {
         // Now test enabling alarm when not alarming:
         // Render at 11:40 (departure is 11:47)
         const earlyDate = new Date("2026-09-07T11:40:00Z");
-        const {rerender} = render(
+        const {rerender, container: armedContainer} = render(
             <Table>
                 <Table.Body>
                     <TableRow
@@ -274,7 +273,7 @@ describe("TrainRow departure alarm calculation", () => {
             </Table>
         );
 
-        const notifyBtn = screen.getAllByRole("button", {name: "Benachrichtigen"})[0];
+        const notifyBtn = armedContainer.querySelector('button[aria-label="Benachrichtigen"]')!;
         fireEvent.click(notifyBtn);
         expect(requestPermissionMock).toHaveBeenCalled();
 
@@ -1250,7 +1249,7 @@ describe("TrainRow departure alarm calculation", () => {
             "Zug 11507 (Linie 1) soll um 11:47 abfahren nach Warszawa Wschodnia",
             expect.objectContaining({variant: "warning"})
         );
-        expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+        expect(screen.queryByText("Abfahrt")).not.toBeInTheDocument();
     });
 
     it("dynamically enables alarm when autoAlarmVisible changes from false to true", () => {
@@ -1381,9 +1380,9 @@ describe("TrainRow departure alarm calculation", () => {
             </Table>
         );
 
-        // At 11:46, alarm triggered and "Abfahrt" badge displayed
+        // The alarm triggers, but an offline train has no station-area badge.
         expect(playSound).toHaveBeenCalledTimes(1);
-        expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+        expect(screen.queryByText("Abfahrt")).not.toBeInTheDocument();
 
         // Train receives a +10 min delay -> calculated departure moves to 11:57 (trigger 11:56)
         const delayedDetails = {
@@ -1462,7 +1461,7 @@ describe("TrainRow departure alarm calculation", () => {
             "Zug 11507 (Linie 1) soll um 11:57 abfahren nach Warszawa Wschodnia",
             expect.objectContaining({variant: "warning"})
         );
-        expect(screen.getByText("Abfahrt")).toBeInTheDocument();
+        expect(screen.queryByText("Abfahrt")).not.toBeInTheDocument();
     });
 
     it("correctly delays departure alarm for delayed trains starting at origin station (placeholder arrival)", () => {

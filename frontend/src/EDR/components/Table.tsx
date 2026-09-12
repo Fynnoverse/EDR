@@ -175,6 +175,7 @@ export const EDRTable: React.FC<Props> = ({
             onResetSort={resetSort}
             arrivalSortMode={arrivalSortMode}
             setArrivalSortMode={mode => { setArrivalSortMode(mode); resetSort(); }}
+            playSoundNotification={playSoundNotification}
         />
         <div className="edr-table-scroll" tabIndex={0}>
             <Table striped={true} className="edr-table">

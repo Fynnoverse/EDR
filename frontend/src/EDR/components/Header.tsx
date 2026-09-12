@@ -34,6 +34,7 @@ type Props = {
     onResetSort: () => void;
     arrivalSortMode: ArrivalSortMode;
     setArrivalSortMode: (mode: ArrivalSortMode) => void;
+    playSoundNotification?: (callBack: () => void) => void;
 }
 
 
@@ -68,12 +69,68 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 export const Header: React.FC<Props> = ({
     serverTzOffset, serverCode, postCfg, timetableLength, serverTime,
     filter, setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
-    sortKey, onResetSort, showDirectionText, setShowDirectionText, arrivalSortMode, setArrivalSortMode
+    sortKey, onResetSort, showDirectionText, setShowDirectionText, arrivalSortMode, setArrivalSortMode,
+    playSoundNotification
 }) => {
     const {t} = useTranslation();
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
 
     const displayMode = getDisplayMode(filterConfig);
+
+    const handleTestNotification = () => {
+        if (playSoundNotification) {
+            playSoundNotification(() => {});
+        }
+
+        if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+            try {
+                navigator.vibrate([300, 150, 300, 150, 450]);
+            } catch {
+                // ignore
+            }
+        }
+
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+            const showNotification = () => {
+                try {
+                    const title = t('EDR_NOTIFICATION_test_title', {
+                        defaultValue: 'Testbenachrichtigung'
+                    });
+                    const body = t('EDR_NOTIFICATION_test_body', {
+                        defaultValue: 'Benachrichtigung, Ton und Vibration funktionieren einwandfrei.'
+                    });
+                    const notif = new Notification(title, {
+                        body,
+                        icon: '/favicon.ico',
+                        tag: 'test-notification'
+                    });
+                    notif.onclick = () => {
+                        window.focus();
+                        notif.close();
+                    };
+                } catch {
+                    // ignore
+                }
+            };
+
+            if (Notification.permission === 'granted') {
+                showNotification();
+            } else if (Notification.permission !== 'denied') {
+                try {
+                    const req = Notification.requestPermission();
+                    if (req && typeof (req as any).then === 'function') {
+                        (req as any).then((permission: NotificationPermission) => {
+                            if (permission === 'granted') {
+                                showNotification();
+                            }
+                        }).catch(() => {});
+                    }
+                } catch {
+                    // ignore
+                }
+            }
+        }
+    };
 
     return (
         <div className="w-full bg-white text-gray-800 shadow-md dark:bg-slate-800 dark:text-gray-100">
@@ -94,6 +151,7 @@ export const Header: React.FC<Props> = ({
                         {t("EDR_UI_direction_text", {defaultValue: "Text an Pfeilen"})}
                     </label>
                     <Button size="xs" className="mr-2" onClick={() => setStreamMode(!streamMode)}>{t("EDR_UI_stream_mode")}</Button>
+                    <Button size="xs" color="gray" className="mr-2" onClick={handleTestNotification}>{t("EDR_UI_test_notification")}</Button>
                     <>{t('EDR_UI_dark_light_mode_switch') ?? ''} :&nbsp;</>
                     <DarkThemeToggle />
                 </div>

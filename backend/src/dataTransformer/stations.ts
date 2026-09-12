@@ -31,6 +31,7 @@ export const getStationTimetable = async (stationId: number, trainList: IEdrServ
         return {
             ..._.omit(train, 'timetable'),
             trainType: stationEntry.trainType,
+            isConfirmed: stationEntry.isConfirmed,
             stopType: stationEntry.stopTypeNumber,
             track: stationEntry.track,
             platform: stationEntry.platform,

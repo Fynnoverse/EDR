@@ -6,3 +6,7 @@ export const stationEventKey = (pointId: string, index: number, scheduled: Date)
     `${pointId}:${index}:${scheduled.valueOf()}`;
 
 export const LIVE_OBSERVATION_GRACE_MS = 15000;
+
+/** EDR pre-fills unconfirmed actual fields with the scheduled time, even ahead of the train. */
+export const validReportedEventTime = (date: Date | undefined, scheduled: Date | undefined, now: Date, confirmed?: boolean) =>
+    validEventTime(date, now) && !(confirmed === false && date?.valueOf() === scheduled?.valueOf());

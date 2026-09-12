@@ -43,6 +43,7 @@ describe("API-based station deviation", () => {
     });
     it("prefers recorded arrival and departure independently over inferred delay", () => {
         const observed = train();
+        observed.TrainData.Velocity = 30;
         observed.timetable = [{...row, indexOfPoint: 2,
             actualArrivalObject: new Date("2026-09-07T11:57:00Z"),
             actualDepartureObject: new Date("2026-09-07T12:02:00Z")} as any];

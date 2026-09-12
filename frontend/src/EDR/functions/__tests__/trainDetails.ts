@@ -17,6 +17,11 @@ const checkpoint = (scheduled: string, actual: string) => ({
 } as TrainTimeTableRow);
 
 describe("live train deviation", () => {
+    it("loads earliness from an older reported checkpoint when the preceding point has no event", () => {
+        const timetables = {"100": [checkpoint("2026-09-07T10:00:00Z", "2026-09-07T09:58:00Z"),
+            {...checkpoint("2026-09-07T10:10:00Z", "3001-01-31T00:00:00Z"), indexOfPoint: 2}]};
+        expect(getTrainDetails({current: null}, timetables, new Date("2026-09-07T10:20:00Z"))(train(3)).lastDelay).toBe(-2);
+    });
     it("does not manufacture an event time after a gap spanning multiple checkpoints", () => {
         const timetables = {"100": [{...checkpoint("2026-09-07T10:00:00Z", "3001-01-31T00:00:00Z"), indexOfPoint: 4}]};
         const previous = {current: {"100": {lastDelay: -2, TrainData: {VDDelayedTimetableIndex: 1}} as DetailedTrain}};

@@ -16,7 +16,7 @@ import { postConfig, StationConfig } from "../../../config/stations";
 import { edrImagesMap, edrWebpImagesMap } from "../../../config";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {getDisplayDistance} from "../../functions/displayDistance";
-import {isTrainStandingAtStation} from "../../functions/stationPresence";
+import {getStationArrivalStatus, isTrainStandingAtStation} from "../../functions/stationPresence";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -47,10 +47,17 @@ export const TrainInfoCell: React.FC<Props> = ({
     const icons = isWebpSupported ? edrWebpImagesMap : edrImagesMap;
     const distanceFromStation = trainDetails?.distanceFromStation;
     const standingAtStation = isTrainStandingAtStation(ttRow, trainDetails, postCfg, serverNow);
+    const arrivalStatus = getStationArrivalStatus(ttRow, trainDetails, serverNow ?? new Date());
     const displayDistance = getDisplayDistance(distanceFromStation,
         trainDetails?.TrainData?.Longitute, trainDetails?.TrainData?.Latititute,
         postCfg.platformPosOverride);
-    const isTrainApproaching = !trainHasPassedStation && distanceFromStation != null && ((nextStationName === postCfg?.srName || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName)) && distanceFromStation < 3);
+    const nextIsOwnStation = (nextStation?.pointId != null && [ttRow, ...(ttRow.secondaryPostsRows ?? [])]
+        .some(point => point.pointId != null && String(point.pointId) === String(nextStation.pointId)))
+        || nextStationName === postCfg.srName
+        || postCfg.secondaryPosts?.some(post => postConfig[post]?.srName === nextStationName);
+    const isTrainApproaching = !trainHasPassedStation && nextIsOwnStation;
+    const isAtOwnStation = !trainHasPassedStation && (!!arrivalStatus || standingAtStation);
+    const ownStationBadgeClass = 'inline-block px-1 rounded bg-green-200 text-green-900 dark:bg-green-600 dark:text-white';
 
     const CopyToClipboard = (stringToCopy: string) => {
         navigator.clipboard.writeText(stringToCopy);
@@ -132,9 +139,16 @@ export const TrainInfoCell: React.FC<Props> = ({
             <div className="mt-1 flex w-full flex-wrap items-baseline gap-x-1">
                 {  trainDetails
                     ? <div className="min-w-0 break-words">
-                        {standingAtStation && <strong className="mr-2">Hält im Bahnhof</strong>}
-                        <span>{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
-                        <span className={isTrainApproaching ? 'px-1 rounded bg-green-200 dark:bg-green-600 animate-pulse' : ''}>{nextStationName}</span>
+                        {isAtOwnStation ? <>
+                            {arrivalStatus ? <strong className="mr-2" title={arrivalStatus.estimated ? "Ankunft aus aufeinanderfolgenden Live-Beobachtungen geschätzt" : "Ankunftszeit aus den Fahrplandaten"}>
+                                {arrivalStatus.estimated ? "≈ Angekommen" : "Angekommen"}
+                            </strong>
+                            : <strong className="mr-2">Hält im Bahnhof</strong>}
+                            <span className={ownStationBadgeClass}>{postCfg.srName}</span>
+                        </> : <>
+                            <span>{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
+                            <span className={isTrainApproaching ? ownStationBadgeClass : ''}>{nextStationName}</span>
+                        </>}
                         {displayDistance && <>
                             {', '}
                             <span className="inline-block whitespace-nowrap" title={displayDistance.approximate

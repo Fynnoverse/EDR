@@ -36,7 +36,7 @@ export const TrainArrivalCell: React.FC<Props> = ({
                         : undefined
                 }
                 {
-                    !trainHasPassedStation && trainDetails?.distanceFromStation != null && arrivalTimeDelay < -5 && trainDetails.distanceFromStation < 5
+                    !trainHasPassedStation && arrivalTimeDelay < 0
                         ? <Badge className="animate-pulse" color="info">{t('EDR_TRAINROW_train_early')}</Badge>
                         : undefined
                 }

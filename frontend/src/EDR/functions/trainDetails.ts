@@ -5,7 +5,7 @@ import { ExtendedTrain } from "../../customTypes/ExtendedTrain";
 import { differenceInMinutes } from "date-fns";
 import {TimeTableRow} from "../../customTypes/TimeTableRow";
 import {isTrainStandingAtStation} from "./stationPresence";
-import {LIVE_OBSERVATION_GRACE_MS, stationEventKey, validEventTime} from "./trainEvents";
+import {LIVE_OBSERVATION_GRACE_MS, stationEventKey, validEventTime, validReportedEventTime} from "./trainEvents";
 
 type ExtraStationConfig = {
     distanceToStation?: number,
@@ -24,8 +24,21 @@ export const getTrainDetails = (previousTrains: React.MutableRefObject<{[k: stri
     stationRows: TimeTableRow[] = [], station?: StationConfig) =>(t: ExtendedTrain) => {
     const previousTrainData = previousTrains.current?.[t.TrainNoLocal as string];
     let lastDelay = previousTrainData?.lastDelay;
+    if (lastDelay === undefined) {
+        // On first load the immediately preceding point may have no time report.
+        // Use the newest usable event from the train's already reached timetable points.
+        const events = (trainTimetables[t.TrainNoLocal] ?? [])
+            .filter(point => point.indexOfPoint <= t.TrainData.VDDelayedTimetableIndex)
+            .flatMap(point => [
+                {actual: point.actualArrivalObject, scheduled: point.scheduledArrivalObject, confirmed: point.isConfirmed},
+                {actual: point.actualDepartureObject, scheduled: point.scheduledDepartureObject, confirmed: point.isConfirmed},
+            ])
+            .filter(event => validReportedEventTime(event.actual, event.scheduled, dateNow, event.confirmed) && isUsableActualTime(event.scheduled))
+            .sort((a, b) => b.actual.valueOf() - a.actual.valueOf());
+        if (events[0]) lastDelay = differenceInMinutes(events[0].actual, events[0].scheduled);
+    }
     const stationPassed = trainTimetables[t.TrainNoLocal]?.find(ttRow => ttRow.indexOfPoint === (t.TrainData.VDDelayedTimetableIndex - 1));
-    const actualDeparture = stationPassed && isUsableActualTime(stationPassed.actualDepartureObject) && stationPassed.actualDepartureObject <= dateNow
+    const actualDeparture = stationPassed && validReportedEventTime(stationPassed.actualDepartureObject, stationPassed.scheduledDepartureObject, dateNow, stationPassed.isConfirmed)
         ? stationPassed.actualDepartureObject
         : undefined;
     const hasJustAdvanced = previousTrainData?.TrainData
@@ -40,11 +53,11 @@ export const getTrainDetails = (previousTrains: React.MutableRefObject<{[k: stri
 
     // A reported arrival at the current point is newer than the previous departure.
     const currentPoint = trainTimetables[t.TrainNoLocal]?.find(row => row.indexOfPoint === t.TrainData.VDDelayedTimetableIndex);
-    if (currentPoint && isUsableActualTime(currentPoint.actualArrivalObject)
-        && currentPoint.actualArrivalObject <= dateNow && isUsableActualTime(currentPoint.scheduledArrivalObject)) {
+    if (currentPoint && validReportedEventTime(currentPoint.actualArrivalObject, currentPoint.scheduledArrivalObject, dateNow, currentPoint.isConfirmed)
+        && isUsableActualTime(currentPoint.scheduledArrivalObject)) {
         lastDelay = differenceInMinutes(currentPoint.actualArrivalObject, currentPoint.scheduledArrivalObject);
     }
-    if (currentPoint && validEventTime(currentPoint.actualDepartureObject, dateNow)
+    if (currentPoint && validReportedEventTime(currentPoint.actualDepartureObject, currentPoint.scheduledDepartureObject, dateNow, currentPoint.isConfirmed)
         && isUsableActualTime(currentPoint.scheduledDepartureObject)
         && !(currentPoint.isStoped === true && currentPoint.leftTrack === false && Math.abs(t.TrainData.Velocity) < 1)) {
         lastDelay = differenceInMinutes(currentPoint.actualDepartureObject, currentPoint.scheduledDepartureObject);
@@ -59,9 +72,10 @@ export const getTrainDetails = (previousTrains: React.MutableRefObject<{[k: stri
     if (station) for (const row of stationRows.filter(row => row.trainNoLocal === t.TrainNoLocal)) {
         const key = stationEventKey(row.pointId, row.stationIndex, row.scheduledArrivalObject);
         const event = details.timetable?.find(point => point.indexOfPoint === row.stationIndex && String(point.pointId) === String(row.pointId));
-        const actual = validEventTime(event?.actualArrivalObject, dateNow) ? event!.actualArrivalObject : row.actualArrivalObject;
+        const actual = event ? (validReportedEventTime(event.actualArrivalObject, event.scheduledArrivalObject, dateNow, event.isConfirmed) ? event.actualArrivalObject : undefined)
+            : (validReportedEventTime(row.actualArrivalObject, row.scheduledArrivalObject, dateNow, row.isConfirmed) ? row.actualArrivalObject : undefined);
         if (validEventTime(actual, dateNow)) {
-            details.observedArrivals![key] = {time: actual, estimated: false};
+            details.observedArrivals![key] = {time: actual!, estimated: false};
         } else if (!details.observedArrivals![key] && previousTrainData?.receivedAt != null && t.receivedAt != null
             && t.receivedAt > previousTrainData.receivedAt
             && t.receivedAt - previousTrainData.receivedAt <= LIVE_OBSERVATION_GRACE_MS

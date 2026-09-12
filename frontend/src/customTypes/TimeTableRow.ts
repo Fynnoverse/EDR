@@ -1,4 +1,5 @@
 export type TimeTableRow = {
+    isConfirmed?: boolean;
     actualArrivalObject: Date,
     actualDepartureObject: Date,
     carrierName: string,

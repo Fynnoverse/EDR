@@ -89,8 +89,20 @@ export const TrainDepartureCell: React.FC<Props> = ({
 
     const handleToggleNotification = () => {
         if (!notificationEnabled) {
-            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission().catch(() => {});
+            if (
+                typeof window !== 'undefined' &&
+                'Notification' in window &&
+                Notification.permission !== 'denied' &&
+                Notification.permission !== 'granted'
+            ) {
+                try {
+                    const req = Notification.requestPermission();
+                    if (req && typeof (req as any).then === 'function') {
+                        (req as any).catch(() => {});
+                    }
+                } catch {
+                    // ignore if requestPermission fails
+                }
             }
             setNotificationEnabled(true);
         } else {

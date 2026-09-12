@@ -294,4 +294,99 @@ describe("TrainRow departure alarm calculation", () => {
         // Sound played
         expect(playSound).toHaveBeenCalled();
     });
+
+    it("requests permission again when not set/default, but does not request when denied or granted", () => {
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const notificationConstructor = jest.fn();
+        const requestPermissionMock = jest.fn().mockResolvedValue("default");
+        (notificationConstructor as any).permission = "default";
+        (notificationConstructor as any).requestPermission = requestPermissionMock;
+
+        Object.defineProperty(window, "Notification", {
+            value: notificationConstructor,
+            writable: true,
+            configurable: true,
+        });
+
+        const standingTrain = {
+            ...delayedTrain,
+            lastDelay: 0,
+        };
+
+        const earlyDate = new Date("2026-09-07T11:40:00Z");
+        const {unmount} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={standingTrain}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const notifyBtn = screen.getAllByRole("button", {name: "Benachrichtigen"})[0];
+        // 1. First click when permission is "default" (not set) -> requests permission
+        fireEvent.click(notifyBtn);
+        expect(requestPermissionMock).toHaveBeenCalledTimes(1);
+
+        // Toggle off
+        fireEvent.click(notifyBtn);
+
+        // 2. Click again when permission is still "default" (e.g. dismissed without blocking) -> requests permission again
+        fireEvent.click(notifyBtn);
+        expect(requestPermissionMock).toHaveBeenCalledTimes(2);
+
+        unmount();
+
+        // 3. When permission is "denied" (forbidden) -> does NOT request permission
+        (notificationConstructor as any).permission = "denied";
+        render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={standingTrain}
+                        serverTime={earlyDate.getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        const notifyBtnDenied = screen.getAllByRole("button", {name: "Benachrichtigen"})[0];
+        fireEvent.click(notifyBtnDenied);
+        // Call count should remain 2
+        expect(requestPermissionMock).toHaveBeenCalledTimes(2);
+    });
 });

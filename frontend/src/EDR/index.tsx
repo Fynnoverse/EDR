@@ -150,6 +150,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
             }
         };
         void refresh();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         return () => { cancelled = true; dataGeneration.current++; clearTimeout(timer); };
         // eslint-disable-next-line
     }, [serverCode, post]);

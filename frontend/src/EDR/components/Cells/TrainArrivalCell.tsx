@@ -8,7 +8,7 @@ import {TrainTimeDisplay} from "./TrainTimeDisplay";
 
 type Props = {
     ttRow: TimeTableRow;
-    trainDetails: DetailedTrain | undefined;
+    trainDetails?: DetailedTrain;
     trainHasPassedStation: boolean;
     thirdColRef: any;
     streamMode: boolean;
@@ -20,7 +20,7 @@ type Props = {
 }
 
 export const TrainArrivalCell: React.FC<Props> = ({
-    ttRow, trainDetails, trainHasPassedStation,
+    ttRow, trainHasPassedStation,
     thirdColRef, streamMode, arrivalTimeDelay, serverNow, deviationMinutes, estimated, departureDeviationMinutes
 }) => {
     const {t} = useTranslation();

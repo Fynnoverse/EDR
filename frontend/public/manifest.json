@@ -1,6 +1,7 @@
 {
-  "short_name": "Simrail EDR, fork by Fynnovation",
-  "name": "Simrail EDR, fork by Fynnovation",
+  "short_name": "SimRail EDR Enhanced",
+  "name": "SimRail Community EDR – Enhanced Edition by Fynnovation",
+  "description": "Enhanced and improved edition of the original SimRail Community EDR by Fynnovation featuring live timetables and driver view.",
   "icons": [
     {
       "src": "favicon.ico",

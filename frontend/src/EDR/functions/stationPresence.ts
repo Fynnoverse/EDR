@@ -8,9 +8,22 @@ import {hasTrainPassedStation} from "./trainFilters";
 export const stationPresenceKey = (row: TimeTableRow, station: StationConfig) =>
     `${station.id}:${stationEventKey(row.pointId, row.stationIndex, row.scheduledArrivalObject)}`;
 
-/** Departure requires observed presence followed by leaving the entire post group. */
+/** Confirmed API events retain evidence of a visit across page reloads. */
+function hasReportedStationVisit(row: TimeTableRow, train: DetailedTrain, station: StationConfig, now: Date): boolean {
+    const indices = new Set(getStationGroupIndices(row, train, station));
+    const points = [row, ...(row.secondaryPostsRows ?? [])].map(stop =>
+        train.timetable?.find(point => point.indexOfPoint === stop.stationIndex && String(point.pointId) === String(stop.pointId)) ?? stop);
+    points.push(...(train.timetable ?? []).filter(point => indices.has(point.indexOfPoint)));
+    return points.some(point => point.isConfirmed === true && (
+        validReportedEventTime(point.actualArrivalObject, point.scheduledArrivalObject, now, point.isConfirmed)
+        || validReportedEventTime(point.actualDepartureObject, point.scheduledDepartureObject, now, point.isConfirmed)
+    ));
+}
+
+/** Departure requires evidence of a visit followed by leaving the entire post group. */
 export function hasTrainLeftStationArea(row: TimeTableRow, train: DetailedTrain | undefined, station: StationConfig, now: Date): boolean {
-    return !!train?.observedStationAreas?.[stationPresenceKey(row, station)]
+    return !!train
+        && (!!train.observedStationAreas?.[stationPresenceKey(row, station)] || hasReportedStationVisit(row, train, station, now))
         && Number.isInteger(train.TrainData.VDDelayedTimetableIndex)
         && hasTrainPassedStation(train.TrainData.VDDelayedTimetableIndex, row.stationIndex, getStationGroupIndices(row, train, station))
         && !isTrainInStationArea(row, train, station)

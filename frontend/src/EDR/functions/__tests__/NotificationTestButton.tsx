@@ -48,7 +48,11 @@ describe("Notification Test Button in Header", () => {
             configurable: true,
         });
 
-        const notificationConstructor = jest.fn();
+        const mockClose = jest.fn();
+        const notificationConstructor = jest.fn().mockImplementation(() => ({
+            close: mockClose,
+            onclick: null,
+        }));
         (notificationConstructor as any).permission = "granted";
         (notificationConstructor as any).requestPermission = jest.fn();
 
@@ -101,6 +105,7 @@ describe("Notification Test Button in Header", () => {
                 body: "Benachrichtigung, Ton und Vibration funktionieren einwandfrei.",
                 icon: "/favicon.ico",
                 tag: "test-notification",
+                renotify: true,
             })
         );
     });

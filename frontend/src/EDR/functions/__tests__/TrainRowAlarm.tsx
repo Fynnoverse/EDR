@@ -300,6 +300,7 @@ describe("TrainRow departure alarm calculation", () => {
                 body: "Zug 11507 (Linie 1) soll um 11:47 abfahren nach Warszawa Wschodnia",
                 icon: "/favicon.ico",
                 tag: "departure-11507",
+                renotify: true,
             })
         );
 
@@ -864,6 +865,7 @@ describe("TrainRow departure alarm calculation", () => {
             expect.objectContaining({
                 body: "Zug 44100 (Linie 1) soll um 11:47 abfahren",
                 tag: "departure-44100",
+                renotify: true,
             })
         );
     });
@@ -1079,5 +1081,106 @@ describe("TrainRow departure alarm calculation", () => {
             "Zug 11507 (Linie 1) soll um 14:45 abfahren nach Warszawa Wschodnia",
             expect.objectContaining({variant: "warning"})
         );
+    });
+
+    it("attaches click handler to focus window and auto-closes browser notification after timeout", () => {
+        jest.useFakeTimers();
+        const playSound = jest.fn((cb?: () => void) => cb?.());
+        const mockClose = jest.fn();
+        let notifInstance: any = null;
+        const notificationConstructor = jest.fn().mockImplementation(() => {
+            notifInstance = {
+                close: mockClose,
+                onclick: null,
+            };
+            return notifInstance;
+        });
+        (notificationConstructor as any).permission = "granted";
+        (notificationConstructor as any).requestPermission = jest.fn();
+
+        Object.defineProperty(window, "Notification", {
+            value: notificationConstructor,
+            writable: true,
+            configurable: true,
+        });
+
+        const windowFocusSpy = jest.spyOn(window, "focus").mockImplementation(() => {});
+
+        const {rerender} = render(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={new Date("2026-09-07T11:40:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        fireEvent.click(screen.getByRole("button", {name: "Benachrichtigen"}));
+
+        rerender(
+            <Table>
+                <Table.Body>
+                    <TableRow
+                        setModalTrainId={jest.fn()}
+                        setTimetableTrainId={jest.fn()}
+                        ttRow={row}
+                        trainDetails={undefined}
+                        serverTime={new Date("2026-09-07T11:46:00Z").getTime()}
+                        firstColRef={null}
+                        secondColRef={null}
+                        thirdColRef={null}
+                        headerFourthColRef={null}
+                        headerFifthColRef={null}
+                        headerSixthhColRef={null}
+                        headerSeventhColRef={null}
+                        playSoundNotification={playSound}
+                        isWebpSupported={false}
+                        streamMode={false}
+                        serverCode="en1"
+                        players={[]}
+                        postCfg={postConfig.KOL}
+                    />
+                </Table.Body>
+            </Table>
+        );
+
+        expect(notificationConstructor).toHaveBeenCalledWith(
+            "Abfahrtswarnung: Zug 11507 (Linie 1)",
+            expect.objectContaining({
+                tag: "departure-11507",
+                renotify: true,
+            })
+        );
+        expect(notifInstance).not.toBeNull();
+
+        // Clicking notification focuses window and calls close()
+        notifInstance.onclick();
+        expect(windowFocusSpy).toHaveBeenCalled();
+        expect(mockClose).toHaveBeenCalledTimes(1);
+
+        // Advancing timers triggers auto-close timeout
+        jest.advanceTimersByTime(8000);
+        expect(mockClose).toHaveBeenCalledTimes(2);
+
+        windowFocusSpy.mockRestore();
+        jest.useRealTimers();
     });
 });

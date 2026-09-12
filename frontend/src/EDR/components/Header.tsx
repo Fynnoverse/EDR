@@ -116,12 +116,28 @@ export const Header: React.FC<Props> = ({
                     const notif = new Notification(title, {
                         body,
                         icon: '/favicon.ico',
-                        tag: 'test-notification'
-                    });
+                        tag: 'test-notification',
+                        renotify: true,
+                    } as NotificationOptions);
                     notif.onclick = () => {
-                        window.focus();
-                        notif.close();
+                        try {
+                            window.focus();
+                        } catch {
+                            // ignore
+                        }
+                        try {
+                            notif.close();
+                        } catch {
+                            // ignore
+                        }
                     };
+                    setTimeout(() => {
+                        try {
+                            notif.close();
+                        } catch {
+                            // ignore
+                        }
+                    }, 8000);
                 } catch {
                     // ignore
                 }

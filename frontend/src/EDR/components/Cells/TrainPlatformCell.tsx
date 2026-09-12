@@ -24,6 +24,7 @@ const PlatformData: React.FC<{ttRow: TimeTableRow} & LiveStopProps> = ({ttRow, t
             ? Math.max(1, planned - effectiveDeviation)
             : planned + earlyMinutes)
         : 0;
+    const change = liveStop - planned;
     const formatMinutes = (minutes: number) => Number(minutes.toFixed(2)).toString();
     const estimated = deviation?.arrivalEstimated || deviation?.departureEstimated;
 
@@ -42,12 +43,12 @@ const PlatformData: React.FC<{ttRow: TimeTableRow} & LiveStopProps> = ({ttRow, t
                         {t("EDR_TRAINROW_scheduled", {defaultValue: "Plan"})} {formatMinutes(planned)}&nbsp;{t("EDR_TRAINROW_layover_minutes")}
                         <span className={deviationUnknown
                             ? "text-gray-500 dark:text-gray-400 ml-1 font-bold"
-                            : effectiveDeviation > 0
+                            : change < 0
                                 ? "text-red-600 ml-1 font-bold"
-                                : effectiveDeviation < 0
+                                : change > 0
                                     ? "text-green-600 ml-1 font-bold"
                                     : "text-gray-500 dark:text-gray-400 ml-1 font-bold"}>
-                            {deviationUnknown ? "—" : <>{effectiveDeviation > 0 ? "+" : effectiveDeviation < 0 ? "-" : "±"}{formatMinutes(Math.abs(effectiveDeviation))}</>}
+                            {deviationUnknown ? "—" : <>{change > 0 ? "+" : change < 0 ? "-" : "±"}{formatMinutes(Math.abs(change))}</>}
                         </span>
                     </span>
                 </span>

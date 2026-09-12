@@ -36,7 +36,7 @@ describe("TrainPlatformCell Haltzeit", () => {
         lastDelay: 0,
     } as unknown as DetailedTrain;
 
-    it("shows 1 min halt and red +delay when delay exceeds planned stop (delay 6 min, planned 5 min)", () => {
+    it("shows 1 min halt and red -delta when delay exceeds planned stop (delay 6 min, planned 5 min -> live 1 min, delta -4)", () => {
         const delayedTrain = {
             ...baseTrain,
             lastDelay: 6,
@@ -56,10 +56,10 @@ describe("TrainPlatformCell Haltzeit", () => {
         );
 
         expect(screen.getByTestId("live-stop-duration")).toHaveTextContent("1 min");
-        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min+6");
+        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min-4");
     });
 
-    it("reduces halt time to remaining buffer when delay is less than planned stop (delay 2 min, planned 5 min -> 3 min)", () => {
+    it("reduces halt time to remaining buffer when delay is less than planned stop (delay 2 min, planned 5 min -> live 3 min, delta -2)", () => {
         const slightlyDelayedTrain = {
             ...baseTrain,
             lastDelay: 2,
@@ -79,10 +79,10 @@ describe("TrainPlatformCell Haltzeit", () => {
         );
 
         expect(screen.getByTestId("live-stop-duration")).toHaveTextContent("3 min");
-        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min+2");
+        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min-2");
     });
 
-    it("adds early arrival time to planned halt (planned 5 min + 3 min early = 8 min)", () => {
+    it("adds early arrival time to planned halt (planned 5 min + 3 min early = 8 min, delta +3)", () => {
         const earlyTrain = {
             ...baseTrain,
             lastDelay: -3,
@@ -102,7 +102,7 @@ describe("TrainPlatformCell Haltzeit", () => {
         );
 
         expect(screen.getByTestId("live-stop-duration")).toHaveTextContent("8 min");
-        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min-3");
+        expect(screen.getByTestId("planned-stop-duration")).toHaveTextContent("Plan 5 min+3");
     });
 
     it("shows planned halt when on time", () => {

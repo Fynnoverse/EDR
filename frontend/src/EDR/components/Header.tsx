@@ -9,7 +9,7 @@ import {Link} from "react-router-dom";
 import _minBy from "lodash/fp/minBy";
 import {ColumnFilterModal} from "./CustomFilterModal";
 import {FilterConfig, presetFilterConfig} from "../index";
-import {SortDirection, TrainSortKey} from "../functions/trainSorting";
+import {ArrivalSortMode, SortDirection, TrainSortKey} from "../functions/trainSorting";
 
 type Props = {
     serverTzOffset: number;
@@ -32,6 +32,8 @@ type Props = {
     sortDirection: SortDirection;
     onSort: (key: TrainSortKey) => void;
     onResetSort: () => void;
+    arrivalSortMode: ArrivalSortMode;
+    setArrivalSortMode: (mode: ArrivalSortMode) => void;
 }
 
 
@@ -66,7 +68,7 @@ const getDisplayMode = (filterConfig: FilterConfig) => {
 export const Header: React.FC<Props> = ({
     serverTzOffset, serverCode, postCfg, timetableLength, serverTime,
     filter, setFilter, streamMode, setStreamMode, filterConfig, setFilterConfig,
-    sortKey, onResetSort, showDirectionText, setShowDirectionText
+    sortKey, onResetSort, showDirectionText, setShowDirectionText, arrivalSortMode, setArrivalSortMode
 }) => {
     const {t} = useTranslation();
     const [configModalOpen, setConfigModaOpen] = React.useState(false);
@@ -97,6 +99,14 @@ export const Header: React.FC<Props> = ({
                 </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full px-3 mt-2">
+                <label className="mb-2 flex items-center gap-2 text-xs">
+                    Standardsortierung
+                    <select className="rounded border-gray-300 text-sm dark:bg-slate-700" value={arrivalSortMode}
+                        onChange={event => setArrivalSortMode(event.target.value as ArrivalSortMode)}>
+                        <option value="predicted">Berechnete Ankunft</option>
+                        <option value="scheduled">Geplante Ankunft</option>
+                    </select>
+                </label>
                 <TextInput sizing={streamMode ? "sm" : "md"} id="trainNumberFilter" className="mb-2 min-w-[100px] grow" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder={t('EDR_UI_train_number') ?? ''}/>
                 <div className="flex flex-wrap gap-1 mb-2">
                     {sortKey && <Button

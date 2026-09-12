@@ -29,4 +29,12 @@ describe("train sorting", () => {
         const rows = [row("1", "2026-09-07T10:00:00Z"), row("2", "2026-09-07T10:05:00Z")];
         expect(sortTimetable(rows, "departure", "descending", {}).map(item => item.trainNoLocal)).toEqual(["2", "1"]);
     });
+
+    it("uses station arrival deviations and allows scheduled arrival order", () => {
+        const rows = [row("1", "2026-09-07T10:00:00Z"), row("2", "2026-09-07T10:05:00Z")];
+        expect(sortTimetable(rows, "arrival", "ascending", {}, item => item.trainNoLocal === "1" ? 10 : 0)
+            .map(item => item.trainNoLocal)).toEqual(["2", "1"]);
+        expect(sortTimetable(rows, "arrival", "ascending", {"1": {lastDelay: 10} as DetailedTrain}, () => 0)
+            .map(item => item.trainNoLocal)).toEqual(["1", "2"]);
+    });
 });

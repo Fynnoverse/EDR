@@ -175,7 +175,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
     // Recalculate when a new observation or timetable arrives, not on every clock tick.
     React.useEffect(() => {
         if (loading || !trains || !trainTimetables) return;
-        const addDetails = getTrainDetails(previousTrains, trainTimetables, nowUTC(serverTime));
+        const addDetails = getTrainDetails(previousTrains, trainTimetables, nowUTC(serverTime), timetable, currentStation);
         setTrainsWithDetails(_keyBy('TrainNoLocal', trains.map(addDetails)));
         // eslint-disable-next-line
     }, [trains, trainTimetables, loading]);
@@ -190,7 +190,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
             const id = train.TrainNoLocal;
             const index = train.TrainData.VDDelayedTimetableIndex;
             const previous = requests.get(id);
-            if (previous?.pending || (previous?.index === index && Date.now() - previous.at < 30000)) return;
+            if (previous?.pending || (previous?.index === index && Date.now() - previous.at < 10000)) return;
             requests.set(id, {index, at: Date.now(), pending: true});
             getTrainTimetable(id, serverCode).then(rows => {
                 if (generation !== dataGeneration.current) return;
@@ -211,9 +211,9 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
                 const rows = await getTimetable(post, serverCode);
                 if (!cancelled) setTimetable(rows.sort((a, b) => a.scheduledArrivalObject.valueOf() - b.scheduledArrivalObject.valueOf()));
             } catch { /* Keep the last station timetable and retry. */ }
-            finally { if (!cancelled) timer = setTimeout(refresh, 15000); }
+            finally { if (!cancelled) timer = setTimeout(refresh, 10000); }
         };
-        timer = setTimeout(refresh, 15000);
+        timer = setTimeout(refresh, 10000);
         return () => { cancelled = true; clearTimeout(timer); };
     }, [serverCode, post]);
 

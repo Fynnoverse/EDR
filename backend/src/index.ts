@@ -27,7 +27,7 @@ async function refreshEdrTimes(serverCode: string) {
     if (!completeTrainList[serverCode]) return;
     const current = liveTimetableRefresh.get(serverCode);
     if (current?.pending) return current.pending;
-    if (current && Date.now() - current.at < 30000) return;
+    if (current && Date.now() - current.at < 10000) return;
     const state: {at: number; pending?: Promise<void>} = {at: Date.now()};
     liveTimetableRefresh.set(serverCode, state);
     state.pending = (async () => {

@@ -29,7 +29,20 @@ describe("distance to the selected station", () => {
         expect(screen.getByText("Nächste:")).toBeVisible();
         expect(screen.getByText("Skierniewice")).toBeVisible();
         expect(screen.getByText("= 1.15 km")).toBeVisible();
-        expect(screen.getByText("= 1.15 km")).toHaveAttribute("title", "Skierniewice");
+        expect(screen.getByText("= 1.15 km")).toHaveAttribute("title", "Entfernung zum Referenzpunkt von Skierniewice, nicht zur Bahnsteigkante");
+    });
+    it("labels a stationary train without replacing its measured distance with zero", () => {
+        const details = {distanceFromStation: 0.17,
+            TrainData: {Velocity: 0, VDDelayedTimetableIndex: 2}, timetable: []} as unknown as DetailedTrain;
+        render(<table><tbody><tr><TrainInfoCell
+            ttRow={{trainNoLocal: "11507", stationIndex: 2, plannedStop: 2} as TimeTableRow}
+            trainDetails={details} trainBadgeColor="success"
+            setModalTrainId={jest.fn()} setTimetableTrainId={jest.fn()}
+            firstColRef={null} trainHasPassedStation={false} isWebpSupported={false}
+            streamMode={false} serverCode="de1" players={undefined} postCfg={postConfig.SK}
+        /></tr></tbody></table>);
+        expect(screen.getByText("Hält im Bahnhof")).toBeVisible();
+        expect(screen.getByText("= 0.17 km")).toBeVisible();
     });
 });
 

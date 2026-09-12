@@ -1,6 +1,9 @@
 import {ExtendedTrain} from "../../../customTypes/ExtendedTrain";
 import {TrainTimeTableRow} from "../../../Sirius";
 import {DetailedTrain, getTrainDetails} from "../trainDetails";
+import {TimeTableRow} from "../../../customTypes/TimeTableRow";
+import {postConfig} from "../../../config/stations";
+import {getStationDeviation} from "../stationDeviation";
 
 const train = (index: number) => ({
     TrainNoLocal: "100",
@@ -37,5 +40,32 @@ describe("live train deviation", () => {
         const previous = {current: {"100": {TrainData: {VDDelayedTimetableIndex: 1}} as DetailedTrain}};
         const details = getTrainDetails(previous, timetables, new Date("2026-09-08T00:03:00Z"))(train(2));
         expect(details.lastDelay).toBe(5);
+    });
+    it("confirms an estimated arrival over two samples, freezes it, then replaces it with an API arrival", () => {
+        const row = {trainNoLocal: "100", pointId: "123", stationIndex: 2, plannedStop: 2,
+            scheduledArrivalObject: new Date("2026-09-07T11:40:00Z"), scheduledDepartureObject: new Date("2026-09-07T11:47:00Z"),
+            actualArrivalObject: new Date(0), actualDepartureObject: new Date(0)} as TimeTableRow;
+        const firstTime = new Date("2026-09-07T11:42:00Z");
+        const sample = {...train(2), receivedAt: Date.now(), distanceFromStation: 0.17};
+        sample.TrainData.Velocity = 0;
+        const first = getTrainDetails({current: null}, {}, firstTime, [row], postConfig.KOL)(sample);
+        expect(Object.keys(first.observedArrivals!)).toHaveLength(0);
+        const second = getTrainDetails({current: {"100": first}}, {}, new Date("2026-09-07T11:42:05Z"), [row], postConfig.KOL)
+            ({...sample, receivedAt: sample.receivedAt + 5000});
+        expect(getStationDeviation(row, second, postConfig.KOL, new Date("2026-09-07T11:55:00Z")))
+            .toMatchObject({arrivalMinutes: 2, arrivalEstimated: true, departureMinutes: 8});
+        const timetable = {"100": [{...row, indexOfPoint: 2, actualArrivalObject: new Date("2026-09-07T11:41:00Z")} as any]};
+        const third = getTrainDetails({current: {"100": second}}, timetable, new Date("2026-09-07T11:55:00Z"), [row], postConfig.KOL)(sample);
+        expect(getStationDeviation(row, third, postConfig.KOL, new Date("2026-09-07T11:55:00Z")))
+            .toMatchObject({arrivalMinutes: 1, arrivalEstimated: false, departureMinutes: 8});
+        const missing = getTrainDetails({current: {"100": third}}, {}, new Date("2026-09-07T11:56:00Z"), [row], postConfig.KOL)(sample);
+        expect(getStationDeviation(row, missing, postConfig.KOL, new Date("2026-09-07T11:56:00Z")))
+            .toMatchObject({arrivalMinutes: 1, arrivalEstimated: false});
+    });
+    it("uses a current recorded departure instead of reverting to its earlier arrival delay", () => {
+        const timetable = {"100": [{indexOfPoint: 2,
+            scheduledArrivalObject: new Date("2026-09-07T11:40:00Z"), actualArrivalObject: new Date("2026-09-07T11:42:00Z"),
+            scheduledDepartureObject: new Date("2026-09-07T11:47:00Z"), actualDepartureObject: new Date("2026-09-07T11:55:00Z")} as TrainTimeTableRow]};
+        expect(getTrainDetails({current: null}, timetable, new Date("2026-09-07T11:56:00Z"))(train(2)).lastDelay).toBe(8);
     });
 });

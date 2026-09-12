@@ -15,3 +15,10 @@ export const getPredictedDepartureTime = (
     ? new Date(Math.max(scheduledDeparture.valueOf(),
         addMinutes(scheduledArrival, deviationMinutes! + (hasStop ? 1 : 0)).valueOf()))
     : scheduledDeparture;
+
+/** Shared by the departure cell and sorting; the displayed delay stays separate. */
+export const getDisplayedDepartureTime = (scheduledArrival: Date, scheduledDeparture: Date,
+    departureMinutes?: number, arrivalMinutes?: number, estimated?: boolean, standingDepartureTime?: Date, hasStop = true) =>
+    standingDepartureTime ?? (estimated === false && (departureMinutes ?? 0) > 0
+        ? getPredictedTrainTime(scheduledDeparture, departureMinutes)
+        : getPredictedDepartureTime(scheduledArrival, scheduledDeparture, arrivalMinutes ?? departureMinutes, hasStop));

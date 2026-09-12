@@ -18,6 +18,7 @@ import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { isInactiveTrainAtStation } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 import {getStationDeviation} from "../functions/stationDeviation";
+import {isTrainStandingAtStation} from "../functions/stationPresence";
 
 
 export const tableCellCommonClassnames = (streamMode: boolean = false) =>
@@ -52,12 +53,13 @@ const TableRow: React.FC<Props> = (
 ) => {
     const dateNow = nowUTC(serverTime);
     const deviation = getStationDeviation(ttRow, trainDetails, postCfg, dateNow);
+    const standingAtStation = isTrainStandingAtStation(ttRow, trainDetails, postCfg, dateNow);
 
     const secondaryStationIndices = (ttRow.secondaryPostsRows || []).map(row => row.stationIndex);
-    const trainHasPassedStation = trainDetails
+    const trainHasPassedStation = trainDetails && !standingAtStation
         ? isInactiveTrainAtStation(trainDetails.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices)
         : false;
-    const isInactive = isInactiveTrainAtStation(trainDetails?.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices);
+    const isInactive = !standingAtStation && isInactiveTrainAtStation(trainDetails?.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices);
     const departureExpectedHours = ttRow.scheduledDepartureObject.getUTCHours();
     const departureExpectedMinutes = ttRow.scheduledDepartureObject.getUTCMinutes();
     // console_log("Is next day ? " + ttRow.train_number, isNextDay);
@@ -91,6 +93,7 @@ const TableRow: React.FC<Props> = (
             serverCode={serverCode}
             players={players}
             postCfg={postCfg}
+            serverNow={dateNow}
         />
         <TrainTypeCell
             secondColRef={secondColRef}
@@ -124,6 +127,7 @@ const TableRow: React.FC<Props> = (
             isTrainOffline={!trainDetails}
             deviationMinutes={deviation.departureMinutes}
             arrivalDeviationMinutes={deviation.arrivalMinutes}
+            standingDepartureTime={deviation.standingDepartureTime}
             estimated={deviation.departureEstimated}
             serverNow={dateNow}
         />

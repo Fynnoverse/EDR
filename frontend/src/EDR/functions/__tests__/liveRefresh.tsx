@@ -55,4 +55,12 @@ describe("live station refresh", () => {
         expect(api.getTrainsForPost).toHaveBeenLastCalledWith("de1", "SK");
         unmount();
     });
+    it("refreshes station events after ten seconds", async () => {
+        const {unmount} = render(<EDR isWebpSupported={false} playSoundNotification={jest.fn()} />);
+        await flush();
+        expect(api.getTimetable).toHaveBeenCalledTimes(1);
+        await act(async () => { jest.advanceTimersByTime(10000); });
+        expect(api.getTimetable).toHaveBeenCalledTimes(2);
+        unmount();
+    });
 });

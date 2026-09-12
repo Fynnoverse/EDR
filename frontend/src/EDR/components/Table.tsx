@@ -16,7 +16,10 @@ import { Dictionary } from "lodash";
 import { TimeTableRow } from "../../customTypes/TimeTableRow";
 import { isInactiveTrainAtStation, moveInactiveRowsLast } from "../functions/trainFilters";
 import {departureDistance, hasTrainPassedStation, shouldHideByScheduledTime, shouldHideDepartedTrain} from "../functions/trainFilters";
-import {SortDirection, sortTimetable, TrainSortKey} from "../functions/trainSorting";
+import {ArrivalSortMode, SortDirection, sortTimetable, TrainSortKey} from "../functions/trainSorting";
+import {getStationDeviation} from "../functions/stationDeviation";
+import {getDisplayedDepartureTime} from "../functions/trainTimes";
+import {isTrainStandingAtStation} from "../functions/stationPresence";
 import {differenceInMinutes} from "date-fns";
 import {nowUTC} from "../../utils/date";
 import {useLocalStorage} from "usehooks-ts";
@@ -58,6 +61,7 @@ export const EDRTable: React.FC<Props> = ({
     const [streamMode, setStreamMode] = React.useState(false);
     const [showDirectionText, setShowDirectionText] = useLocalStorage("edr-show-direction-text", false);
     const [sortKey, setSortKey] = React.useState<TrainSortKey | undefined>();
+    const [arrivalSortMode, setArrivalSortMode] = useLocalStorage<ArrivalSortMode>("edr-arrival-sort-mode", "predicted");
     const [sortDirection, setSortDirection] = React.useState<SortDirection>("ascending");
 
     const [headerFirstColRef, firstColBounds] = useMeasure();
@@ -106,7 +110,7 @@ export const EDRTable: React.FC<Props> = ({
             .filter((tt) => {
                 const train = trainsWithDetails[tt.trainNoLocal];
                 const secondaryStationIndices = (tt.secondaryPostsRows || []).map(row => row.stationIndex);
-                const hasPassed = train !== undefined && hasTrainPassedStation(
+                const hasPassed = train !== undefined && !isTrainStandingAtStation(tt, train, postCfg, dateNow) && hasTrainPassedStation(
                     train.TrainData.VDDelayedTimetableIndex,
                     tt.stationIndex,
                     secondaryStationIndices,
@@ -121,16 +125,26 @@ export const EDRTable: React.FC<Props> = ({
                 if (filterConfig.onlyApproaching && shouldHideDepartedTrain(hasPassed, distanceAfterDeparture, filterConfig.departedDistance)) return false;
                 if (filterConfig.maxRange !== undefined && train?.distanceFromStation != null && train.distanceFromStation > filterConfig.maxRange) return false;
 
+                // A train still waiting here must not vanish as its arrival moves out of the time window.
+                if (isTrainStandingAtStation(tt, train, postCfg, dateNow)) return true;
+
                 return !shouldHideByScheduledTime(
                     filterConfig.maxTime,
                     differenceInMinutes(tt.scheduledArrivalObject, dateNow),
-                    train?.lastDelay,
+                    getStationDeviation(tt, train, postCfg, dateNow).arrivalMinutes,
                 );
             });
+    const arrivalDeviation = (row: TimeTableRow) => getStationDeviation(row, trainsWithDetails[row.trainNoLocal], postCfg, dateNow).arrivalMinutes;
+    const departureTime = (row: TimeTableRow) => {
+        const deviation = getStationDeviation(row, trainsWithDetails[row.trainNoLocal], postCfg, dateNow);
+        return getDisplayedDepartureTime(row.scheduledArrivalObject, row.scheduledDepartureObject,
+            deviation.departureMinutes, deviation.arrivalMinutes, deviation.departureEstimated, deviation.standingDepartureTime, row.plannedStop > 0);
+    };
     const visibleTimetable = sortKey
-        ? sortTimetable(filteredTimetable, sortKey, sortDirection, trainsWithDetails)
-        : moveInactiveRowsLast(filteredTimetable,
-        (tt) => isInactiveTrainAtStation(
+        ? sortTimetable(filteredTimetable, sortKey, sortDirection, trainsWithDetails, arrivalDeviation, departureTime)
+        : moveInactiveRowsLast(sortTimetable(filteredTimetable, "arrival", "ascending", trainsWithDetails,
+            arrivalSortMode === "scheduled" ? () => 0 : arrivalDeviation),
+        (tt) => !isTrainStandingAtStation(tt, trainsWithDetails[tt.trainNoLocal], postCfg, dateNow) && isInactiveTrainAtStation(
             trainsWithDetails[tt.trainNoLocal]?.TrainData.VDDelayedTimetableIndex,
             tt.stationIndex,
             (tt.secondaryPostsRows || []).map(row => row.stationIndex),
@@ -159,6 +173,8 @@ export const EDRTable: React.FC<Props> = ({
             sortDirection={sortDirection}
             onSort={changeSort}
             onResetSort={resetSort}
+            arrivalSortMode={arrivalSortMode}
+            setArrivalSortMode={mode => { setArrivalSortMode(mode); resetSort(); }}
         />
         <div className="edr-table-scroll" tabIndex={0}>
             <Table striped={true} className="edr-table">

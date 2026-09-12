@@ -6,7 +6,7 @@ import {useTranslation} from "react-i18next";
 import Tooltip from "rc-tooltip";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {TrainTimeDisplay} from "./TrainTimeDisplay";
-import {getPredictedDepartureTime, getPredictedTrainTime} from "../../functions/trainTimes";
+import {getDisplayedDepartureTime} from "../../functions/trainTimes";
 
 type Props = {
     headerSixthhColRef: any;
@@ -20,8 +20,9 @@ type Props = {
     serverNow: Date;
     estimated?: boolean;
     arrivalDeviationMinutes?: number;
+    standingDepartureTime?: Date;
 }
-export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNotification, ttRow, headerSixthhColRef, trainHasPassedStation, streamMode, isTrainOffline, deviationMinutes, serverNow, estimated, arrivalDeviationMinutes}) => {
+export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNotification, ttRow, headerSixthhColRef, trainHasPassedStation, streamMode, isTrainOffline, deviationMinutes, serverNow, estimated, arrivalDeviationMinutes, standingDepartureTime}) => {
     const {t} = useTranslation();
     const [notificationEnabled, setNotificationEnabled] = React.useState(false);
 
@@ -35,10 +36,8 @@ export const TrainDepartureCell: React.FC<Props> = ({trainMustDepart,playSoundNo
         <td className={tableCellCommonClassnames(streamMode)} width="190" style={{minWidth: 190}} ref={headerSixthhColRef}>
             <div className="flex items-center justify-start gap-3 h-full">
                 <TrainTimeDisplay scheduledTime={ttRow.scheduledDepartureObject} deviationMinutes={deviationMinutes} serverNow={serverNow} estimated={estimated}
-                    predictedTime={estimated === false && (deviationMinutes ?? 0) > 0
-                        ? getPredictedTrainTime(ttRow.scheduledDepartureObject, deviationMinutes)
-                        : getPredictedDepartureTime(ttRow.scheduledArrivalObject, ttRow.scheduledDepartureObject,
-                            arrivalDeviationMinutes ?? deviationMinutes, ttRow.plannedStop > 0)} />
+                    predictedTime={getDisplayedDepartureTime(ttRow.scheduledArrivalObject, ttRow.scheduledDepartureObject,
+                        deviationMinutes, arrivalDeviationMinutes, estimated, standingDepartureTime, ttRow.plannedStop > 0)} />
                 <div className="hidden lg:flex items-center justify-center shrink-0 min-w-[32px]">
                     {
                         !trainHasPassedStation && !isTrainOffline && (trainMustDepart ?

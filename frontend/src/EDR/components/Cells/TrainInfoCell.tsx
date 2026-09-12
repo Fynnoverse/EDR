@@ -16,6 +16,7 @@ import { postConfig, StationConfig } from "../../../config/stations";
 import { edrImagesMap, edrWebpImagesMap } from "../../../config";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {getDisplayDistance} from "../../functions/displayDistance";
+import {isTrainStandingAtStation} from "../../functions/stationPresence";
 
 type Props = {
     ttRow: TimeTableRow;
@@ -30,12 +31,13 @@ type Props = {
     serverCode: string;
     players: ISteamUser[] | undefined;
     postCfg: StationConfig;
+    serverNow?: Date;
 }
 export const TrainInfoCell: React.FC<Props> = ({
        ttRow, trainDetails, trainBadgeColor,
        trainHasPassedStation,
        setModalTrainId, firstColRef, isWebpSupported,
-       streamMode, setTimetableTrainId, serverCode, players, postCfg
+       streamMode, setTimetableTrainId, serverCode, players, postCfg, serverNow
 }) => {
     const {t} = useTranslation();
     const { enqueueSnackbar } = useSnackbar();
@@ -44,6 +46,7 @@ export const TrainInfoCell: React.FC<Props> = ({
     const controllingPlayer = players?.find(player => player.steamid === trainDetails?.TrainData?.ControlledBySteamID);
     const icons = isWebpSupported ? edrWebpImagesMap : edrImagesMap;
     const distanceFromStation = trainDetails?.distanceFromStation;
+    const standingAtStation = isTrainStandingAtStation(ttRow, trainDetails, postCfg, serverNow);
     const displayDistance = getDisplayDistance(distanceFromStation,
         trainDetails?.TrainData?.Longitute, trainDetails?.TrainData?.Latititute,
         postCfg.platformPosOverride);
@@ -129,13 +132,14 @@ export const TrainInfoCell: React.FC<Props> = ({
             <div className="mt-1 flex w-full flex-wrap items-baseline gap-x-1">
                 {  trainDetails
                     ? <div className="min-w-0 break-words">
+                        {standingAtStation && <strong className="mr-2">Hält im Bahnhof</strong>}
                         <span>{t("EDR_TRAINROW_position_next")}:&nbsp;</span>
                         <span className={isTrainApproaching ? 'px-1 rounded bg-green-200 dark:bg-green-600 animate-pulse' : ''}>{nextStationName}</span>
                         {displayDistance && <>
                             {', '}
                             <span className="inline-block whitespace-nowrap" title={displayDistance.approximate
                                 ? `Luftlinie zu ${postCfg.srName}; Streckenentfernung derzeit nicht verfügbar`
-                                : postCfg.srName}>
+                                : `Entfernung zum Referenzpunkt von ${postCfg.srName}, nicht zur Bahnsteigkante`}>
                                 {displayDistance.approximate ? '≈ ' : '= '}{displayDistance.km.toFixed(2)}&nbsp;km
                             </span>
                         </>}

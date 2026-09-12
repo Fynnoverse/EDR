@@ -1,7 +1,6 @@
 import React from "react";
 import {Table} from "flowbite-react";
 import {nowUTC} from "../../utils/date";
-import { getDateWithHourAndMinutes } from "../functions/timeUtils";
 import {configByType} from "../../config/trains";
 import { DetailedTrain } from "../functions/trainDetails";
 import { subMinutes } from "date-fns";
@@ -19,6 +18,7 @@ import { isInactiveTrainAtStation } from "../functions/trainFilters";
 import { getServerTimeNumber } from "../../utils/serverTime";
 import {getStationDeviation} from "../functions/stationDeviation";
 import {isTrainStandingAtStation} from "../functions/stationPresence";
+import {getDisplayedDepartureTime} from "../functions/trainTimes";
 
 
 export const tableCellCommonClassnames = (streamMode: boolean = false) =>
@@ -60,17 +60,20 @@ const TableRow: React.FC<Props> = (
         ? isInactiveTrainAtStation(trainDetails.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices)
         : false;
     const isInactive = !standingAtStation && isInactiveTrainAtStation(trainDetails?.TrainData.VDDelayedTimetableIndex, ttRow.stationIndex, secondaryStationIndices);
-    const departureExpectedHours = ttRow.scheduledDepartureObject.getUTCHours();
-    const departureExpectedMinutes = ttRow.scheduledDepartureObject.getUTCMinutes();
-    // console_log("Is next day ? " + ttRow.train_number, isNextDay);
-    const isDepartureNextDay = dateNow.getUTCHours() >= 20 && departureExpectedHours < 12;  // TODO: less but still clunky
-    const isDeparturePreviousDay = departureExpectedHours >= 20 && dateNow.getUTCHours() < 12; // TODO: less but still Clunky
-    const expectedDeparture = getDateWithHourAndMinutes(dateNow, departureExpectedHours, departureExpectedMinutes, isDepartureNextDay, isDeparturePreviousDay);
+    const calculatedDeparture = getDisplayedDepartureTime(
+        ttRow.scheduledArrivalObject,
+        ttRow.scheduledDepartureObject,
+        deviation.departureMinutes,
+        deviation.arrivalMinutes,
+        deviation.departureEstimated,
+        deviation.standingDepartureTime,
+        ttRow.plannedStop > 0
+    );
 
     const arrivalTimeDelay = deviation.arrivalMinutes ?? 0;
 
     const distanceFromStation = trainDetails?.distanceFromStation;
-    const trainMustDepart = !trainHasPassedStation && distanceFromStation != null && distanceFromStation < 1.5 && (subMinutes(expectedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
+    const trainMustDepart = !trainHasPassedStation && distanceFromStation != null && distanceFromStation < 1.5 && (subMinutes(calculatedDeparture, 1) <= dateNow); // 1.5 for temporary zawierce freight fix
     const trainBadgeColor = configByType[ttRow.trainType]?.color ?? "purple";
     const secondaryPostData = ttRow?.secondaryPostsRows ?? [];
 

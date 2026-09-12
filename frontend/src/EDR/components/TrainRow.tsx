@@ -123,6 +123,7 @@ const TableRow: React.FC<Props> = (
             streamMode={streamMode}
             isTrainOffline={!trainDetails}
             deviationMinutes={deviation.departureMinutes}
+            arrivalDeviationMinutes={deviation.arrivalMinutes}
             estimated={deviation.departureEstimated}
             serverNow={dateNow}
         />

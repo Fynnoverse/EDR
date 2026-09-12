@@ -8,12 +8,24 @@ body {
 
 /* Keep headers and rows in the same scrollport: narrow screens must not
    squeeze direction badges and stop details into neighbouring cells. */
-.edr-layout {
+.edr-page {
     display: flex;
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
     min-width: 0;
+    overflow: hidden;
+}
+.edr-layout {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
+.edr-layout > :not(.edr-table-scroll), .edr-page > [role="status"] {
+    flex-shrink: 0;
 }
 .edr-table-scroll {
     flex: 1;
@@ -41,7 +53,3 @@ body {
 .edr-table td:nth-child(6) { width: 13%; min-width: 160px; }
 .edr-table td:nth-child(7) { width: 16%; min-width: 180px; }
 .edr-table hr { margin-block: 0.5rem; }
-@media (max-width: 640px) {
-    .edr-layout { height: auto; min-height: 100dvh; }
-    .edr-table-scroll { flex: none; max-height: 75dvh; }
-}

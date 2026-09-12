@@ -200,6 +200,10 @@ export const dispatchDirections: NumericDictionary<StationNeighbours> = {
         left: [StationId.warszawa_wlochy, StationId.jozefinow, StationId.jozefinow_roz_2, StationId.piastow],
         right: [StationId.grodzisk_mazowiecki, StationId.parzniew],
     },
+    [StationId.jozefinow]: {
+        left: [StationId.warszawa_wlochy, StationId.warszawa_ursus_polnocny],
+        right: [StationId.pruszkow, StationId.jozefinow_roz_2, StationId.piastow]
+    },
     [StationId.krakow_batowice]: {
         left: [StationId.dlubnia, StationId.raciborowice],
         right: [StationId.krakow_mydlniki, StationId.krakow_przedmiescie],
@@ -881,11 +885,17 @@ export const postConfig: Dictionary<StationConfig> = {
         srName: "Pruszków",
         trainPosRange: 0.5,
         platformPosOverride: [20.798650, 52.168203],
+        secondaryPosts: ["JOZ"],
         graphConfig: {
             pre: ["KOR", "GRO_MAZ"],
             post: [],
             final: ["WW"]
         }
+    },
+    JOZ: {
+        id: "JOZ",
+        srName: "Józefinów",
+        trainPosRange: 0.5
     },
     PIA: {
         id: "PIA",

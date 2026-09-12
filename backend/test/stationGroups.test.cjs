@@ -12,6 +12,10 @@ const {getStationTimetable} = load(root + '/backend/src/dataTransformer/stations
 const byName = Object.fromEntries(Object.values(postConfig).map(p => [p.srName, p.id]));
 const names = Object.fromEntries(snapshot.points.map(p => [p.id, p.name]));
 const sorted = values => [...values].sort((a, b) => a - b);
+// User-confirmed remote control, absent from the historical API snapshot.
+const stations = snapshot.stations.map(station => station.name === 'Pruszków'
+    ? {...station, secondaryPosts: [...station.secondaryPosts, {id: 1539, name: 'Józefinów'}]}
+    : station);
 const trains = snapshot.examples.map(t => ({...t, timetable: t.timetable.map(p => ({
     ...p, plannedStop: 0, stopTypeNumber: 0,
     arrivalTime: '2026-09-09T12:00:00Z', departureTime: '2026-09-09T12:00:00Z'
@@ -30,10 +34,10 @@ async function dispatch(post, mergePosts, input = trains) {
     return response.body;
 }
 
-test('all 68 official playable stations and their 20 supervised subposts match both configurations', () => {
+test('official stations and user-confirmed remote subposts match both configurations', () => {
     assert.equal(snapshot.stations.length, 68);
     assert.equal(snapshot.stations.reduce((count, s) => count + s.secondaryPosts.length, 0), 20);
-    for (const station of snapshot.stations) {
+    for (const station of stations) {
         const key = byName[station.name];
         assert.ok(key, `Missing playable station: ${station.name}`);
         assert.equal(newInternalIdToSrId[key], station.id, station.name);
@@ -71,7 +75,7 @@ test('all 669 observed neighbor/line/direction combinations resolve without ambi
 });
 
 test('grouped responses retain every train and checkpoint but hide only internal neighbors', async () => {
-    for (const station of snapshot.stations) {
+    for (const station of stations) {
         const group = [station.id, ...station.secondaryPosts.map(p => p.id)];
         const rows = await dispatch(byName[station.name], true);
         const expected = trains.filter(t => t.timetable.some(p => group.includes(Number(p.pointId))));
@@ -119,7 +123,7 @@ test('Łowicz Przedmieście uses line 532 on the correct side of the station in 
 });
 
 test('each subpost can also be requested directly with grouping enabled or disabled', async () => {
-    for (const station of snapshot.stations) for (const sub of station.secondaryPosts) {
+    for (const station of stations) for (const sub of station.secondaryPosts) {
         const key = byName[sub.name];
         const grouped = await dispatch(key, true);
         const separate = await dispatch(key, false);

@@ -1,6 +1,6 @@
 import {TimeTableRow} from "../../customTypes/TimeTableRow";
 import {DetailedTrain} from "./trainDetails";
-import {getPredictedTrainTimestamp} from "./trainTimes";
+import {getPredictedDepartureTime, getPredictedTrainTimestamp} from "./trainTimes";
 
 export type TrainSortKey = "trainNumber" | "trainType" | "arrival" | "from" | "stop" | "departure" | "to";
 export type SortDirection = "ascending" | "descending";
@@ -14,7 +14,7 @@ const getSortValue = (row: TimeTableRow, key: TrainSortKey, train?: DetailedTrai
         case "arrival": return getPredictedTrainTimestamp(row.scheduledArrivalObject, train?.lastDelay);
         case "from": return row.fromPost ?? "";
         case "stop": return row.plannedStop;
-        case "departure": return getPredictedTrainTimestamp(row.scheduledDepartureObject, train?.lastDelay);
+        case "departure": return getPredictedDepartureTime(row.scheduledArrivalObject, row.scheduledDepartureObject, train?.lastDelay, row.plannedStop > 0).valueOf();
         case "to": return row.toPost ?? "";
     }
 };

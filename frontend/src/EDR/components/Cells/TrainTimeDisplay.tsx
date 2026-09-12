@@ -8,12 +8,13 @@ type Props = {
     deviationMinutes?: number;
     serverNow: Date;
     estimated?: boolean;
+    predictedTime?: Date;
 };
 
 /** Shows the live-adjusted time prominently and retains the scheduled time as context. */
-export const TrainTimeDisplay: React.FC<Props> = ({scheduledTime, deviationMinutes, serverNow, estimated}) => {
+export const TrainTimeDisplay: React.FC<Props> = ({scheduledTime, deviationMinutes, serverNow, estimated, predictedTime: timeOverride}) => {
     const {t} = useTranslation();
-    const predictedTime = getPredictedTrainTime(scheduledTime, deviationMinutes);
+    const predictedTime = timeOverride ?? getPredictedTrainTime(scheduledTime, deviationMinutes);
     const effectiveDeviation = deviationMinutes ?? 0;
     const scheduledLabel = t("EDR_TRAINROW_scheduled", {defaultValue: "Plan"});
 

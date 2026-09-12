@@ -10,6 +10,13 @@ jest.mock("react-i18next", () => ({
 describe("TrainTimeDisplay", () => {
     const serverNow = new Date("2026-09-07T13:00:00Z");
 
+    it("keeps the reported delay when departure uses an internal dwell adjustment", () => {
+        render(<TrainTimeDisplay scheduledTime={new Date("2026-09-07T13:10:00Z")}
+            predictedTime={new Date("2026-09-07T13:13:00Z")} deviationMinutes={12} serverNow={serverNow} />);
+        expect(screen.getByTestId("predicted-train-time")).toHaveTextContent("13:13");
+        expect(screen.getByTestId("scheduled-train-time")).toHaveTextContent("Plan 13:10+12");
+    });
+
     it("places a positive deviation next to the scheduled time", () => {
         render(<TrainTimeDisplay
             scheduledTime={new Date("2026-09-07T13:51:00Z")}

@@ -249,7 +249,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
                               trainSchedules={trainTimetables}
         /></>
 
-    return <>
+    return <div className="edr-page">
         <div className="px-4 py-1 text-xs text-gray-600 dark:text-gray-300" role="status">
             {lastLiveReceipt ? `Live-Abruf vor ${Math.max(0, Math.floor((Date.now() - lastLiveReceipt) / 1000))} s` : "Warte auf Live-Daten"}
             {liveRefreshFailed && " · Aktualisierung fehlgeschlagen; letzter Datenstand bleibt sichtbar"}
@@ -283,7 +283,7 @@ export const EDR: React.FC<Props> = ({playSoundNotification, isWebpSupported}) =
             />
             : null
         }
-    </>
+    </div>
 }
 
 export default EDR;

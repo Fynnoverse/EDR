@@ -11,6 +11,7 @@ import _minBy from "lodash/fp/minBy";
 import {ColumnFilterModal} from "./CustomFilterModal";
 import {FilterConfig, presetFilterConfig} from "../index";
 import {ArrivalSortMode, SortDirection, TrainSortKey} from "../functions/trainSorting";
+import {requestPushNotificationPermission, sendPushNotification} from "../functions/pushNotification";
 
 type Props = {
     serverTzOffset: number;
@@ -85,21 +86,8 @@ export const Header: React.FC<Props> = ({
 
     const handleAutoAlarmChange = (enabled: boolean) => {
         setAutoAlarmVisible?.(enabled);
-        if (
-            enabled &&
-            typeof window !== 'undefined' &&
-            'Notification' in window &&
-            Notification.permission !== 'granted' &&
-            Notification.permission !== 'denied'
-        ) {
-            try {
-                const req = Notification.requestPermission();
-                if (req && typeof (req as any).then === 'function') {
-                    (req as any).catch(() => {});
-                }
-            } catch {
-                // ignore
-            }
+        if (enabled) {
+            void requestPushNotificationPermission();
         }
     };
 
@@ -128,60 +116,32 @@ export const Header: React.FC<Props> = ({
             // ignore
         }
 
-        if (typeof window !== 'undefined' && 'Notification' in window) {
-            const showNotification = () => {
-                try {
-                    const title = t('EDR_NOTIFICATION_test_title', {
-                        defaultValue: 'Testbenachrichtigung'
-                    });
-                    const body = t('EDR_NOTIFICATION_test_body', {
-                        defaultValue: 'Benachrichtigung, Ton und Vibration funktionieren einwandfrei.'
-                    });
-                    const notif = new Notification(title, {
-                        body,
-                        icon: '/favicon.ico',
-                        tag: 'test-notification',
-                        renotify: true,
-                    } as NotificationOptions);
-                    notif.onclick = () => {
-                        try {
-                            window.focus();
-                        } catch {
-                            // ignore
-                        }
-                        try {
-                            notif.close();
-                        } catch {
-                            // ignore
-                        }
-                    };
-                    setTimeout(() => {
-                        try {
-                            notif.close();
-                        } catch {
-                            // ignore
-                        }
-                    }, 8000);
-                } catch {
-                    // ignore
-                }
-            };
+        const title = t('EDR_NOTIFICATION_test_title', {
+            defaultValue: 'Testbenachrichtigung'
+        });
+        const body = t('EDR_NOTIFICATION_test_body', {
+            defaultValue: 'Benachrichtigung, Ton und Vibration funktionieren einwandfrei.'
+        });
 
+        if (typeof window !== 'undefined' && 'Notification' in window) {
             if (Notification.permission === 'granted') {
-                showNotification();
+                void sendPushNotification(title, {
+                    body,
+                    icon: '/favicon.ico',
+                    tag: 'test-notification',
+                    renotify: true,
+                });
             } else if (Notification.permission !== 'denied') {
-                try {
-                    const req = Notification.requestPermission();
-                    if (req && typeof (req as any).then === 'function') {
-                        (req as any).then((permission: NotificationPermission) => {
-                            if (permission === 'granted') {
-                                showNotification();
-                            }
-                        }).catch(() => {});
+                void requestPushNotificationPermission().then((permission) => {
+                    if (permission === 'granted') {
+                        void sendPushNotification(title, {
+                            body,
+                            icon: '/favicon.ico',
+                            tag: 'test-notification',
+                            renotify: true,
+                        });
                     }
-                } catch {
-                    // ignore
-                }
+                });
             }
         }
     };

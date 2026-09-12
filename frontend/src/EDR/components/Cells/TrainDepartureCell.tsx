@@ -9,6 +9,7 @@ import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {TrainTimeDisplay} from "./TrainTimeDisplay";
 import {getDisplayedDepartureTime} from "../../functions/trainTimes";
 import {formatServerTime} from "../../../utils/serverTime";
+import {requestPushNotificationPermission, sendPushNotification} from "../../functions/pushNotification";
 
 type Props = {
     headerSixthhColRef: any;
@@ -111,37 +112,12 @@ export const TrainDepartureCell: React.FC<Props> = ({
                 // ignore if toast/snackbar fails
             }
 
-            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                try {
-                    const notif = new Notification(title, {
-                        body,
-                        icon: '/favicon.ico',
-                        tag: `departure-${ttRow.trainNoLocal}`,
-                        renotify: true,
-                    } as NotificationOptions);
-                    notif.onclick = () => {
-                        try {
-                            window.focus();
-                        } catch {
-                            // ignore
-                        }
-                        try {
-                            notif.close();
-                        } catch {
-                            // ignore
-                        }
-                    };
-                    setTimeout(() => {
-                        try {
-                            notif.close();
-                        } catch {
-                            // ignore
-                        }
-                    }, 8000);
-                } catch {
-                    // ignore if notification creation fails
-                }
-            }
+            void sendPushNotification(title, {
+                body,
+                icon: '/favicon.ico',
+                tag: `departure-${ttRow.trainNoLocal}`,
+                renotify: true,
+            });
 
             onAlarmTriggered?.();
             playSoundNotification(() => setNotificationEnabled(false));
@@ -151,21 +127,7 @@ export const TrainDepartureCell: React.FC<Props> = ({
 
     const handleToggleNotification = () => {
         if (!notificationEnabled) {
-            if (
-                typeof window !== 'undefined' &&
-                'Notification' in window &&
-                Notification.permission !== 'denied' &&
-                Notification.permission !== 'granted'
-            ) {
-                try {
-                    const req = Notification.requestPermission();
-                    if (req && typeof (req as any).then === 'function') {
-                        (req as any).catch(() => {});
-                    }
-                } catch {
-                    // ignore if requestPermission fails
-                }
-            }
+            void requestPushNotificationPermission();
             setNotificationEnabled(true);
         } else {
             setNotificationEnabled(false);

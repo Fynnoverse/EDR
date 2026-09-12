@@ -12,7 +12,7 @@ import TimetableIcon from "../../../images/icons/png/timetable.png";
 import ScheduleIcon from "../../../images/icons/png/schedule.png";
 import { Link } from "react-router-dom";
 import { ISteamUser } from "../../../config/ISteamUser";
-import { postConfig, StationConfig } from "../../../config/stations";
+import { StationConfig } from "../../../config/stations";
 import { edrImagesMap, edrWebpImagesMap } from "../../../config";
 import { TimeTableRow } from "../../../customTypes/TimeTableRow";
 import {getDisplayDistance} from "../../functions/displayDistance";

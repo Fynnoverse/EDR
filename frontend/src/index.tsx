@@ -11,6 +11,11 @@ import 'rc-tooltip/assets/bootstrap_white.css';
 import "hacktimer";
 
 import "./pathfinding/data";
+import {registerServiceWorker} from "./EDR/functions/pushNotification";
+
+if (process.env.NODE_ENV !== 'test') {
+  void registerServiceWorker();
+}
 
 declare global {
     interface Window {

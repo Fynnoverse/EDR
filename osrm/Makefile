@@ -1,31 +1,30 @@
+.DEFAULT_GOAL := all
+.PHONY: all serve
 .PRECIOUS: %.pbf
+.DELETE_ON_ERROR:
 
-# List all the source countries we need
-WANTED_COUNTRIES := $(shell grep -v "\#" countries.wanted)
-
-# Transform "belgium" to "world/belgium-latest.osm.pbf"
+WANTED_COUNTRIES := $(shell sed 's/\#.*//' countries.wanted)
 COUNTRIES_PBF := $(addsuffix -latest.osm.pbf,$(addprefix world/,$(WANTED_COUNTRIES)))
 
-# Download the raw source file of a country
 world/%.osm.pbf:
-	wget -N -nv -P world/ https://download.geofabrik.de/europe/$*.osm.pbf
+	mkdir -p $(@D)
+	wget -nv -O $@ https://download.geofabrik.de/europe/$*.osm.pbf
 
-# Filter a raw country (in world/*) to rail-only data (in filtered/*)
 filtered/%.osm.pbf: world/%.osm.pbf filter.params
+	mkdir -p $(@D)
 	osmium tags-filter --expressions=filter.params $< -o $@ --overwrite
 
-# Combine all rail-only data (in filtered/*) into one file
 output/filtered.osm.pbf: $(subst world,filtered,$(COUNTRIES_PBF))
+	mkdir -p $(@D)
 	osmium merge $^ -o $@ --overwrite
 
-# Compute the real OSRM data on the combined file
-output/filtered.osrm: output/filtered.osm.pbf basic.lua
-	osrm-extract -p /opt/host/basic.lua /opt/host/$<
+output/routing-ready: output/filtered.osm.pbf basic.lua
+	osrm-extract -p basic.lua output/filtered.osm.pbf
+	osrm-partition output/filtered.osrm
+	osrm-customize output/filtered.osrm
+	touch $@
 
-	osrm-partition /opt/host/$<
-	osrm-customize /opt/host/$<
+all: output/routing-ready
 
-all: output/filtered.osrm
-
-serve: output/filtered.osrm basic.lua
-	osrm-routed --algorithm mld /opt/host/$<
+serve: output/routing-ready
+	osrm-routed --algorithm mld --max-viaroute-size 1000 output/filtered.osrm

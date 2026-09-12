@@ -74,3 +74,9 @@ Anorther big thanks to all the SimRail community that has made this project grow
 ## License
 
 GNU General Public License v3.0
+
+### Docker with the SimRail Map
+
+See [the shared Docker deployment guide](docs/docker-map.md) for running this
+fork and the sibling `map-v2` checkout on `edr.fynnovation.com` and
+`map.edr.fynnovation.com` with a shared backend and routing service.

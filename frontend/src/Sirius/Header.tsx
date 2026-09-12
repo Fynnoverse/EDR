@@ -45,7 +45,7 @@ export const SiriusHeader: React.FC<Props> = ({trainNumber, trainDetails, server
                 <div className="flex">
                     <Dropdown label={<>{t("EDR_UI_map_select")}</>} size="sm" className="z-50">
                         <Dropdown.Item onClick={() => setMapLink(0)}>
-                            map.simrail.app
+                            map.edr.fynnovation.com
                         </Dropdown.Item>
                     </Dropdown>
                 </div>

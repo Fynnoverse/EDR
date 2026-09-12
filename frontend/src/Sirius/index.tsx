@@ -235,7 +235,7 @@ const Sirius: React.FC<Props> = ({isWebpSupported}) => {
             );
         }
         if (component === "map-layout") {
-            if (mapLink === 0) return (<iframe src={`https://map.simrail.app/server/${serverCode}?trainId=${trainNumber}`} title="Simrail FR map embedded" className={"transition-all h-full w-full"} />);
+            if (mapLink === 0) return (<iframe src={`https://map.edr.fynnovation.com/server/${serverCode}?trainId=${trainNumber}`} title="Simrail FR map embedded" className={"transition-all h-full w-full"} />);
         }
     };
 

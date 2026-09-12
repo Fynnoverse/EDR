@@ -80,3 +80,12 @@ GNU General Public License v3.0
 See [the shared Docker deployment guide](docs/docker-map.md) for running this
 fork and the sibling `map-v2` checkout on `edr.fynnovation.com` and
 `map.edr.fynnovation.com` with a shared backend and routing service.
+
+## Routing and spatial distances
+
+Station-area detection uses GPS distance to station reference points, with routed
+values only when position data is missing. The departure filter uses OSRM for a
+single post; merged posts use distance to the closest reference point because the
+backend only supplies a route to the main post. These distances are not mixed.
+Temporary routing failures still retain the train list and its labelled display
+fallback; arrival/departure events and alarms remain independent of routing.

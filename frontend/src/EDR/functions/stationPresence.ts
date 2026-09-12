@@ -1,7 +1,7 @@
 import {TimeTableRow} from "../../customTypes/TimeTableRow";
 import {postConfig, StationConfig} from "../../config/stations";
 import {DetailedTrain} from "./trainDetails";
-import {getDisplayDistance} from "./displayDistance";
+import {getStationAreaDistance} from "./displayDistance";
 import {stationEventKey, validEventTime, validReportedEventTime} from "./trainEvents";
 import {hasTrainPassedStation} from "./trainFilters";
 
@@ -101,14 +101,14 @@ export function isTrainInStationArea(
 
     const inRangeOfAnyPost = allPosts.some(p => {
         const postRange = p.trainPosRange ?? station?.trainPosRange ?? STATION_STOP_RADIUS_KM;
-        const dist = getDisplayDistance(
+        const dist = getStationAreaDistance(
             p.id === station?.id ? train.distanceFromStation : null,
             train.TrainData?.Longitute,
             train.TrainData?.Latititute,
             p.platformPosOverride
         );
-        return dist !== undefined && dist.km <= postRange;
-    }) || (train.distanceFromStation != null && train.distanceFromStation <= (station?.trainPosRange ?? STATION_STOP_RADIUS_KM));
+        return dist !== undefined && dist <= postRange;
+    }) || (allPosts.length === 0 && train.distanceFromStation != null && train.distanceFromStation <= (station?.trainPosRange ?? STATION_STOP_RADIUS_KM));
 
     if (stationIndices.length > 0 && currentIndex !== undefined) {
         const minIndex = Math.min(...stationIndices);
@@ -169,14 +169,14 @@ export function isTrainStandingAtStation(row: TimeTableRow, train: DetailedTrain
 
     const inRangeOfAnyPost = allPosts.some(p => {
         const postRange = p.trainPosRange ?? station?.trainPosRange ?? STATION_STOP_RADIUS_KM;
-        const dist = getDisplayDistance(
+        const dist = getStationAreaDistance(
             p.id === station?.id ? train.distanceFromStation : null,
             train.TrainData?.Longitute,
             train.TrainData?.Latititute,
             p.platformPosOverride
         );
-        return dist !== undefined && dist.km <= postRange;
-    }) || (train.distanceFromStation != null && train.distanceFromStation <= (station?.trainPosRange ?? STATION_STOP_RADIUS_KM));
+        return dist !== undefined && dist <= postRange;
+    }) || (allPosts.length === 0 && train.distanceFromStation != null && train.distanceFromStation <= (station?.trainPosRange ?? STATION_STOP_RADIUS_KM));
 
     return ((stop && (stop.plannedStop > 0 || stop.stopType > 0)) || (event?.plannedStop ?? 0) > 0
         || (scheduledDwell > 0 && scheduledDwell < 86400000) || reportedStop || recordedPresence || atStationSignal)

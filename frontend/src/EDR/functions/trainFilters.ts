@@ -5,7 +5,8 @@ export const DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 5;
 /** Straight-line distance is a lower bound on routed distance. It can prove
  * a departed train is beyond the threshold even when routing is unavailable.
  * When multiple post positions are passed (e.g. main station and outer sub-stations),
- * distance is measured to the closest post in the station group. */
+ * use spatial distance to the closest post: the API only routes to the main post.
+ * A single post prefers its routed distance, including a valid zero. */
 export const departureDistance = (
     routedDistance: number | null | undefined,
     longitude: number,
@@ -24,7 +25,8 @@ export const departureDistance = (
             : (stationPositions.length === 2 && typeof stationPositions[0] === "number" ? [stationPositions as [number, number]] : []))
         : (stationPositions ? [stationPositions] : []);
 
-    if (positions.length === 0) return routed;
+    if (positions.length <= 1 && routed !== undefined) return routed;
+    if (positions.length === 0) return undefined;
 
     const radians = Math.PI / 180;
     const directDistances = positions.map(([stationLongitude, stationLatitude]) => {
@@ -39,9 +41,7 @@ export const departureDistance = (
 
     if (directDistances.length === 0) return routed;
     const minDirect = Math.min(...directDistances);
-    return positions.length > 1
-        ? (routed !== undefined ? Math.min(routed, minDirect) : minDirect)
-        : Math.max(routed ?? 0, minDirect);
+    return minDirect;
 };
 
 /**

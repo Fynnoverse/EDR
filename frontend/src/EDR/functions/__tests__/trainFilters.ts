@@ -12,7 +12,7 @@ import {
 describe("departed trains with unavailable routing", () => {
     const station: [number, number] = [20.151522, 51.967741];
 
-    it.each([null, undefined, 0, NaN])("hides confirmed departures beyond 100 m with route distance %s", route => {
+    it.each([null, undefined, NaN])("hides confirmed departures beyond 100 m with route distance %s", route => {
         const distance = departureDistance(route, station[0], station[1] + 0.002, station);
         expect(shouldHideDepartedTrain(true, distance, 0.1)).toBe(true);
         expect(shouldHideDepartedTrain(false, distance, 0.1)).toBe(false);
@@ -115,4 +115,15 @@ describe("shouldHideByScheduledTime", () => {
     it("does not hide trains when the schedule filter is disabled", () => {
         expect(shouldHideByScheduledTime(undefined, 90, 10)).toBe(false);
     });
+});
+
+it("uses valid single-post routes without mixing in GPS distance, including zero", () => {
+    expect(departureDistance(0, 20, 52.01, [20, 52])).toBe(0);
+    expect(departureDistance(0.2, 20, 52.01, [20, 52])).toBe(0.2);
+});
+it("keeps group distance spatial even when a main-post route is present", () => {
+    const posts: [number, number][] = [[20, 52], [20, 52.01]];
+    const spatial = departureDistance(null, 20, 52.02, posts);
+    expect(departureDistance(0.1, 20, 52.02, posts)).toBe(spatial);
+    expect(departureDistance(12, 20, 52.02, posts)).toBe(spatial);
 });

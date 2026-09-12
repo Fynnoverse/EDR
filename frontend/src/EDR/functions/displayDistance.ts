@@ -21,3 +21,14 @@ export function getDisplayDistance(
         + Math.cos(latitude * radians) * Math.cos(stationLatitude * radians) * Math.sin(dLon / 2) ** 2;
     return {km: 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a)))), approximate: true};
 }
+
+/** Spatial distance for station-area checks; routing is only a fallback when GPS is missing. */
+export function getStationAreaDistance(
+    routedKm: number | null | undefined,
+    longitude: number | undefined,
+    latitude: number | undefined,
+    stationPosition?: [number, number]
+): number | undefined {
+    return getDisplayDistance(null, longitude, latitude, stationPosition)?.km
+        ?? getDisplayDistance(routedKm, undefined, undefined)?.km;
+}

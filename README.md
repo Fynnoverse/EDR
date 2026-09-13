@@ -87,5 +87,6 @@ Station-area detection uses GPS distance to station reference points, with route
 values only when position data is missing. The departure filter uses OSRM for a
 single post; merged posts use distance to the closest reference point because the
 backend only supplies a route to the main post. These distances are not mixed.
-Temporary routing failures still retain the train list and its labelled display
-fallback; arrival/departure events and alarms remain independent of routing.
+Temporary routing failures retain the train list, but no track-distance value is
+invented from GPS. Single-post departure distance filters wait for valid OSRM
+data. Arrival/departure events and alarms remain independent of routing.

@@ -81,7 +81,7 @@ describe("distance to the selected station", () => {
 });
 
 describe("missing live routed distance", () => {
-    it("renders a labelled fallback for the live Łowicz case", () => {
+    it("does not invent track distance from GPS when OSRM distance is missing", () => {
         const details = {
             distanceFromStation: null,
             TrainData: {VDDelayedTimetableIndex: 0, Longitute: 19.9749813079834, Latititute: 52.09132385253906},
@@ -94,25 +94,16 @@ describe("missing live routed distance", () => {
             firstColRef={null} trainHasPassedStation={false} isWebpSupported={false}
             streamMode={false} serverCode="de1" players={undefined} postCfg={postConfig.LG}
         /></tr></tbody></table>);
-        const distance = screen.getByTitle(/Luftlinie zu Łowicz Główny/);
-        expect(distance).toBeVisible();
-        expect(distance).toHaveTextContent(/≈ 1\.93\s*km/);
-        expect(distance).not.toHaveTextContent("(Luftlinie)");
+        expect(screen.queryByTitle(/Luftlinie/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/km/)).not.toBeInTheDocument();
         expect(screen.getByText("Łowicz Główny")).toHaveClass("bg-green-200");
     });
 
-    it("prefers the route and preserves zero", () => {
-        expect(getDisplayDistance(1.15, 19, 52, [20, 52])).toEqual({km: 1.15, approximate: false});
-        expect(getDisplayDistance(0, 19, 52, [20, 52])).toEqual({km: 0, approximate: false});
+    it("preserves valid OSRM distances including zero", () => {
+        expect(getDisplayDistance(1.15)).toEqual({km: 1.15});
+        expect(getDisplayDistance(0)).toEqual({km: 0});
     });
-    it("uses kilometres with longitude/latitude in the correct order", () => {
-        expect(getDisplayDistance(null, 19, 52, [19, 53])?.km).toBeCloseTo(111.195, 2);
-        expect(getDisplayDistance(null, 19, 52, [20, 52])?.km).toBeCloseTo(68.458, 2);
-    });
-    it("does not invent a distance without valid positions", () => {
-        expect(getDisplayDistance(null, undefined, undefined, [19, 52])).toBeUndefined();
-        expect(getDisplayDistance(null, 0, 0, [19, 52])).toBeUndefined();
-        expect(getDisplayDistance(null, 19, NaN, [19, 52])).toBeUndefined();
-        expect(getDisplayDistance(null, 19, 52)).toBeUndefined();
+    it.each([null, undefined, NaN, Infinity, -1])("does not display invalid route distance %s", value => {
+        expect(getDisplayDistance(value)).toBeUndefined();
     });
 });

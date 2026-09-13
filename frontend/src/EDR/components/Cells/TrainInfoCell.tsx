@@ -49,9 +49,7 @@ export const TrainInfoCell: React.FC<Props> = ({
     const standingAtStation = isTrainStandingAtStation(ttRow, trainDetails, postCfg, serverNow);
     const inStationArea = isTrainInStationArea(ttRow, trainDetails, postCfg);
     const arrivalStatus = getStationArrivalStatus(ttRow, trainDetails, serverNow ?? new Date());
-    const displayDistance = getDisplayDistance(distanceFromStation,
-        trainDetails?.TrainData?.Longitute, trainDetails?.TrainData?.Latititute,
-        postCfg.platformPosOverride);
+    const displayDistance = getDisplayDistance(distanceFromStation);
     const allPosts = getStationGroupPosts(postCfg);
     const nextIsOwnStation = (nextStation?.pointId != null && [ttRow, ...(ttRow.secondaryPostsRows ?? [])]
         .some(point => point.pointId != null && String(point.pointId) === String(nextStation.pointId)))
@@ -154,10 +152,8 @@ export const TrainInfoCell: React.FC<Props> = ({
                         </>}
                         {displayDistance && <>
                             {', '}
-                            <span className="inline-block whitespace-nowrap" title={displayDistance.approximate
-                                ? `Luftlinie zu ${postCfg.srName}; Streckenentfernung derzeit nicht verfügbar`
-                                : `Entfernung zum Referenzpunkt von ${postCfg.srName}, nicht zur Bahnsteigkante`}>
-                                {displayDistance.approximate ? '≈ ' : '= '}{displayDistance.km.toFixed(2)}&nbsp;km
+                            <span className="inline-block whitespace-nowrap" title={`Entfernung zum Referenzpunkt von ${postCfg.srName}, nicht zur Bahnsteigkante`}>
+                                {'= '}{displayDistance.km.toFixed(2)}&nbsp;km
                             </span>
                         </>}
                     </div>

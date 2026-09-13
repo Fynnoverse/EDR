@@ -1,49 +1,26 @@
+import {getDisplayDistance, getSpatialDistance} from "./displayDistance";
+
 export const MIN_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 0.1;
 export const MAX_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 5;
 export const DEFAULT_DEPARTED_TRAIN_HIDE_DISTANCE_KM = 5;
 
-/** Straight-line distance is a lower bound on routed distance. It can prove
- * a departed train is beyond the threshold even when routing is unavailable.
- * When multiple post positions are passed (e.g. main station and outer sub-stations),
- * use spatial distance to the closest post: the API only routes to the main post.
- * A single post prefers its routed distance, including a valid zero. */
+/** Single posts use OSRM only. Groups use spatial distance to the nearest post,
+ * because the API's main-post route does not describe distance to the entire group. */
 export const departureDistance = (
     routedDistance: number | null | undefined,
     longitude: number,
     latitude: number,
     stationPositions?: [number, number] | Array<[number, number] | undefined>,
 ): number | undefined => {
-    const routed = routedDistance != null && Number.isFinite(routedDistance) && routedDistance >= 0
-        ? routedDistance : undefined;
-    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)
-        || Math.abs(longitude) > 180 || Math.abs(latitude) > 90
-        || (longitude === 0 && latitude === 0)) return routed;
+    const positions = (stationPositions ?? []).filter((position): position is [number, number] =>
+        Array.isArray(position) && position.length === 2);
+    if (positions.length <= 1) return getDisplayDistance(routedDistance)?.km;
 
-    const positions: Array<[number, number]> = Array.isArray(stationPositions)
-        ? (stationPositions.length > 0 && Array.isArray(stationPositions[0])
-            ? (stationPositions as Array<[number, number] | undefined>).filter((p): p is [number, number] => Array.isArray(p) && p.length === 2)
-            : (stationPositions.length === 2 && typeof stationPositions[0] === "number" ? [stationPositions as [number, number]] : []))
-        : (stationPositions ? [stationPositions] : []);
-
-    if (positions.length <= 1 && routed !== undefined) return routed;
-    if (positions.length === 0) return undefined;
-
-    const radians = Math.PI / 180;
-    const directDistances = positions.map(([stationLongitude, stationLatitude]) => {
-        if (!Number.isFinite(stationLongitude) || !Number.isFinite(stationLatitude)
-            || Math.abs(stationLongitude) > 180 || Math.abs(stationLatitude) > 90
-            || (stationLongitude === 0 && stationLatitude === 0)) return undefined;
-        const a = Math.sin((latitude - stationLatitude) * radians / 2) ** 2
-            + Math.cos(latitude * radians) * Math.cos(stationLatitude * radians)
-            * Math.sin((longitude - stationLongitude) * radians / 2) ** 2;
-        return 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
-    }).filter((d): d is number => d !== undefined);
-
-    if (directDistances.length === 0) return routed;
-    const minDirect = Math.min(...directDistances);
-    return minDirect;
+    const distances = positions.map(position => getSpatialDistance(longitude, latitude, position));
+    // Missing group coordinates must not silently switch the filter's meaning to a main-post route.
+    if (distances.some(distance => distance === undefined)) return undefined;
+    return Math.min(...distances as number[]);
 };
-
 /**
  * Determines whether the live train has moved beyond the selected post and
  * all secondary timetable entries belonging to it.
